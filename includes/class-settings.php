@@ -314,7 +314,7 @@ class Settings {
 
 		// Get current settings.
 		$mode                       = get_option( OPTION_MODE, DEFAULT_MODE );
-		$protected_roles            = get_option( OPTION_PROTECTED_ROLES, \quick_2fa_get_default_protected_roles() );
+		$protected_roles            = get_option( OPTION_PROTECTED_ROLES, get_default_protected_roles() );
 		$verification_period        = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
 		$code_length                = get_option( OPTION_CODE_LENGTH, DEFAULT_CODE_LENGTH );
 		$code_expiry                = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );

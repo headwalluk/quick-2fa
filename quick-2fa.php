@@ -3,7 +3,7 @@
  * Plugin Name: Quick 2FA
  * Plugin URI: https://github.com/headwalluk/quick-2fa
  * Description: Lightweight email-based two-factor authentication for WordPress admin access.
- * Version: 0.3.0
+ * Version: 0.5.0
  * Requires at least: 6.0
  * Requires PHP: 8.2
  * Author: Paul Faulkner
@@ -20,22 +20,23 @@
 defined( 'ABSPATH' ) || die();
 
 // Define plugin constants.
-define( 'QUICK_2FA_VERSION', '0.3.0' );
+define( 'QUICK_2FA_VERSION', '0.5.0' );
 define( 'QUICK_2FA_FILE', __FILE__ );
 define( 'QUICK_2FA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'QUICK_2FA_URL', plugin_dir_url( __FILE__ ) );
 define( 'QUICK_2FA_BASENAME', plugin_basename( __FILE__ ) );
 
-// Load plugin constants.
-require_once QUICK_2FA_PATH . 'constants.php';
+	// Load plugin constants.
+	require_once QUICK_2FA_PATH . 'constants.php';
 
-// Load global functions.
-require_once QUICK_2FA_PATH . 'functions.php';
+	// Load plugin functions.
+	require_once QUICK_2FA_PATH . 'functions.php';
 
-// Load private/helper functions.
-require_once QUICK_2FA_PATH . 'functions-private.php';
-
-// Load main plugin class.
+// Load plugin classes.
+require_once QUICK_2FA_PATH . 'includes/class-account-security-handler.php';
+require_once QUICK_2FA_PATH . 'includes/class-email-handler.php';
+require_once QUICK_2FA_PATH . 'includes/class-verification-code-handler.php';
+require_once QUICK_2FA_PATH . 'includes/class-password-reminder-handler.php';
 require_once QUICK_2FA_PATH . 'includes/class-plugin.php';
 
 // Load settings class.
@@ -48,7 +49,7 @@ require_once QUICK_2FA_PATH . 'includes/class-settings.php';
  */
 function quick_2fa_activate() {
 	// Set default options if not already set.
-	$defaults = quick_2fa_get_default_settings();
+	$defaults = Quick_2FA\get_default_settings();
 
 	foreach ( $defaults as $key => $value ) {
 		if ( false === get_option( $key ) ) {

@@ -240,7 +240,7 @@ class Plugin {
 		store_return_url( $user_id );
 
 		// Redirect to verification page.
-		wp_safe_redirect( \quick_2fa_get_verify_url() );
+		wp_safe_redirect( get_verify_url() );
 		exit();
 	}
 
@@ -256,7 +256,7 @@ class Plugin {
 		store_return_url( $user_id );
 
 		// Redirect to password reminder page.
-		wp_safe_redirect( \quick_2fa_get_password_url() );
+		wp_safe_redirect( get_password_url() );
 		exit();
 	}
 
@@ -367,15 +367,14 @@ class Plugin {
 		$error   = null;
 		$message = null;
 
+		// Get password handler.
+		$handler = new Password_Reminder_Handler( $user_id );
+
 		// Calculate days since last password change.
-		$last_pass_change = get_user_meta( $user_id, '_password_last_changed', true );
-		if ( empty( $last_pass_change ) ) {
-			$last_pass_change = strtotime( $user->user_registered );
-		}
-		$days_since = floor( ( time() - $last_pass_change ) / DAY_IN_SECONDS );
+		$days_since = $handler->get_password_age();
 
 		// Generate a strong password.
-		$new_password = wp_generate_password( 16, true, true );
+		$new_password = $handler->generate_strong_password();
 
 		// Handle form submission.
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
@@ -387,38 +386,12 @@ class Plugin {
 					// Get submitted password.
 					$password = isset( $_POST['q2fa_new_password'] ) ? wp_unslash( $_POST['q2fa_new_password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Password needs special chars.
 
-					if ( empty( $password ) ) {
-						$error = new \WP_Error( 'empty_password', __( 'Please enter a password.', 'quick-2fa' ) );
-					} elseif ( strlen( $password ) < 8 ) {
-						$error = new \WP_Error( 'weak_password', __( 'Password must be at least 8 characters long.', 'quick-2fa' ) );
+					// Update password using handler.
+					$result = $handler->update_password( $password );
+
+					if ( is_wp_error( $result ) ) {
+						$error = $result;
 					} else {
-						// Get current session info before password change.
-						$sessions      = \WP_Session_Tokens::get_instance( $user_id );
-						$current_token = wp_get_session_token();
-
-						// Clear other sessions first.
-						$sessions->destroy_others( $current_token );
-
-						// Update user password.
-						wp_set_password( $password, $user_id );
-
-						// Force user to stay logged in by updating the session token.
-						// WordPress invalidates sessions on password change, so we need to restore it.
-						$current_session = $sessions->get( $current_token );
-						if ( $current_session ) {
-							// Update the session with the new password hash verification.
-							$sessions->update( $current_token, $current_session );
-						}
-
-						// Log the user back in to create a fresh session.
-						wp_set_auth_cookie( $user_id, true );
-
-						// Update last password changed timestamp.
-						update_user_meta( $user_id, '_password_last_changed', time() );
-
-						// Log the event.
-						log_event( $user_id, LOG_PASSWORD_CHANGED );
-
 						// Success! Redirect to return URL.
 						$return_url = get_return_url( $user_id );
 						wp_safe_redirect( $return_url );
@@ -430,11 +403,8 @@ class Plugin {
 				if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['_wpnonce'] ), 'quick2fa_remind_later' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce validation.
 					$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 				} else {
-					// Update reminder timestamp.
-					update_user_meta( $user_id, META_LAST_PASSWORD_REMINDER, time() );
-
-					// Log the event.
-					log_event( $user_id, 'password_reminder_dismissed' );
+					// Dismiss reminder using handler.
+					$handler->dismiss_reminder();
 
 					// Redirect to return URL.
 					$return_url = get_return_url( $user_id );

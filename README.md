@@ -53,17 +53,34 @@ GPL v2 or later. See LICENSE file.
 
 This plugin follows WordPress coding standards and uses namespaces for organization.
 
+### Architecture (v0.4.0+)
+
+The plugin uses a class-based architecture with focused handler classes:
+
+- `Account_Security_Handler` - Account locking and security event logging
+- `Email_Handler` - Email template rendering and sending
+- `Verification_Code_Handler` - Code generation, storage, and verification
+- `Password_Reminder_Handler` - Password age tracking and updates
+- `Plugin` - Main plugin orchestration
+- `Settings` - Admin settings interface
+
 ### Directory Structure
 
 ```
 quick-2fa/
-├── assets/          # CSS/JS assets (if needed)
+├── assets/          # CSS/JS assets
+├── emails/          # Email template files
 ├── includes/        # Core plugin classes
+│   ├── class-account-security-handler.php
+│   ├── class-email-handler.php
+│   ├── class-verification-code-handler.php
+│   ├── class-password-reminder-handler.php
+│   ├── class-plugin.php
+│   └── class-settings.php
 ├── views/           # HTML template files
 ├── docs/            # Documentation
 ├── constants.php    # Plugin constants (namespaced)
-├── functions.php    # Global functions
-├── functions-private.php  # Private functions (namespaced)
+├── functions.php    # Utility functions (namespaced)
 └── quick-2fa.php    # Main plugin file
 ```
 

@@ -1,0 +1,13 @@
+# Block direct access to documentation files
+# Prevent web access to project notes and markdown files
+
+# Apache 2.4+
+<IfModule mod_authz_core.c>
+	Require all denied
+</IfModule>
+
+# Apache 2.2
+<IfModule !mod_authz_core.c>
+	Order deny,allow
+	Deny from all
+</IfModule>
