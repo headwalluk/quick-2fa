@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.2
-Stable tag: 0.6.0
+Stable tag: 0.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,12 @@ All commands accept user ID, login, or email address as the user identifier.
 4. Admin notice when 2FA is disabled
 
 == Changelog ==
+
+= 0.6.1 =
+* Added MU plugin compatibility - initialize defaults on first run
+* Improved settings page UX - reordered 2FA mode options
+* Enhanced email settings with widefat inputs for better visibility
+* Code quality improvements with PHPCS
 
 = 0.6.0 =
 * Added trusted devices feature with configurable expiry (1-365 days)

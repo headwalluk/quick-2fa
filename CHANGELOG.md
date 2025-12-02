@@ -5,6 +5,29 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2025-12-02
+
+### Added
+- **MU Plugin Compatibility**: First-run initialization for Must-Use plugin installations
+  - `Plugin::check_first_run()` method runs on `admin_init` with priority 1
+  - Automatically sets default options when `quick2fa_version` option doesn't exist
+  - All options set with autoload enabled for performance
+  - Version tracking for future upgrade logic
+
+### Changed
+- **Settings Page UX**: Reordered 2FA mode radio options for better flow
+  - Now: Disabled → Enabled for all users → Enabled for specific roles
+  - Places "specific roles" option adjacent to role selector
+- **Email Settings**: Enhanced input fields with `widefat` CSS class
+  - From Name, From Address, and Subject fields now full-width
+  - Better visibility and easier editing of email configuration
+
+### Technical Notes
+- Activation hooks remain for regular plugin installations
+- MU plugin installations now properly initialize via `check_first_run()`
+- Explicit `else` clauses in conditionals for code clarity
+- All user preferences preserved during version updates
+
 ## [0.6.0] - 2025-12-02
 
 ### Added

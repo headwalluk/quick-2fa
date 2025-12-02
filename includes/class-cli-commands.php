@@ -168,7 +168,7 @@ class CLI_Commands {
 				'fields' => 'ID',
 			)
 		);
-		$user_ids = $user_query->get_results();
+		$user_ids   = $user_query->get_results();
 
 		$locked_count   = 0;
 		$excluded_count = 0;
@@ -243,7 +243,7 @@ class CLI_Commands {
 				),
 			)
 		);
-		$user_ids = $user_query->get_results();
+		$user_ids   = $user_query->get_results();
 
 		if ( empty( $user_ids ) ) {
 			\WP_CLI::warning( 'No locked users found.' );
@@ -337,7 +337,7 @@ class CLI_Commands {
 		}
 
 		// Get last verified.
-		$last_verified = get_user_meta( $user->ID, META_LAST_VERIFIED, true );
+		$last_verified         = get_user_meta( $user->ID, META_LAST_VERIFIED, true );
 		$last_verified_display = $last_verified ? human_time_diff( $last_verified ) . ' ago' : 'Never';
 
 		// Get trusted devices count.
@@ -431,7 +431,7 @@ class CLI_Commands {
 				),
 			)
 		);
-		$users = $user_query->get_results();
+		$users      = $user_query->get_results();
 
 		if ( empty( $users ) ) {
 			\WP_CLI::warning( 'No locked users found.' );
@@ -526,7 +526,7 @@ class CLI_Commands {
 			return $user;
 		}
 
-		return new \WP_Error( 'user_not_found', sprintf( "User not found: %s", $user_identifier ) );
+		return new \WP_Error( 'user_not_found', sprintf( 'User not found: %s', $user_identifier ) );
 	}
 
 	/**

@@ -65,11 +65,11 @@ defined( 'ABSPATH' ) || die();
 							<label>
 								<input type="radio" 
 										name="<?php echo esc_attr( $const_option_mode ); ?>" 
-										value="<?php echo esc_attr( $const_mode_roles ); ?>" 
-										<?php checked( $mode, $const_mode_roles ); ?>>
-								<strong><?php esc_html_e( 'Enabled for specific roles', 'quick-2fa' ); ?></strong>
+										value="<?php echo esc_attr( $const_mode_disabled ); ?>" 
+										<?php checked( $mode, $const_mode_disabled ); ?>>
+								<strong><?php esc_html_e( 'Disabled', 'quick-2fa' ); ?></strong>
 								<p class="description">
-									<?php esc_html_e( 'Only users with selected roles will be required to verify their identity.', 'quick-2fa' ); ?>
+									<?php esc_html_e( 'Two-factor authentication is disabled. Not recommended for production sites.', 'quick-2fa' ); ?>
 								</p>
 							</label>
 							<br>
@@ -89,11 +89,11 @@ defined( 'ABSPATH' ) || die();
 							<label>
 								<input type="radio" 
 										name="<?php echo esc_attr( $const_option_mode ); ?>" 
-										value="<?php echo esc_attr( $const_mode_disabled ); ?>" 
-										<?php checked( $mode, $const_mode_disabled ); ?>>
-								<strong><?php esc_html_e( 'Disabled', 'quick-2fa' ); ?></strong>
+										value="<?php echo esc_attr( $const_mode_roles ); ?>" 
+										<?php checked( $mode, $const_mode_roles ); ?>>
+								<strong><?php esc_html_e( 'Enabled for specific roles', 'quick-2fa' ); ?></strong>
 								<p class="description">
-									<?php esc_html_e( 'Two-factor authentication is disabled. Not recommended for production sites.', 'quick-2fa' ); ?>
+									<?php esc_html_e( 'Only users with selected roles will be required to verify their identity.', 'quick-2fa' ); ?>
 								</p>
 							</label>
 						</fieldset>
@@ -255,11 +255,11 @@ defined( 'ABSPATH' ) || die();
 						<label for="quick2fa_email_from_name"><?php esc_html_e( 'From Name', 'quick-2fa' ); ?></label>
 					</th>
 					<td>
-						<input type="text" 
-								name="<?php echo esc_attr( $const_option_email_from_name ); ?>" 
-								id="quick2fa_email_from_name" 
-								value="<?php echo esc_attr( $email_from_name ); ?>" 
-								class="regular-text">
+					<input type="text" 
+							name="<?php echo esc_attr( $const_option_email_from_name ); ?>" 
+							id="quick2fa_email_from_name" 
+							value="<?php echo esc_attr( $email_from_name ); ?>" 
+							class="widefat">
 						<p class="description">
 							<?php esc_html_e( 'The name that appears in the "From" field of verification emails.', 'quick-2fa' ); ?>
 						</p>
@@ -272,11 +272,11 @@ defined( 'ABSPATH' ) || die();
 						<label for="quick2fa_email_from_address"><?php esc_html_e( 'From Address', 'quick-2fa' ); ?></label>
 					</th>
 					<td>
-						<input type="email" 
-								name="<?php echo esc_attr( $const_option_email_from_address ); ?>" 
-								id="quick2fa_email_from_address" 
-								value="<?php echo esc_attr( $email_from_address ); ?>" 
-								class="regular-text">
+					<input type="email" 
+							name="<?php echo esc_attr( $const_option_email_from_address ); ?>" 
+							id="quick2fa_email_from_address" 
+							value="<?php echo esc_attr( $email_from_address ); ?>" 
+							class="widefat">
 						<p class="description">
 							<?php esc_html_e( 'The email address that appears in the "From" field of verification emails.', 'quick-2fa' ); ?>
 						</p>
@@ -289,11 +289,11 @@ defined( 'ABSPATH' ) || die();
 						<label for="quick2fa_email_subject"><?php esc_html_e( 'Email Subject', 'quick-2fa' ); ?></label>
 					</th>
 					<td>
-						<input type="text" 
-								name="<?php echo esc_attr( $const_option_email_subject ); ?>" 
-								id="quick2fa_email_subject" 
-								value="<?php echo esc_attr( $email_subject ); ?>" 
-								class="regular-text">
+					<input type="text" 
+							name="<?php echo esc_attr( $const_option_email_subject ); ?>" 
+							id="quick2fa_email_subject" 
+							value="<?php echo esc_attr( $email_subject ); ?>" 
+							class="widefat">
 						<p class="description">
 							<?php esc_html_e( 'Subject line for verification emails.', 'quick-2fa' ); ?>
 						</p>
