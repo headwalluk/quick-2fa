@@ -52,6 +52,9 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 /**
  * Activation hook.
  *
+ * Note: This only runs when installed as a regular plugin.
+ * For MU plugin installations, defaults are set via Plugin::check_first_run().
+ *
  * @since 1.0.0
  */
 function quick_2fa_activate() {
@@ -60,12 +63,12 @@ function quick_2fa_activate() {
 
 	foreach ( $defaults as $key => $value ) {
 		if ( false === get_option( $key ) ) {
-			add_option( $key, $value );
+			add_option( $key, $value, '', 'yes' ); // Autoload enabled.
 		}
 	}
 
-	// Store plugin version.
-	update_option( 'quick2fa_version', QUICK_2FA_VERSION );
+	// Store plugin version with autoload.
+	add_option( 'quick2fa_version', QUICK_2FA_VERSION, '', 'yes' );
 }
 register_activation_hook( __FILE__, 'quick_2fa_activate' );
 

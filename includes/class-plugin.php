@@ -60,6 +60,9 @@ class Plugin {
 		$user_management = new User_Management();
 		$user_management->run();
 
+		// Check first run and initialize defaults (supports MU plugin installation).
+		add_action( 'admin_init', array( $this, 'check_first_run' ), 1 );
+
 		// Check verification on admin init.
 		add_action( 'admin_init', array( $this, 'check_verification' ), 1 );
 
@@ -83,6 +86,36 @@ class Plugin {
 	 */
 	public function load_textdomain() {
 		load_plugin_textdomain( 'quick-2fa', false, dirname( QUICK_2FA_BASENAME ) . '/languages' );
+	}
+
+	/**
+	 * Check if this is the first run and initialize default options.
+	 *
+	 * This ensures defaults are set even when installed as MU plugin
+	 * (where activation hooks don't fire).
+	 *
+	 * @since 0.6.0
+	 */
+	public function check_first_run() {
+		// Check if plugin version is set (indicates plugin has been initialized).
+		if ( false === get_option( 'quick2fa_version' ) ) {
+			// First run - set default options.
+			$defaults = get_default_settings();
+
+			foreach ( $defaults as $key => $value ) {
+				if ( false === get_option( $key ) ) {
+					add_option( $key, $value, '', 'yes' ); // Autoload enabled.
+				}
+			}
+
+			// Store plugin version with autoload.
+			add_option( 'quick2fa_version', QUICK_2FA_VERSION, '', 'yes' );
+		} elseif ( get_option( 'quick2fa_version' ) !== QUICK_2FA_VERSION ) {
+			// Version mismatch - update version (for future upgrade logic).
+			update_option( 'quick2fa_version', QUICK_2FA_VERSION );
+		} else {
+			// No change needed.
+		}
 	}
 
 	/**
