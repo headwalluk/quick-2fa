@@ -1407,17 +1407,206 @@ Questions? We're here to help!
 
 ---
 
+## User Lock-out Management Implementation
+
+### Overview
+
+Administrators need visibility and control over user lock-out status directly from the WordPress Users table. This feature enhances the plugin's usability for hosting providers and site administrators by providing quick access to lock-out management without requiring database access.
+
+### Implementation Checklist
+
+**Phase 1: Custom Column Display** ✅
+
+- [x] Hook into `manage_users_columns` to add "Lock Status" column header
+- [x] Hook into `manage_users_custom_column` to render column content for each user
+- [x] Create helper function `get_user_lockout_status()` to check lock-out state
+  - Returns: `'locked'`, `'unlocked'`, or `'never_verified'`
+  - Checks if `META_LOCKED_UNTIL` exists and is greater than current time
+- [x] Display appropriate icon based on status:
+  - Locked: Red dashicon `dashicons-lock` with tooltip showing expiry time
+  - Unlocked: Green dashicon `dashicons-yes-alt` 
+  - Never verified: Gray dash
+- [x] Format tooltip text: "Locked out until [formatted_date]" or "Locked out (manual)"
+- [x] Add inline CSS for icon colors (red for locked, green for unlocked)
+- [x] Position column after "Email" column (use array manipulation in column filter)
+
+**Phase 2: Column Sorting** ✅
+
+- [x] Hook into `manage_users_sortable_columns` to make column sortable
+- [x] Hook into `pre_get_users` to handle orderby parameter
+- [x] Add meta_query ordering by `META_LOCKED_UNTIL` value
+- [x] Handle NULL values (users without lock-out meta)
+- [ ] Test sorting: locked users first vs last
+
+**Phase 3: Users Table Filters** ✅
+
+- [x] Hook into `views_users` to add filter links
+- [x] Count locked users: query users where `META_LOCKED_UNTIL` > current timestamp
+- [x] Count not-locked users: total users - locked users
+- [x] Add filter links with counts: "Locked Out (5)" and "Not Locked Out (142)"
+- [x] Hook into `pre_get_users` to filter user list based on selected view
+- [x] Add meta_query for "Locked Out" filter
+- [x] Add inverse logic for "Not Locked Out" filter
+- [x] Preserve current filter when performing row actions
+- [ ] Test filter counts update after lock/unlock actions
+
+**Phase 4: Row Actions** ✅
+
+- [x] Hook into `user_row_actions` to add lock/unlock actions
+- [x] Check current user's `edit_users` capability
+- [x] Prevent adding action for current user (can't lock yourself)
+- [x] Generate dynamic action label based on lock-out status:
+  - If locked: "Unlock"
+  - If not locked: "Lock Out"
+- [x] Build action URL with nonce
+- [x] Add row action to actions array with appropriate priority
+- [x] Style action link (use default WordPress styling)
+
+**Phase 5: Lock Action Handler** ✅
+
+- [x] Hook into `admin_action_quick2fa_lock` (fires on `users.php?action=quick2fa_lock`)
+- [x] Verify nonce: `wp_verify_nonce($_GET['_wpnonce'], 'quick2fa_lock_' . $user_id)`
+- [x] Check capability: `current_user_can('edit_users')`
+- [x] Prevent self-lock: check if target user ID == current user ID
+- [x] Get target user ID from `$_GET['user']`
+- [x] Set permanent lock: `update_user_meta($user_id, META_LOCKED_UNTIL, PHP_INT_MAX)`
+- [x] Log event with admin_id
+- [x] Add admin notice: "User [username] has been locked out."
+- [x] Redirect back to users.php with filters preserved
+- [x] Add error handling for invalid user IDs
+
+**Phase 6: Unlock Action Handler** ✅
+
+- [x] Hook into `admin_action_quick2fa_unlock` (fires on `users.php?action=quick2fa_unlock`)
+- [x] Verify nonce: `wp_verify_nonce($_GET['_wpnonce'], 'quick2fa_unlock_' . $user_id)`
+- [x] Check capability: `current_user_can('edit_users')`
+- [x] Get target user ID from `$_GET['user']`
+- [x] Delete lock meta: `delete_user_meta($user_id, META_LOCKED_UNTIL)`
+- [x] Reset attempt counter: `update_user_meta($user_id, META_CODE_ATTEMPTS, 0)`
+- [x] Log event with admin_id
+- [x] Add admin notice: "User [username] has been unlocked."
+- [x] Redirect back to users.php with filters preserved
+
+**Phase 7: Helper Functions** ✅
+
+- [x] Create `get_user_lockout_status($user_id)` function
+  - Check if `META_LOCKED_UNTIL` exists
+  - Compare value to current timestamp
+  - Return status string
+- [x] Create `format_lockout_expiry($timestamp)` function
+  - Format timestamp using WordPress date format
+  - Handle special cases (PHP_INT_MAX = "manual lock")
+- [x] Create `count_locked_users()` function
+  - Efficient count query using `WP_User_Query`
+  - Cache result in transient for 5 minutes
+- [x] Add function documentation with @since tags
+
+**Phase 8: Testing & Edge Cases** (Ready for Manual Testing)
+
+- [ ] Test with 0 locked users
+- [ ] Test with 100+ locked users (performance)
+- [ ] Test locking user with active session (should block on next page load)
+- [ ] Test automatic lock expiry (timestamp passes, user shows as unlocked)
+- [ ] Test multisite: super admin can manage users across sites
+- [x] Test self-lock prevention with error message (implemented)
+- [x] Test invalid user IDs (implemented with wp_die)
+- [x] Test nonce verification failures (implemented)
+- [x] Test capability checks (implemented - requires edit_users)
+- [ ] Verify filter counts update immediately after lock/unlock
+- [ ] Test sorting performance with large user bases
+- [ ] Check for N+1 query issues in column rendering
+
+**Phase 9: UI Polish** (In Progress)
+
+- [x] Choose final wording: "Lock Status" ✅
+- [x] Decide: show icon for unlocked users → Green checkmark ✅
+- [x] Ensure icon colors match WordPress admin theme (red=#d63638, green=#00a32a)
+- [ ] Test responsive design (mobile admin)
+- [ ] Add screen reader text for accessibility
+- [ ] Ensure tooltips work on touch devices
+- [x] Match WordPress admin notice styling (uses add_settings_error)
+- [ ] Add subtle hover effects on icons (optional)
+
+**Phase 10: Documentation** (Pending)
+
+- [x] Add inline code comments explaining lock-out logic ✅
+- [x] Document user meta keys in constants.php (already documented)
+- [ ] Add FAQ entry: "How do I unlock a locked user?"
+- [ ] Update readme.txt with user management features
+- [ ] Add screenshot of Users table with lock-out column
+- [ ] Document in hosting provider deployment guide
+
+### Implementation Notes
+
+**File Organization:**
+
+Create new file: `includes/class-user-management.php`
+
+```php
+<?php
+namespace Quick_2FA;
+
+class User_Management {
+    public function run() {
+        // Column display
+        add_filter('manage_users_columns', [$this, 'add_lockout_column']);
+        add_action('manage_users_custom_column', [$this, 'render_lockout_column'], 10, 3);
+        
+        // Column sorting
+        add_filter('manage_users_sortable_columns', [$this, 'make_column_sortable']);
+        add_action('pre_get_users', [$this, 'handle_column_sort']);
+        
+        // Filters
+        add_filter('views_users', [$this, 'add_lockout_filters']);
+        add_action('pre_get_users', [$this, 'filter_by_lockout_status']);
+        
+        // Row actions
+        add_filter('user_row_actions', [$this, 'add_lockout_actions'], 10, 2);
+        
+        // Action handlers
+        add_action('admin_action_quick2fa_lock', [$this, 'handle_lock_user']);
+        add_action('admin_action_quick2fa_unlock', [$this, 'handle_unlock_user']);
+    }
+    
+    // ... method implementations
+}
+```
+
+**Performance Considerations:**
+
+- Use transient caching for user counts (5-minute expiry)
+- Avoid querying lock-out status for every user on large sites (batch meta queries)
+- Consider using `update_user_caches()` to prime user cache
+- Indexed user meta queries are efficient for typical user counts (<10,000)
+
+**Security Considerations:**
+
+- Always verify nonces before state changes
+- Check capabilities on every action
+- Prevent self-lock-out (major support issue)
+- Sanitize and validate all user inputs
+- Use WordPress functions for redirects (`wp_safe_redirect()`)
+
+**Backwards Compatibility:**
+
+- No database schema changes needed (uses existing user meta)
+- Feature is additive (doesn't break existing functionality)
+- Works alongside automatic lock-outs seamlessly
+
+---
+
 ## Future Enhancements Roadmap
 
 ### v1.1 (Planned)
 
-- Remember device functionality (30-day trust period)
+- Remember device functionality (30-day trust period) ✅ Implemented
+- User lock-out management UI ✅ Implemented
 - WP-CLI management commands
 - Export logs to CSV
-- Email template visual editor
 
 ### v1.2 (Under Consideration)
 
+- Bulk lock/unlock actions in Users table
 - SMS verification option
 - IP whitelist/blacklist
 - Backup codes (10 one-time codes)

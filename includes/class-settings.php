@@ -170,6 +170,39 @@ class Settings {
 				'default'           => DEFAULT_PASSWORD_REMINDER_COOLDOWN,
 			)
 		);
+
+		// Trusted devices enabled setting.
+		register_setting(
+			'quick2fa_settings',
+			OPTION_ENABLE_TRUSTED_DEVICES,
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => DEFAULT_ENABLE_TRUSTED_DEVICES,
+			)
+		);
+
+		// Trusted device expiry setting.
+		register_setting(
+			'quick2fa_settings',
+			OPTION_TRUSTED_DEVICE_EXPIRY,
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => array( $this, 'sanitize_trusted_device_expiry' ),
+				'default'           => DEFAULT_TRUSTED_DEVICE_EXPIRY,
+			)
+		);
+
+		// Lockout duration setting.
+		register_setting(
+			'quick2fa_settings',
+			OPTION_LOCKOUT_DURATION,
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => array( $this, 'sanitize_lockout_duration' ),
+				'default'           => DEFAULT_LOCKOUT_DURATION,
+			)
+		);
 	}
 
 	/**
@@ -261,6 +294,30 @@ class Settings {
 	}
 
 	/**
+	 * Sanitize trusted device expiry setting.
+	 *
+	 * @since 1.0.0
+	 * @param mixed $value Input value.
+	 * @return int Sanitized expiry value (1-365 days).
+	 */
+	public function sanitize_trusted_device_expiry( $value ) {
+		$val = (int) $value;
+		return ( $val >= 1 && $val <= 365 ) ? $val : DEFAULT_TRUSTED_DEVICE_EXPIRY;
+	}
+
+	/**
+	 * Sanitize lockout duration setting.
+	 *
+	 * @since 0.6.0
+	 * @param mixed $value Input value.
+	 * @return int Sanitized duration value (1-1440 minutes = 1 min to 24 hours).
+	 */
+	public function sanitize_lockout_duration( $value ) {
+		$val = (int) $value;
+		return ( $val >= 1 && $val <= 1440 ) ? $val : DEFAULT_LOCKOUT_DURATION;
+	}
+
+	/**
 	 * Enqueue admin scripts and styles.
 	 *
 	 * @since 1.0.0
@@ -324,6 +381,9 @@ class Settings {
 		$password_reminders_enabled = get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED );
 		$password_reminder_period   = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
 		$password_reminder_cooldown = get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
+		$trusted_devices_enabled    = get_option( OPTION_ENABLE_TRUSTED_DEVICES, DEFAULT_ENABLE_TRUSTED_DEVICES );
+		$trusted_device_expiry      = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
+		$lockout_duration           = get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION );
 
 		// Get all WordPress roles.
 		$wp_roles  = wp_roles();
@@ -341,6 +401,9 @@ class Settings {
 		$const_option_password_reminders_enabled = OPTION_PASSWORD_REMINDERS_ENABLED;
 		$const_option_password_reminder_period   = OPTION_PASSWORD_REMINDER_PERIOD;
 		$const_option_password_reminder_cooldown = OPTION_PASSWORD_REMINDER_COOLDOWN;
+		$const_option_enable_trusted_devices     = OPTION_ENABLE_TRUSTED_DEVICES;
+		$const_option_trusted_device_expiry      = OPTION_TRUSTED_DEVICE_EXPIRY;
+		$const_option_lockout_duration           = OPTION_LOCKOUT_DURATION;
 		$const_mode_all                          = MODE_ALL;
 		$const_mode_roles                        = MODE_ROLES;
 		$const_mode_disabled                     = MODE_DISABLED;

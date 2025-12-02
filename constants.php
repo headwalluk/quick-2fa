@@ -23,6 +23,7 @@ const META_LAST_VERIFIED          = '_quick2fa_last_verified';
 const META_LAST_PASSWORD_REMINDER = '_quick2fa_last_password_reminder';
 const META_LOCKED_UNTIL           = '_quick2fa_locked_until';
 const META_LOGS                   = '_quick2fa_logs';
+const META_TRUSTED_DEVICES        = '_quick2fa_trusted_devices';
 
 /**
  * Option keys used by the plugin.
@@ -43,7 +44,9 @@ const OPTION_PASSWORD_INTRO             = 'quick2fa_password_intro';
 const OPTION_EMAIL_FROM_NAME            = 'quick2fa_email_from_name';
 const OPTION_EMAIL_FROM_ADDRESS         = 'quick2fa_email_from_address';
 const OPTION_EMAIL_SUBJECT              = 'quick2fa_email_subject';
-const OPTION_EMAIL_TEMPLATE             = 'quick2fa_email_template';
+const OPTION_ENABLE_TRUSTED_DEVICES     = 'quick2fa_enable_trusted_devices';
+const OPTION_TRUSTED_DEVICE_EXPIRY      = 'quick2fa_trusted_device_expiry';
+const OPTION_LOCKOUT_DURATION           = 'quick2fa_lockout_duration';
 const OPTION_VERSION                    = 'quick2fa_version';
 
 /**
@@ -115,3 +118,6 @@ const DEFAULT_CODE_EXPIRY                = 15;
 const DEFAULT_PASSWORD_REMINDERS_ENABLED = true;
 const DEFAULT_PASSWORD_REMINDER_PERIOD   = 60;
 const DEFAULT_PASSWORD_REMINDER_COOLDOWN = 1;
+const DEFAULT_ENABLE_TRUSTED_DEVICES     = false;
+const DEFAULT_TRUSTED_DEVICE_EXPIRY      = 30;
+const DEFAULT_LOCKOUT_DURATION           = 60;

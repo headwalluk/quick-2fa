@@ -5,6 +5,54 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-12-02
+
+### Added
+- **Trusted Devices**: Optional "Trust this device" feature with configurable expiry (1-365 days)
+  - SHA256 device fingerprinting based on user agent and IP
+  - User meta storage for trusted device records
+  - Automatic cleanup of expired devices
+  - Settings page configuration for enabling/disabling and expiry duration
+- **User Lock-Out Management**: Comprehensive admin UI for managing locked users
+  - "Lock Status" column in users table with visual indicators
+  - Filter views for locked/unlocked users with counts
+  - Row actions for manual lock/unlock operations
+  - Self-lock prevention for current admin
+  - Session termination when locking accounts
+- **WP-CLI Commands**: Full command-line interface for user security management
+  - `wp quick-2fa lock <user>` - Lock account and terminate sessions
+  - `wp quick-2fa unlock <user>` - Unlock account and reset attempts
+  - `wp quick-2fa lock-all [--exclude=<user>]` - Emergency lockdown
+  - `wp quick-2fa unlock-all` - Bulk unlock all users
+  - `wp quick-2fa status <user>` - Comprehensive user status
+  - `wp quick-2fa list-locked [--format=<format>]` - List locked users
+  - `wp quick-2fa clear-devices <user>` - Remove trusted devices
+- **Configurable Lock-Out Duration**: Admin setting for automatic lock duration
+  - Configurable from 1-1440 minutes (1 minute to 24 hours)
+  - Default: 60 minutes
+  - Separate from permanent manual locks
+
+### Changed
+- **Lock-Out Enforcement**: Now blocks ALL users at login, not just those with active admin sessions
+  - Added `wp_authenticate_user` filter to check lock status during authentication
+  - Enhanced `check_verification()` to handle already-logged-in users
+  - Improved lock detection and messaging (permanent vs temporary)
+- **Session Management**: All lock operations now terminate active sessions via `WP_Session_Tokens::destroy_all()`
+- **Permanent Lock Detection**: Fixed messaging for permanent locks (>100 years = "contact administrator")
+- **WP-CLI Namespace**: Standardized command namespace from `quick2fa` to `quick-2fa` for consistency
+
+### Removed
+- **Deprecated Functions**: Cleaned up for v1.0.0 readiness
+  - Removed wrapper functions that were deprecated in v0.4.0
+  - Direct use of handler classes now required
+
+### Technical Notes
+- Manual locks (via admin UI or CLI) use `PHP_INT_MAX` expiry (~68 years)
+- Automatic locks (rate-limit breaches) use configurable duration from settings
+- Device fingerprints stored as SHA256 hashes with timestamps
+- All WP-CLI commands accept user ID, login, or email as identifier
+- User Management UI uses proper nonce verification and capability checks
+
 ## [0.5.0] - 2025-12-02
 
 ### Added

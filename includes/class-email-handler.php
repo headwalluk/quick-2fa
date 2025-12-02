@@ -56,18 +56,12 @@ class Email_Handler {
 	 * @param \WP_User $user User object.
 	 * @return string Formatted email message.
 	 */
-	public function get_message( $code, $user ) {
-		$template = $this->get_template();
+	public function get_message( $code, $user ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Variables extracted in template.
+		$code_expiry = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
 
-		return $this->replace_placeholders(
-			$template,
-			array(
-				'{code}'      => $code,
-				'{name}'      => $user->display_name,
-				'{site_name}' => get_bloginfo( 'name' ),
-				'{site_url}'  => home_url(),
-			)
-		);
+		ob_start();
+		include \QUICK_2FA_PATH . 'emails/verification-code.php';
+		return ob_get_clean();
 	}
 
 	/**
@@ -114,31 +108,5 @@ class Email_Handler {
 		}
 
 		return array( $from_name, $from_email );
-	}
-
-	/**
-	 * Get email template.
-	 *
-	 * @since 0.4.0
-	 * @return string Email template.
-	 */
-	private function get_template() {
-		return get_option( OPTION_EMAIL_TEMPLATE, get_default_email_template() );
-	}
-
-	/**
-	 * Replace placeholders in template.
-	 *
-	 * @since 0.4.0
-	 * @param string $template    Template string.
-	 * @param array  $replacements Associative array of placeholder => value pairs.
-	 * @return string Template with placeholders replaced.
-	 */
-	private function replace_placeholders( $template, $replacements ) {
-		return str_replace(
-			array_keys( $replacements ),
-			array_values( $replacements ),
-			$template
-		);
 	}
 }

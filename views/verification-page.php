@@ -6,9 +6,11 @@
  * @since 1.0.0
  *
  * Variables available in this template:
- * @var WP_User     $user    Current user object
- * @var WP_Error    $error   Error object (if any)
- * @var string|null $message Success message (if any)
+ * @var WP_User     $user                     Current user object
+ * @var WP_Error    $error                    Error object (if any)
+ * @var string|null $message                  Success message (if any)
+ * @var bool        $trusted_devices_enabled  Whether trusted devices feature is enabled
+ * @var int         $trusted_device_expiry    Number of days to trust a device
  */
 
 // Exit if accessed directly.
@@ -148,6 +150,20 @@ defined( 'ABSPATH' ) || die();
 					inputmode="numeric"
 					autofocus
 				>
+				<?php if ( $trusted_devices_enabled ) : ?>
+					<label style="font-weight: normal; margin-top: 12px; display: flex; align-items: center; cursor: pointer;">
+						<input type="checkbox" name="q2fa_trust_device" id="q2fa_trust_device" value="1" style="margin: 0 8px 0 0; width: auto;">
+						<span>
+							<?php
+							printf(
+								/* translators: %d: number of days */
+								esc_html( _n( 'Trust this device for %d day', 'Trust this device for %d days', $trusted_device_expiry, 'quick-2fa' ) ),
+								(int) $trusted_device_expiry
+							);
+							?>
+						</span>
+					</label>
+				<?php endif; ?>
 				<button type="submit" name="q2fa_verify"><?php esc_html_e( 'Verify', 'quick-2fa' ); ?></button>
 			</form>
 

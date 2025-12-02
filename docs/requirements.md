@@ -724,4 +724,145 @@ Regular password changes help keep your account secure. We recommend updating yo
 
 ---
 
+## User Lock-out Management
+
+### Overview
+
+Since Quick 2FA can automatically lock out users after failed verification attempts, administrators need a straightforward way to view locked users and manually control lock-out status directly from the WordPress Users admin table (`/wp-admin/users.php`).
+
+**Design Philosophy:** Keep it lightweight and integrated into WordPress's native UI patterns. No custom admin pages required.
+
+### Custom Users Table Column
+
+**Column Header:** "2FA Status" or "Security"
+
+**Column Content:**
+- **Locked Users:** Display a red padlock icon (🔒 or dashicon `dashicons-lock`)
+  - Tooltip/title attribute: "Locked out until [date/time]" (e.g., "Locked out until Dec 2, 2025 3:45 PM")
+  - If permanently locked (no expiry): "Locked out (manual)"
+- **Unlocked Users:** Display a green checkmark icon (✓ or dashicon `dashicons-yes`) or leave empty
+  - Tooltip: "Not locked out" or no tooltip
+- **Never Verified:** Display a gray dash (—) or empty state
+  - Optional tooltip: "Never verified"
+
+**Column Position:** Insert after the "Email" column, before "Role" column for logical grouping with user identity information.
+
+**Sortability:** Make column sortable by lock-out status (locked users first/last).
+
+### Users Table Filter
+
+**Location:** Add to the existing Views filter row (All | Administrator | Editor | etc.)
+
+**Filter Options:**
+1. **All** - Show all users (default view, shows count)
+2. **Locked Out** - Show only users currently locked out
+3. **Not Locked Out** - Show only users not currently locked out (or never locked)
+
+**Filter Text Format:** `Locked Out (5)` where the number indicates count of users in that state.
+
+**Query Behavior:**
+- "Locked Out" filter: Query users where `_quick2fa_locked_until` meta exists AND value > current timestamp
+- "Not Locked Out" filter: Query users where meta doesn't exist OR value <= current timestamp
+
+### Row Actions
+
+**Action Label:** Dynamic based on current lock-out status
+- If user is locked: **"Unlock"** or **"Remove Lock"**
+- If user is not locked: **"Lock Out"** or **"Lock User"**
+
+**Action Behavior:**
+- **Lock Action:**
+  - Sets `_quick2fa_locked_until` user meta to a far-future timestamp (e.g., 100 years from now, or use `-1` for permanent)
+  - Shows admin notice: "User [username] has been locked out."
+  - Logs event: `manual_lock` with admin user ID and timestamp
+  - Remains on Users table page with filter preserved
+
+- **Unlock Action:**
+  - Deletes `_quick2fa_locked_until` user meta
+  - Resets `_quick2fa_code_attempts` to 0
+  - Shows admin notice: "User [username] has been unlocked."
+  - Logs event: `manual_unlock` with admin user ID and timestamp
+  - Remains on Users table page with filter preserved
+
+**Security:**
+- Requires `edit_users` capability
+- Nonce verification on action requests
+- Confirm action via admin notice (no separate confirmation dialog for simplicity)
+- Prevent locking out yourself (display error: "You cannot lock out your own account.")
+
+**URL Pattern:**
+- Lock: `/wp-admin/users.php?action=quick2fa_lock&user=123&_wpnonce=abc123`
+- Unlock: `/wp-admin/users.php?action=quick2fa_unlock&user=123&_wpnonce=abc123`
+
+### Bulk Actions
+
+**Optional Enhancement (v1.1+):**
+- Add "Lock Out" and "Unlock" to bulk actions dropdown
+- Allow administrators to lock/unlock multiple users at once
+- Confirmation notice: "5 users have been locked out." / "3 users have been unlocked."
+
+**Not included in v1.0** to keep initial implementation lightweight.
+
+### Technical Implementation Notes
+
+**Hooks to Use:**
+- `manage_users_columns` - Add custom column header
+- `manage_users_custom_column` - Render column content
+- `manage_users_sortable_columns` - Make column sortable
+- `views_users` - Add filter links
+- `pre_get_users` - Modify user query for filters
+- `user_row_actions` - Add lock/unlock row action
+- `admin_action_quick2fa_lock` - Handle lock action
+- `admin_action_quick2fa_unlock` - Handle unlock action
+
+**Performance Considerations:**
+- User meta queries are indexed by user ID (efficient)
+- Avoid N+1 queries: use `update_user_caches()` if displaying many users
+- Lock-out filter uses meta_query (indexed, performant for typical user counts)
+
+**UI Guidelines:**
+- Use WordPress Dashicons for consistency
+- Match WordPress admin color scheme (red = locked, green = unlocked)
+- Keep tooltips concise
+- Follow WordPress admin notice patterns for feedback
+
+### User Experience Flow
+
+**Scenario 1: Admin discovers locked user**
+1. Navigate to Users → All Users
+2. See red padlock icon in "2FA Status" column
+3. Hover over icon: sees "Locked out until Dec 2, 2025 3:45 PM"
+4. Click "Unlock" row action
+5. User meta deleted, admin notice confirms: "User john@example.com has been unlocked."
+
+**Scenario 2: Admin needs to temporarily disable user access**
+1. Navigate to Users → All Users
+2. Find user, click "Lock Out" row action
+3. User meta set, admin notice confirms: "User jane@example.com has been locked out."
+4. User cannot access `/wp-admin/` until unlocked
+5. Later, admin clicks "Unlock" to restore access
+
+**Scenario 3: Admin wants to review all locked users**
+1. Navigate to Users → All Users
+2. Click "Locked Out (5)" filter
+3. Table shows only locked users
+4. Admin can quickly unlock specific users via row actions
+
+### Edge Cases to Handle
+
+1. **User locks themselves:** Prevent with capability check + current user ID check
+2. **Expired lock shows as locked:** Check timestamp before displaying icon
+3. **Super admin on multisite:** Should have permission to unlock any user on any site
+4. **User is locked during active session:** Next page navigation triggers 2FA check, sees lock, shows locked message
+5. **Manual lock vs automatic lock:** Both use same meta key, same unlock process (no distinction needed)
+
+### Success Metrics
+
+- **Reduced support tickets** about locked users
+- **Faster resolution** of lock-out issues (no need to SSH or use phpMyAdmin)
+- **Increased adoption** by hosting providers who need manual control
+- **No performance impact** on Users table page load time
+
+---
+
 _End of Requirements Document_

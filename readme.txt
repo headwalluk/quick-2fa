@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.2
-Stable tag: 0.3.0
+Stable tag: 0.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,57 @@ By default, 3 days. You can configure this from 1-30 days in settings.
 
 No! Our password reminder page is specifically designed to be compatible with password manager browser extensions.
 
+= Can I manage locked users from the command line? =
+
+Yes! Quick 2FA includes comprehensive WP-CLI support. See the WP-CLI Commands section below.
+
+== WP-CLI Commands ==
+
+Quick 2FA provides powerful command-line tools for managing user lock-out status:
+
+= Lock/Unlock Individual Users =
+
+`wp quick-2fa lock <user>`
+Lock a user account and terminate all active sessions.
+
+`wp quick-2fa unlock <user>`
+Unlock a user account and reset failed attempt counter.
+
+= Emergency Lockdown =
+
+`wp quick-2fa lock-all [--exclude=<user>]`
+Lock ALL users (optionally exclude one admin account). Useful when your site is under attack.
+
+`wp quick-2fa unlock-all`
+Unlock all currently locked users.
+
+= User Management =
+
+`wp quick-2fa status <user>`
+Show comprehensive status including lock status, last verification, failed attempts, and trusted devices.
+
+`wp quick-2fa list-locked [--format=<format>]`
+List all locked users. Supports table, CSV, JSON, and YAML formats.
+
+`wp quick-2fa clear-devices <user>`
+Remove all trusted devices for a user.
+
+= Examples =
+
+    # Emergency: Lock down entire site except admin
+    wp quick-2fa lock-all --exclude=admin
+
+    # Check user status
+    wp quick-2fa status john_doe
+
+    # List locked users as CSV
+    wp quick-2fa list-locked --format=csv
+
+    # Unlock a specific user
+    wp quick-2fa unlock jane_smith
+
+All commands accept user ID, login, or email address as the user identifier.
+
 == Screenshots ==
 
 1. Verification page - Clean, simple email code entry
@@ -105,6 +156,16 @@ No! Our password reminder page is specifically designed to be compatible with pa
 4. Admin notice when 2FA is disabled
 
 == Changelog ==
+
+= 0.6.0 =
+* Added trusted devices feature with configurable expiry (1-365 days)
+* Added comprehensive user lock-out management via admin UI
+* Added WP-CLI commands for managing user accounts and security
+* Added configurable auto-lock duration setting (1-1440 minutes)
+* Enhanced lock-out enforcement for all users at login
+* Improved session termination when locking accounts
+* Standardized WP-CLI command namespace to quick-2fa
+* Fixed permanent vs temporary lock messaging
 
 = 0.3.0 =
 * Comprehensive security review and hardening

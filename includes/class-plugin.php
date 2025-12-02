@@ -26,6 +26,14 @@ class Plugin {
 	private static $instance = null;
 
 	/**
+	 * Plugin settings instance.
+	 *
+	 * @since 1.0.0
+	 * @var Settings
+	 */
+	private $settings;
+
+	/**
 	 * Get single instance of the class.
 	 *
 	 * @since 1.0.0
@@ -45,8 +53,18 @@ class Plugin {
 	 * @since 1.0.0
 	 */
 	public function run() {
+		$this->settings = new Settings();
+		$this->settings->run();
+
+		// Initialize user management features.
+		$user_management = new User_Management();
+		$user_management->run();
+
 		// Check verification on admin init.
 		add_action( 'admin_init', array( $this, 'check_verification' ), 1 );
+
+		// Block locked users at login.
+		add_filter( 'wp_authenticate_user', array( $this, 'check_lockout_on_login' ), 10, 2 );
 
 		// Handle 2FA pages on login init.
 		add_action( 'login_init', array( $this, 'handle_login_actions' ) );
@@ -68,6 +86,55 @@ class Plugin {
 	}
 
 	/**
+	 * Get plugin settings instance.
+	 *
+	 * @since 1.0.0
+	 * @return Settings
+	 */
+	public function get_settings() {
+		return $this->settings;
+	}
+
+	/**
+	 * Check if user is locked out during login.
+	 *
+	 * Blocks locked users from logging in (front-end or admin).
+	 *
+	 * @since 0.6.0
+	 * @param \WP_User|\WP_Error $user     WP_User or WP_Error object if previous filter failed.
+	 * @param string             $password Password provided during login (unused).
+	 * @return \WP_User|\WP_Error WP_User on success, WP_Error if locked.
+	 */
+	public function check_lockout_on_login( $user, $password ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by wp_authenticate_user filter.
+		// If previous filter already failed, pass it through.
+		if ( is_wp_error( $user ) ) {
+			return $user;
+		}
+
+		// Check if user is locked.
+		$security = new Account_Security_Handler( $user->ID );
+		if ( $security->is_locked() ) {
+			$time_remaining = $security->get_lock_time_remaining();
+			$locked_until   = get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
+
+			// Check if this is a permanent lock.
+			if ( $locked_until > time() + ( 100 * YEAR_IN_SECONDS ) ) {
+				$error_message = __( 'Your account has been locked. Please contact your site administrator.', 'quick-2fa' );
+			} else {
+				$error_message = sprintf(
+					/* translators: %s: Time remaining until unlock */
+					__( 'Your account has been locked. Please try again in %s.', 'quick-2fa' ),
+					human_time_diff( time(), time() + $time_remaining )
+				);
+			}
+
+			return new \WP_Error( 'account_locked', $error_message );
+		}
+
+		return $user;
+	}
+
+	/**
 	 * Check if user needs verification on admin access.
 	 *
 	 * @since 1.0.0
@@ -76,6 +143,30 @@ class Plugin {
 		// Bail early if we should skip checks.
 		if ( should_skip_check() ) {
 			return;
+		}
+
+		// Check if user is locked out (applies to ALL users, regardless of 2FA settings).
+		$user_id = get_current_user_id();
+		if ( $user_id ) {
+			$security = new Account_Security_Handler( $user_id );
+			if ( $security->is_locked() ) {
+				wp_logout();
+
+				$locked_until = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
+
+				// Check if this is a permanent lock.
+				if ( $locked_until > time() + ( 100 * YEAR_IN_SECONDS ) ) {
+					$error_message = __( 'Your account has been locked. Please contact your site administrator.', 'quick-2fa' );
+				} else {
+					$error_message = sprintf(
+						/* translators: %s: Time remaining until unlock */
+						__( 'Your account has been locked. Please try again in %s.', 'quick-2fa' ),
+						human_time_diff( time(), time() + $security->get_lock_time_remaining() )
+					);
+				}
+
+				wp_die( esc_html( $error_message ), esc_html__( 'Account Locked', 'quick-2fa' ), array( 'response' => 403 ) );
+			}
 		}
 
 		// Check if user needs verification first (higher priority).
@@ -107,6 +198,14 @@ class Plugin {
 		// Check if user's role requires 2FA.
 		if ( ! $this->user_role_requires_2fa( $user_id ) ) {
 			return false;
+		}
+
+		// Check if trusted devices feature is enabled and device is trusted.
+		if ( get_option( OPTION_ENABLE_TRUSTED_DEVICES, DEFAULT_ENABLE_TRUSTED_DEVICES ) ) {
+			$security_handler = new Account_Security_Handler( $user_id );
+			if ( $security_handler->is_device_trusted() ) {
+				return false;
+			}
 		}
 
 		// Get last verification timestamp.
@@ -323,12 +422,22 @@ class Plugin {
 						$error = new \WP_Error( 'empty_code', __( 'Please enter the verification code.', 'quick-2fa' ) );
 					} else {
 						// Verify code.
-						$result = verify_code( $user_id, $code );
+						$code_handler = new Verification_Code_Handler( $user_id );
+						$result       = $code_handler->verify( $code );
 
 						if ( is_wp_error( $result ) ) {
 							$error = $result;
 						} else {
-							// Success! Redirect to return URL.
+							// Success! Check if user wants to trust this device.
+							if ( get_option( OPTION_ENABLE_TRUSTED_DEVICES, DEFAULT_ENABLE_TRUSTED_DEVICES ) ) {
+								$trust_device = isset( $_POST['q2fa_trust_device'] ) && '1' === $_POST['q2fa_trust_device'];
+								if ( $trust_device ) {
+									$security_handler = new Account_Security_Handler( $user_id );
+									$security_handler->trust_device();
+								}
+							}
+
+							// Redirect to return URL.
 							$return_url = get_return_url( $user_id );
 							wp_safe_redirect( $return_url );
 							exit;
@@ -337,7 +446,8 @@ class Plugin {
 				}
 			} elseif ( isset( $_POST['q2fa_resend'] ) ) {
 				// Resend code.
-				$result = send_verification_code( $user_id );
+				$code_handler = new Verification_Code_Handler( $user_id );
+				$result       = $code_handler->send_via_email();
 				if ( is_wp_error( $result ) ) {
 					$error = $result;
 				} else {
@@ -346,11 +456,16 @@ class Plugin {
 			}
 		} else {
 			// Initial page load - send code.
-			$result = send_verification_code( $user_id );
+			$code_handler = new Verification_Code_Handler( $user_id );
+			$result       = $code_handler->send_via_email();
 			if ( is_wp_error( $result ) ) {
 				$error = $result;
 			}
 		}
+
+		// Check if trusted devices feature is enabled.
+		$trusted_devices_enabled = get_option( OPTION_ENABLE_TRUSTED_DEVICES, DEFAULT_ENABLE_TRUSTED_DEVICES );
+		$trusted_device_expiry   = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 
 		// Load verification page template.
 		require QUICK_2FA_PATH . 'views/verification-page.php';

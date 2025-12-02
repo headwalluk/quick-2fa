@@ -3,10 +3,10 @@
  * Email Template: Verification Code
  *
  * Available variables:
- * - {name}      : User display name
- * - {code}      : Verification code
- * - {site_name} : Site name
- * - {site_url}  : Site URL
+ *
+ * @var string   $code        Verification code
+ * @var \WP_User $user        User object
+ * @var int      $code_expiry Code expiry in minutes
  *
  * @package Quick_2FA
  * @since 0.4.0
@@ -15,17 +15,32 @@
 // Block direct access.
 defined( 'ABSPATH' ) || die();
 
-// Translators: Email template with placeholders that will be replaced by actual values.
-// {name} = user display name, {code} = verification code, {site_name} = site name, {site_url} = site URL.
-// phpcs:disable WordPress.WP.I18n.NonSingularStringLiteralText, WordPress.Security.EscapeOutput.OutputNotEscaped
-echo __(
-	"Hello {name},\n\n" .
-	"Your verification code is: {code}\n\n" .
-	"This code will expire in 15 minutes.\n\n" .
-	"If you did not request this code, please contact your site administrator immediately.\n\n" .
-	"---\n" .
-	"{site_name}\n" .
-	'{site_url}',
-	'quick-2fa'
+// Plain text email - simple, translatable, secure.
+printf(
+	/* translators: %s: User display name */
+	esc_html__( 'Hi %s,', 'quick-2fa' ),
+	esc_html( $user->display_name )
 );
-// phpcs:enable WordPress.WP.I18n.NonSingularStringLiteralText, WordPress.Security.EscapeOutput.OutputNotEscaped
+echo "\n\n";
+
+printf(
+	/* translators: %s: Verification code */
+	esc_html__( 'Your verification code is: %s', 'quick-2fa' ),
+	esc_html( $code )
+);
+echo "\n\n";
+
+printf(
+	/* translators: %d: Number of minutes */
+	esc_html__( 'This code will expire in %d minutes.', 'quick-2fa' ),
+	intval( $code_expiry )
+);
+echo "\n\n";
+
+esc_html_e( 'If you did not request this code, please contact your site administrator immediately.', 'quick-2fa' );
+echo "\n\n";
+
+echo "---\n";
+// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Plain text email, html_entity_decode for proper rendering.
+echo html_entity_decode( get_bloginfo( 'name' ), ENT_QUOTES, 'UTF-8' ) . "\n";
+echo esc_url( home_url() );

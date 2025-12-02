@@ -31,6 +31,66 @@ See the `docs/` directory for:
 - ✅ Non-breaking (REST API, WP-CLI, webhooks work normally)
 - ✅ Lightweight (no JavaScript, minimal dependencies)
 - ✅ Customizable branding
+- ✅ User lock-out management (admin UI + WP-CLI)
+- ✅ Trusted devices (optional)
+
+## WP-CLI Commands
+
+Quick 2FA provides comprehensive command-line tools for managing user security:
+
+### Lock/Unlock Users
+
+```bash
+# Lock a user account (terminates all sessions)
+wp quick-2fa lock <user>
+
+# Unlock a user account
+wp quick-2fa unlock <user>
+```
+
+### Emergency Lockdown
+
+```bash
+# Lock ALL users except one (emergency use)
+wp quick-2fa lock-all --exclude=admin
+
+# Unlock all locked users
+wp quick-2fa unlock-all
+```
+
+### User Management
+
+```bash
+# Show comprehensive user status
+wp quick-2fa status <user>
+
+# List all locked users
+wp quick-2fa list-locked
+
+# Export locked users as CSV
+wp quick-2fa list-locked --format=csv
+
+# Clear all trusted devices for a user
+wp quick-2fa clear-devices <user>
+```
+
+### Examples
+
+```bash
+# Emergency: Site under attack, lock everyone except your admin
+wp quick-2fa lock-all --exclude=admin
+
+# Check if a user is locked
+wp quick-2fa status john_doe
+
+# Unlock a user who can't access their email
+wp quick-2fa unlock jane_smith
+
+# View all locked users
+wp quick-2fa list-locked --format=table
+```
+
+All commands accept user ID, login, or email address as the `<user>` identifier.
 
 ## Requirements
 

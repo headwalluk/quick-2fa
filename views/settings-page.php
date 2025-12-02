@@ -17,6 +17,9 @@
  * @var bool   $password_reminders_enabled         Whether password reminders are enabled
  * @var int    $password_reminder_period           Password reminder period in days
  * @var int    $password_reminder_cooldown         Cooldown between reminders in days
+ * @var bool   $trusted_devices_enabled            Whether trusted devices feature is enabled
+ * @var int    $trusted_device_expiry              Trusted device expiry in days
+ * @var int    $lockout_duration                   Account lockout duration in minutes
  * @var array  $all_roles                          All WordPress roles
  * @var string $const_option_mode                  $const_option_mode constant value
  * @var string $const_option_protected_roles       $const_option_protected_roles constant value
@@ -29,6 +32,9 @@
  * @var string $const_option_password_reminders_enabled    $const_option_password_reminders_enabled constant value
  * @var string $const_option_password_reminder_period      $const_option_password_reminder_period constant value
  * @var string $const_option_password_reminder_cooldown    $const_option_password_reminder_cooldown constant value
+ * @var string $const_option_enable_trusted_devices        $const_option_enable_trusted_devices constant value
+ * @var string $const_option_trusted_device_expiry         $const_option_trusted_device_expiry constant value
+ * @var string $const_option_lockout_duration              $const_option_lockout_duration constant value
  * @var string $const_mode_all                     $const_mode_all constant value
  * @var string $const_mode_roles                   $const_mode_roles constant value
  * @var string $const_mode_disabled                $const_mode_disabled constant value
@@ -39,8 +45,6 @@ defined( 'ABSPATH' ) || die();
 ?>
 <div class="wrap">
 	<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-
-	<?php settings_errors(); ?>
 
 	<form method="post" action="options.php">
 		<?php settings_fields( 'quick2fa_settings' ); ?>
@@ -175,6 +179,66 @@ defined( 'ABSPATH' ) || die();
 						<?php esc_html_e( 'minutes', 'quick-2fa' ); ?>
 						<p class="description">
 							<?php esc_html_e( 'How long verification codes remain valid (5-60 minutes).', 'quick-2fa' ); ?>
+						</p>
+					</td>
+				</tr>
+
+				<!-- Trusted Devices -->
+				<tr>
+					<th scope="row">
+						<label for="quick2fa_enable_trusted_devices"><?php esc_html_e( 'Trusted Devices', 'quick-2fa' ); ?></label>
+					</th>
+					<td>
+						<label>
+							<input type="checkbox" 
+									name="<?php echo esc_attr( $const_option_enable_trusted_devices ); ?>" 
+									id="quick2fa_enable_trusted_devices" 
+									value="1" 
+									<?php checked( $trusted_devices_enabled, 1 ); ?>>
+							<?php esc_html_e( 'Allow users to trust devices', 'quick-2fa' ); ?>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'When enabled, users can choose to trust a device, skipping 2FA on that device.', 'quick-2fa' ); ?>
+						</p>
+					</td>
+				</tr>
+
+				<!-- Trusted Device Expiry -->
+				<tr>
+					<th scope="row">
+						<label for="quick2fa_trusted_device_expiry"><?php esc_html_e( 'Trust Device Duration', 'quick-2fa' ); ?></label>
+					</th>
+					<td>
+						<input type="number" 
+								name="<?php echo esc_attr( $const_option_trusted_device_expiry ); ?>" 
+								id="quick2fa_trusted_device_expiry" 
+								value="<?php echo esc_attr( $trusted_device_expiry ); ?>" 
+								min="1" 
+								max="365" 
+								class="small-text">
+						<?php esc_html_e( 'days', 'quick-2fa' ); ?>
+						<p class="description">
+							<?php esc_html_e( 'How long a trusted device remains trusted before requiring 2FA again (1-365 days).', 'quick-2fa' ); ?>
+						</p>
+					</td>
+				</tr>
+
+				<!-- Account Lockout Duration -->
+				<tr>
+					<th scope="row">
+						<label for="quick2fa_lockout_duration"><?php esc_html_e( 'Auto-Lock Duration', 'quick-2fa' ); ?></label>
+					</th>
+					<td>
+						<input type="number" 
+								name="<?php echo esc_attr( $const_option_lockout_duration ); ?>" 
+								id="quick2fa_lockout_duration" 
+								value="<?php echo esc_attr( $lockout_duration ); ?>" 
+								min="1" 
+								max="1440" 
+								class="small-text">
+						<?php esc_html_e( 'minutes', 'quick-2fa' ); ?>
+						<p class="description">
+							<?php esc_html_e( 'Duration to lock accounts after too many failed verification attempts (1-1440 minutes = 1 minute to 24 hours).', 'quick-2fa' ); ?>
 						</p>
 					</td>
 				</tr>

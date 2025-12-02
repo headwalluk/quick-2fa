@@ -36,13 +36,15 @@ function get_default_settings(): array {
 			OPTION_PASSWORD_REMINDERS_ENABLED => DEFAULT_PASSWORD_REMINDERS_ENABLED,
 			OPTION_PASSWORD_REMINDER_PERIOD   => DEFAULT_PASSWORD_REMINDER_PERIOD,
 			OPTION_PASSWORD_REMINDER_COOLDOWN => DEFAULT_PASSWORD_REMINDER_COOLDOWN,
+			OPTION_ENABLE_TRUSTED_DEVICES     => DEFAULT_ENABLE_TRUSTED_DEVICES,
+			OPTION_TRUSTED_DEVICE_EXPIRY      => DEFAULT_TRUSTED_DEVICE_EXPIRY,
+			OPTION_LOCKOUT_DURATION           => DEFAULT_LOCKOUT_DURATION,
 			OPTION_LOGO_URL                   => '',
 			OPTION_VERIFY_INTRO               => get_default_verify_intro(),
 			OPTION_PASSWORD_INTRO             => get_default_password_intro(),
 			OPTION_EMAIL_FROM_NAME            => get_bloginfo( 'name' ),
 			OPTION_EMAIL_FROM_ADDRESS         => get_option( 'admin_email' ),
 			OPTION_EMAIL_SUBJECT              => __( 'Your verification code', 'quick-2fa' ),
-			OPTION_EMAIL_TEMPLATE             => get_default_email_template(),
 		);
 	}
 
@@ -76,24 +78,6 @@ function get_default_protected_roles(): array {
 	}
 
 	return $q2fa_default_protected_roles;
-}
-
-/**
- * Get default email template.
- *
- * @since 1.0.0
- * @return string Default email template.
- */
-function get_default_email_template(): string {
-	global $q2fa_default_email_template;
-
-	if ( is_null( $q2fa_default_email_template ) ) {
-		ob_start();
-		include PLUGIN_DIR . '/emails/verification-code.php';
-		$q2fa_default_email_template = ob_get_clean();
-	}
-
-	return $q2fa_default_email_template;
 }
 
 /**
@@ -304,135 +288,4 @@ function should_skip_check(): bool {
 	}
 
 	return false;
-}
-
-/**
- * Log an event.
- *
- * @deprecated 0.4.0 Use Account_Security_Handler::log_event() instead.
- * @since 1.0.0
- * @param int    $user_id    User ID.
- * @param string $event_type Event type constant.
- * @param array  $data       Additional event data.
- */
-function log_event( int $user_id, string $event_type, array $data = array() ): void {
-	$handler = new Account_Security_Handler( $user_id );
-	$handler->log_event( $event_type, $data );
-}
-
-/**
- * Generate a cryptographically secure verification code.
- *
- * @deprecated 0.4.0 Use Verification_Code_Handler::generate() instead.
- * @since 1.0.0
- * @param int $user_id User ID (unused, kept for backward compatibility).
- * @return string Verification code.
- */
-function generate_code( int $user_id = 0 ): string {
-	$handler = new Verification_Code_Handler( $user_id );
-	return $handler->generate();
-}
-
-/**
- * Store hashed verification code.
- *
- * @deprecated 0.4.0 Use Verification_Code_Handler::store() instead.
- * @since 1.0.0
- * @param int    $user_id User ID.
- * @param string $code    Plain text code.
- */
-function store_code( int $user_id, string $code ): void {
-	$handler = new Verification_Code_Handler( $user_id );
-	$handler->store( $code );
-}
-
-/**
- * Check rate limiting for code generation.
- *
- * @deprecated 0.4.0 Use Verification_Code_Handler::check_rate_limit() instead.
- * @since 1.0.0
- * @param int $user_id User ID.
- * @return true|\WP_Error True if allowed, WP_Error if rate limited.
- */
-function check_code_generation_rate_limit( int $user_id ): true|\WP_Error {
-	$handler = new Verification_Code_Handler( $user_id );
-	return $handler->check_rate_limit();
-}
-
-/**
- * Send verification code via email.
- *
- * @deprecated 0.4.0 Use Verification_Code_Handler::send_via_email() instead.
- * @since 1.0.0
- * @param int $user_id User ID.
- * @return true|\WP_Error True on success, WP_Error on failure.
- */
-function send_verification_code( int $user_id ): true|\WP_Error {
-	$handler = new Verification_Code_Handler( $user_id );
-	return $handler->send_via_email();
-}
-
-/**
- * Get formatted email message.
- *
- * @deprecated 0.4.0 Use Email_Handler::get_message() instead.
- * @since 1.0.0
- * @param string   $code Verification code.
- * @param \WP_User $user User object.
- * @return string Formatted email message.
- */
-function get_email_message( string $code, \WP_User $user ): string {
-	$handler = new Email_Handler();
-	return $handler->get_message( $code, $user );
-}
-
-/**
- * Get email headers.
- *
- * @deprecated 0.4.0 Use Email_Handler::get_headers() instead.
- * @since 1.0.0
- * @return array Email headers.
- */
-function get_email_headers(): array {
-	$handler = new Email_Handler();
-	return $handler->get_headers();
-}
-
-/**
- * Check if user account is locked.
- *
- * @deprecated 0.4.0 Use Account_Security_Handler::is_locked() instead.
- * @since 1.0.0
- * @param int $user_id User ID.
- * @return bool True if account is locked.
- */
-function is_account_locked( int $user_id ): bool {
-	$handler = new Account_Security_Handler( $user_id );
-	return $handler->is_locked();
-}
-
-/**
- * Lock user account.
- *
- * @deprecated 0.4.0 Use Account_Security_Handler::lock_account() instead.
- * @since 1.0.0
- * @param int $user_id User ID.
- */
-function lock_account( int $user_id ): void {
-	$handler = new Account_Security_Handler( $user_id );
-	$handler->lock_account();
-}
-
-/**
- * Verify submitted code against stored hash.
- *
- * @deprecated 0.4.0 Use Verification_Code_Handler::verify() instead.
- * @since 1.0.0
- * @param int    $user_id User ID.
- * @param string $code    Submitted code.
- * @return true|\WP_Error True on success, WP_Error on failure.
- */
-function verify_code( int $user_id, string $code ): true|\WP_Error {
-	$handler = new Verification_Code_Handler( $user_id );
-	return $handler->verify( $code );
 }

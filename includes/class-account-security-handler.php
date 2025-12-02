@@ -69,11 +69,12 @@ class Account_Security_Handler {
 	 * Lock user account.
 	 *
 	 * @since 0.4.0
-	 * @param int $duration Lock duration in seconds (default: RATE_LIMIT_ACCOUNT_LOCK_DURATION).
+	 * @param int $duration Lock duration in seconds (default: from OPTION_LOCKOUT_DURATION setting).
 	 */
 	public function lock_account( $duration = null ) {
 		if ( null === $duration ) {
-			$duration = RATE_LIMIT_ACCOUNT_LOCK_DURATION;
+			$lockout_minutes = get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION );
+			$duration        = $lockout_minutes * MINUTE_IN_SECONDS;
 		}
 
 		$lock_until = time() + $duration;
@@ -189,5 +190,131 @@ class Account_Security_Handler {
 	 */
 	public static function get_client_user_agent() {
 		return get_user_agent();
+	}
+
+	/**
+	 * Get device fingerprint for current request.
+	 *
+	 * Creates a unique identifier for the current device based on
+	 * IP address and user agent. This is used for trusted device tracking.
+	 *
+	 * @since 0.6.0
+	 * @return string Device fingerprint hash.
+	 */
+	public function get_device_fingerprint(): string {
+		$ip         = self::get_client_ip();
+		$user_agent = self::get_client_user_agent();
+
+		// Create fingerprint from IP and user agent.
+		$fingerprint = $ip . '|' . $user_agent;
+
+		// Return hash of fingerprint.
+		return hash( 'sha256', $fingerprint );
+	}
+
+	/**
+	 * Check if current device is trusted for this user.
+	 *
+	 * @since 0.6.0
+	 * @return bool True if device is trusted and not expired.
+	 */
+	public function is_device_trusted(): bool {
+		// Get fingerprint for current device.
+		$current_fingerprint = $this->get_device_fingerprint();
+
+		// Get trusted devices for user.
+		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
+
+		if ( ! is_array( $trusted_devices ) ) {
+			return false;
+		}
+
+		// Check if current device is in the list and not expired.
+		if ( isset( $trusted_devices[ $current_fingerprint ] ) ) {
+			$expiry = $trusted_devices[ $current_fingerprint ];
+
+			// Check if still valid.
+			if ( $expiry > time() ) {
+				return true;
+			}
+
+			// Device expired, clean it up.
+			unset( $trusted_devices[ $current_fingerprint ] );
+			update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Trust current device for this user.
+	 *
+	 * Adds current device fingerprint to user's trusted devices list
+	 * with an expiration timestamp.
+	 *
+	 * @since 0.6.0
+	 * @return bool True on success.
+	 */
+	public function trust_device(): bool {
+		// Get fingerprint for current device.
+		$fingerprint = $this->get_device_fingerprint();
+
+		// Get existing trusted devices.
+		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
+
+		if ( ! is_array( $trusted_devices ) ) {
+			$trusted_devices = array();
+		}
+
+		// Clean up expired devices before adding new one.
+		$this->cleanup_expired_devices();
+
+		// Add current device with expiration timestamp.
+		$expiry_days                     = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
+		$expiry                          = time() + ( $expiry_days * DAY_IN_SECONDS );
+		$trusted_devices[ $fingerprint ] = $expiry;
+
+		// Update user meta.
+		return update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices ) !== false;
+	}
+
+	/**
+	 * Remove expired devices from user's trusted devices list.
+	 *
+	 * @since 0.6.0
+	 * @return int Number of devices removed.
+	 */
+	public function cleanup_expired_devices(): int {
+		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
+
+		if ( ! is_array( $trusted_devices ) || empty( $trusted_devices ) ) {
+			return 0;
+		}
+
+		$removed      = 0;
+		$current_time = time();
+
+		foreach ( $trusted_devices as $fingerprint => $expiry ) {
+			if ( $expiry < $current_time ) {
+				unset( $trusted_devices[ $fingerprint ] );
+				++$removed;
+			}
+		}
+
+		if ( $removed > 0 ) {
+			update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
+		}
+
+		return $removed;
+	}
+
+	/**
+	 * Remove all trusted devices for this user.
+	 *
+	 * @since 0.6.0
+	 * @return bool True on success.
+	 */
+	public function clear_trusted_devices(): bool {
+		return delete_user_meta( $this->user_id, META_TRUSTED_DEVICES );
 	}
 }
