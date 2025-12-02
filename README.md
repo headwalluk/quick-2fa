@@ -34,8 +34,8 @@ See the `docs/` directory for:
 
 ## Requirements
 
-- WordPress 5.8 or higher
-- PHP 7.4 or higher
+- WordPress 6.0 or higher
+- PHP 8.2 or higher
 - Working email delivery (wp_mail)
 
 ## Support

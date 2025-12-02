@@ -9,50 +9,50 @@
 namespace Quick_2FA;
 
 // Exit if accessed directly.
-defined( 'ABSPATH') || die();
+defined( 'ABSPATH' ) || die();
 
 /**
  * User meta keys used by the plugin.
  *
  * @since 1.0.0
  */
-const META_CODE_HASH = '_quick2fa_code_hash';
-const META_CODE_TIMESTAMP = '_quick2fa_code_timestamp';
-const META_CODE_ATTEMPTS = '_quick2fa_code_attempts';
-const META_LAST_VERIFIED = '_quick2fa_last_verified';
+const META_CODE_HASH              = '_quick2fa_code_hash';
+const META_CODE_TIMESTAMP         = '_quick2fa_code_timestamp';
+const META_CODE_ATTEMPTS          = '_quick2fa_code_attempts';
+const META_LAST_VERIFIED          = '_quick2fa_last_verified';
 const META_LAST_PASSWORD_REMINDER = '_quick2fa_last_password_reminder';
-const META_LOCKED_UNTIL = '_quick2fa_locked_until';
-const META_LOGS = '_quick2fa_logs';
+const META_LOCKED_UNTIL           = '_quick2fa_locked_until';
+const META_LOGS                   = '_quick2fa_logs';
 
 /**
  * Option keys used by the plugin.
  *
  * @since 1.0.0
  */
-const OPTION_MODE = 'quick2fa_mode';
-const OPTION_PROTECTED_ROLES = 'quick2fa_protected_roles';
-const OPTION_VERIFICATION_PERIOD = 'quick2fa_verification_period';
-const OPTION_CODE_LENGTH = 'quick2fa_code_length';
-const OPTION_CODE_EXPIRY = 'quick2fa_code_expiry';
+const OPTION_MODE                       = 'quick2fa_mode';
+const OPTION_PROTECTED_ROLES            = 'quick2fa_protected_roles';
+const OPTION_VERIFICATION_PERIOD        = 'quick2fa_verification_period';
+const OPTION_CODE_LENGTH                = 'quick2fa_code_length';
+const OPTION_CODE_EXPIRY                = 'quick2fa_code_expiry';
 const OPTION_PASSWORD_REMINDERS_ENABLED = 'quick2fa_password_reminders_enabled';
-const OPTION_PASSWORD_REMINDER_PERIOD = 'quick2fa_password_reminder_period';
+const OPTION_PASSWORD_REMINDER_PERIOD   = 'quick2fa_password_reminder_period';
 const OPTION_PASSWORD_REMINDER_COOLDOWN = 'quick2fa_password_reminder_cooldown';
-const OPTION_LOGO_URL = 'quick2fa_logo_url';
-const OPTION_VERIFY_INTRO = 'quick2fa_verify_intro';
-const OPTION_PASSWORD_INTRO = 'quick2fa_password_intro';
-const OPTION_EMAIL_FROM_NAME = 'quick2fa_email_from_name';
-const OPTION_EMAIL_FROM_EMAIL = 'quick2fa_email_from_email';
-const OPTION_EMAIL_SUBJECT = 'quick2fa_email_subject';
-const OPTION_EMAIL_TEMPLATE = 'quick2fa_email_template';
-const OPTION_VERSION = 'quick2fa_version';
+const OPTION_LOGO_URL                   = 'quick2fa_logo_url';
+const OPTION_VERIFY_INTRO               = 'quick2fa_verify_intro';
+const OPTION_PASSWORD_INTRO             = 'quick2fa_password_intro';
+const OPTION_EMAIL_FROM_NAME            = 'quick2fa_email_from_name';
+const OPTION_EMAIL_FROM_ADDRESS         = 'quick2fa_email_from_address';
+const OPTION_EMAIL_SUBJECT              = 'quick2fa_email_subject';
+const OPTION_EMAIL_TEMPLATE             = 'quick2fa_email_template';
+const OPTION_VERSION                    = 'quick2fa_version';
 
 /**
  * 2FA mode values.
  *
  * @since 1.0.0
  */
-const MODE_ALL = 'all';
-const MODE_ROLES = 'roles';
+const MODE_ALL      = 'all';
+const MODE_ROLES    = 'roles';
 const MODE_DISABLED = 'disabled';
 
 /**
@@ -60,12 +60,12 @@ const MODE_DISABLED = 'disabled';
  *
  * @since 1.0.0
  */
-const RATE_LIMIT_CODE_GENERATION_MAX = 3;
+const RATE_LIMIT_CODE_GENERATION_MAX    = 3;
 const RATE_LIMIT_CODE_GENERATION_WINDOW = 900; // 15 minutes in seconds.
-const RATE_LIMIT_VERIFICATION_MAX = 5;
+const RATE_LIMIT_VERIFICATION_MAX       = 5;
 const RATE_LIMIT_ACCOUNT_LOCK_THRESHOLD = 10;
-const RATE_LIMIT_ACCOUNT_LOCK_WINDOW = 3600; // 1 hour in seconds.
-const RATE_LIMIT_ACCOUNT_LOCK_DURATION = 3600; // 1 hour in seconds.
+const RATE_LIMIT_ACCOUNT_LOCK_WINDOW    = 3600; // 1 hour in seconds.
+const RATE_LIMIT_ACCOUNT_LOCK_DURATION  = 3600; // 1 hour in seconds.
 
 /**
  * Transient key prefixes.
@@ -87,7 +87,7 @@ const QUERY_PARAM = 'q2fa';
  *
  * @since 1.0.0
  */
-const ACTION_VERIFY = 'verify';
+const ACTION_VERIFY   = 'verify';
 const ACTION_PASSWORD = 'password';
 
 /**
@@ -95,23 +95,23 @@ const ACTION_PASSWORD = 'password';
  *
  * @since 1.0.0
  */
-const LOG_CODE_GENERATED = 'code_generated';
-const LOG_CODE_SENT = 'code_sent';
+const LOG_CODE_GENERATED       = 'code_generated';
+const LOG_CODE_SENT            = 'code_sent';
 const LOG_VERIFICATION_SUCCESS = 'verification_success';
-const LOG_VERIFICATION_FAILED = 'verification_failed';
-const LOG_ACCOUNT_LOCKED = 'account_locked';
-const LOG_ACCOUNT_UNLOCKED = 'account_unlocked';
-const LOG_PASSWORD_CHANGED = 'password_changed';
+const LOG_VERIFICATION_FAILED  = 'verification_failed';
+const LOG_ACCOUNT_LOCKED       = 'account_locked';
+const LOG_ACCOUNT_UNLOCKED     = 'account_unlocked';
+const LOG_PASSWORD_CHANGED     = 'password_changed';
 
 /**
  * Default settings values.
  *
  * @since 1.0.0
  */
-const DEFAULT_MODE = MODE_ROLES;
-const DEFAULT_VERIFICATION_PERIOD = 3;
-const DEFAULT_CODE_LENGTH = 6;
-const DEFAULT_CODE_EXPIRY = 15;
+const DEFAULT_MODE                       = MODE_ROLES;
+const DEFAULT_VERIFICATION_PERIOD        = 3;
+const DEFAULT_CODE_LENGTH                = 6;
+const DEFAULT_CODE_EXPIRY                = 15;
 const DEFAULT_PASSWORD_REMINDERS_ENABLED = true;
-const DEFAULT_PASSWORD_REMINDER_PERIOD = 60;
+const DEFAULT_PASSWORD_REMINDER_PERIOD   = 60;
 const DEFAULT_PASSWORD_REMINDER_COOLDOWN = 1;

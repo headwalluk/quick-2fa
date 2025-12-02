@@ -1,10 +1,10 @@
 === Quick 2FA ===
 Contributors: yourusername
 Tags: security, two-factor, 2fa, authentication, email
-Requires at least: 5.8
-Tested up to: 6.4
-Requires PHP: 7.4
-Stable tag: 1.0.0
+Requires at least: 6.0
+Tested up to: 6.7
+Requires PHP: 8.2
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -106,12 +106,30 @@ No! Our password reminder page is specifically designed to be compatible with pa
 
 == Changelog ==
 
-= 1.0.0 =
-* Initial release
+= 0.3.0 =
+* Comprehensive security review and hardening
+* Added input sanitization callbacks for all settings
+* Enhanced email header injection protection
+* Improved IP address validation with IPv4/IPv6 support
+* Code quality improvements: 3,100+ WordPress Coding Standards fixes
+* Full compliance with WordPress Plugin Handbook security guidelines
+* Added OWASP Top 10 security coverage
+* Created comprehensive security audit documentation
+
+= 0.2.0 =
+* Added complete settings page with Select2 role selection
+* Implemented password reminder functionality with strong password generation
+* Fixed session handling to keep users logged in after password change
+* Added support for invalid registration dates
+* Improved security with proper session management
+* Updated minimum requirements: PHP 8.2, WordPress 6.0
+
+= 0.1.0 =
+* Initial development release
 * Email-based two-factor authentication
-* Password change reminders
-* Role-based protection
-* MU plugin support
+* Verification code generation and validation
+* Rate limiting and account locking
+* Event logging system
 
 == Upgrade Notice ==
 
