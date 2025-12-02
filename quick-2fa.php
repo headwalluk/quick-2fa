@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Quick 2FA
- * Plugin URI: https://github.com/headwalluk/quick-2fa
+ * Plugin URI: https://github.com/create-element/quick-2fa
  * Description: Lightweight email-based two-factor authentication for WordPress admin access.
  * Version: 0.5.0
  * Requires at least: 6.0
