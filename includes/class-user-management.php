@@ -521,7 +521,7 @@ class User_Management {
 	 */
 	public function render_profile_section( \WP_User $user ): void {
 		// Check if trusted devices feature is enabled.
-		if ( ! get_option( OPTION_ENABLE_TRUSTED_DEVICES, DEFAULT_ENABLE_TRUSTED_DEVICES ) ) {
+		if ( get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
 			return;
 		}
 

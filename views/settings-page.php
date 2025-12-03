@@ -32,7 +32,7 @@
  * @var string $const_option_password_reminders_enabled    $const_option_password_reminders_enabled constant value
  * @var string $const_option_password_reminder_period      $const_option_password_reminder_period constant value
  * @var string $const_option_password_reminder_cooldown    $const_option_password_reminder_cooldown constant value
- * @var string $const_option_enable_trusted_devices        $const_option_enable_trusted_devices constant value
+
  * @var string $const_option_trusted_device_expiry         $const_option_trusted_device_expiry constant value
  * @var string $const_option_lockout_duration              $const_option_lockout_duration constant value
  * @var string $const_mode_all                     $const_mode_all constant value
@@ -178,26 +178,6 @@ defined( 'ABSPATH' ) || die(); ?>
 						<?php esc_html_e( 'minutes', 'quick-2fa' ); ?>
 						<p class="description">
 							<?php esc_html_e( 'How long verification codes remain valid (5-60 minutes).', 'quick-2fa' ); ?>
-						</p>
-					</td>
-				</tr>
-
-				<!-- Trusted Devices -->
-				<tr>
-					<th scope="row">
-						<label for="quick2fa_enable_trusted_devices"><?php esc_html_e( 'Trusted Devices', 'quick-2fa' ); ?></label>
-					</th>
-					<td>
-						<label>
-							<input type="checkbox" 
-									name="<?php echo esc_attr( $const_option_enable_trusted_devices ); ?>" 
-									id="quick2fa_enable_trusted_devices" 
-									value="1" 
-									<?php checked( $trusted_devices_enabled, 1 ); ?>>
-							<?php esc_html_e( 'Allow users to trust devices', 'quick-2fa' ); ?>
-						</label>
-						<p class="description">
-							<?php esc_html_e( 'When enabled, users can choose to trust a device, skipping 2FA on that device.', 'quick-2fa' ); ?>
 						</p>
 					</td>
 				</tr>

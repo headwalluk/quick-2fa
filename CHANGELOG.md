@@ -5,6 +5,33 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2025-12-03
+
+### Changed
+- **Trusted Devices Always Enabled**: Removed admin setting to enable/disable trusted devices
+  - Feature is now always available to users
+  - Users still choose whether to trust their device during verification
+  - Simplified admin settings page by removing unnecessary toggle
+  - Better UX: No confusion about whether feature is available
+- **Refactored Option Logic**: Renamed for better default handling
+  - Changed `OPTION_ENABLE_TRUSTED_DEVICES` to `OPTION_DISABLE_TRUSTED_DEVICES`
+  - Changed `DEFAULT_ENABLE_TRUSTED_DEVICES = false` to `DEFAULT_DISABLE_TRUSTED_DEVICES = false`
+  - Reversed all boolean logic checks throughout codebase
+  - Missing/empty option now correctly defaults to "enabled"
+  - Avoids WordPress `get_option()` false/empty ambiguity
+
+### Removed
+- **Settings Page**: Removed "Allow users to trust devices" checkbox
+- **Settings Registration**: Removed `OPTION_ENABLE_TRUSTED_DEVICES` from registered settings
+- **Unnecessary Variables**: Cleaned up `$trusted_devices_enabled` variable and related code
+
+### Technical Notes
+- Option renamed: `quick2fa_enable_trusted_devices` → `quick2fa_disable_trusted_devices`
+- Default value: `false` (devices enabled)
+- Logic pattern: `if ( ! get_option( OPTION_DISABLE_TRUSTED_DEVICES ) )` means "if enabled"
+- Future extensibility: Easy to add filter `apply_filters('quick2fa_disable_trusted_devices', false)`
+- Files modified: 6 files, 8 insertions(+), 41 deletions(-)
+
 ## [0.7.0] - 2025-12-03
 
 ### Added

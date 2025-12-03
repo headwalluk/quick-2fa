@@ -165,17 +165,6 @@ class Settings {
 			)
 		);
 
-		// Trusted devices enabled setting.
-		register_setting(
-			'quick2fa_settings',
-			OPTION_ENABLE_TRUSTED_DEVICES,
-			array(
-				'type'              => 'boolean',
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => DEFAULT_ENABLE_TRUSTED_DEVICES,
-			)
-		);
-
 		// Trusted device expiry setting.
 		register_setting(
 			'quick2fa_settings',
@@ -367,7 +356,6 @@ class Settings {
 		$password_reminders_enabled = get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED );
 		$password_reminder_period   = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
 		$password_reminder_cooldown = get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
-		$trusted_devices_enabled    = get_option( OPTION_ENABLE_TRUSTED_DEVICES, DEFAULT_ENABLE_TRUSTED_DEVICES );
 		$trusted_device_expiry      = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 		$lockout_duration           = get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION );
 
@@ -387,7 +375,6 @@ class Settings {
 		$const_option_password_reminders_enabled = OPTION_PASSWORD_REMINDERS_ENABLED;
 		$const_option_password_reminder_period   = OPTION_PASSWORD_REMINDER_PERIOD;
 		$const_option_password_reminder_cooldown = OPTION_PASSWORD_REMINDER_COOLDOWN;
-		$const_option_enable_trusted_devices     = OPTION_ENABLE_TRUSTED_DEVICES;
 		$const_option_trusted_device_expiry      = OPTION_TRUSTED_DEVICE_EXPIRY;
 		$const_option_lockout_duration           = OPTION_LOCKOUT_DURATION;
 		$const_mode_all                          = MODE_ALL;

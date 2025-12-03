@@ -261,7 +261,7 @@ class Plugin {
 		// If trusted devices feature is enabled, check device fingerprint.
 		// This provides additional security by requiring re-verification from unknown devices,
 		// even if the time-based period hasn't expired yet.
-		if ( get_option( OPTION_ENABLE_TRUSTED_DEVICES, DEFAULT_ENABLE_TRUSTED_DEVICES ) ) {
+		if ( ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
 			$security_handler = new Account_Security_Handler( $user_id );
 			// If device is NOT trusted, require verification.
 			if ( ! $security_handler->is_device_trusted() ) {
@@ -478,7 +478,7 @@ class Plugin {
 					$error = $result;
 				} else {
 					// Success! Trust this device (required for the verification to work).
-					if ( get_option( OPTION_ENABLE_TRUSTED_DEVICES, DEFAULT_ENABLE_TRUSTED_DEVICES ) ) {
+					if ( ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
 						$security_handler = new Account_Security_Handler( $user_id );
 
 						// Check if user wants to trust this device long-term.
@@ -532,7 +532,7 @@ class Plugin {
 		}
 
 		// Check if trusted devices feature is enabled.
-		$trusted_devices_enabled = get_option( OPTION_ENABLE_TRUSTED_DEVICES, DEFAULT_ENABLE_TRUSTED_DEVICES );
+		$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
 		$trusted_device_expiry   = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 
 		// Load verification page template.

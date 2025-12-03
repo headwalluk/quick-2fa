@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.2
-Stable tag: 0.7.0
+Stable tag: 0.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,14 @@ All commands accept user ID, login, or email address as the user identifier.
 4. Admin notice when 2FA is disabled
 
 == Changelog ==
+
+= 0.7.1 =
+* Trusted devices now always enabled - removed admin toggle setting
+* Refactored option logic: OPTION_ENABLE_TRUSTED_DEVICES → OPTION_DISABLE_TRUSTED_DEVICES
+* Users can still choose whether to trust their device during verification
+* Cleaner default handling - missing option defaults to enabled
+* Removed "Allow users to trust devices" checkbox from settings page
+* Reduced settings complexity while maintaining full functionality
 
 = 0.7.0 =
 * Added trusted devices profile section - view and manage devices from user profile
