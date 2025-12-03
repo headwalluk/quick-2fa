@@ -23,7 +23,7 @@ class Settings {
 	 *
 	 * @since 1.0.0
 	 */
-	public function run() {
+	public function run(): void {
 		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -34,14 +34,8 @@ class Settings {
 	 *
 	 * @since 1.0.0
 	 */
-	public function add_settings_page() {
-		add_options_page(
-			__( 'Quick 2FA Settings', 'quick-2fa' ),
-			__( 'Quick 2FA', 'quick-2fa' ),
-			'manage_options',
-			'quick-2fa',
-			array( $this, 'render_settings_page' )
-		);
+	public function add_settings_page(): void {
+		add_options_page( __( 'Quick 2FA Settings', 'quick-2fa' ), __( 'Quick 2FA', 'quick-2fa' ), 'manage_options', 'quick-2fa', array( $this, 'render_settings_page' ) );
 	}
 
 	/**
@@ -49,7 +43,7 @@ class Settings {
 	 *
 	 * @since 1.0.0
 	 */
-	public function register_settings() {
+	public function register_settings(): void {
 		// Mode setting.
 		register_setting(
 			'quick2fa_settings',
@@ -212,7 +206,7 @@ class Settings {
 	 * @param mixed $value Input value.
 	 * @return string Sanitized mode value.
 	 */
-	public function sanitize_mode( $value ) {
+	public function sanitize_mode( mixed $value ): string {
 		$valid = array( MODE_ALL, MODE_ROLES, MODE_DISABLED );
 		return in_array( $value, $valid, true ) ? $value : DEFAULT_MODE;
 	}
@@ -224,7 +218,7 @@ class Settings {
 	 * @param mixed $value Input value.
 	 * @return array Sanitized roles array.
 	 */
-	public function sanitize_protected_roles( $value ) {
+	public function sanitize_protected_roles( mixed $value ): array {
 		if ( ! is_array( $value ) ) {
 			return array();
 		}
@@ -240,9 +234,9 @@ class Settings {
 	 * @param mixed $value Input value.
 	 * @return int Sanitized period value (1-365 days).
 	 */
-	public function sanitize_verification_period( $value ) {
+	public function sanitize_verification_period( mixed $value ): int {
 		$val = (int) $value;
-		return ( $val >= 1 && $val <= 365 ) ? $val : DEFAULT_VERIFICATION_PERIOD;
+		return $val >= 1 && $val <= 365 ? $val : DEFAULT_VERIFICATION_PERIOD;
 	}
 
 	/**
@@ -252,9 +246,9 @@ class Settings {
 	 * @param mixed $value Input value.
 	 * @return int Sanitized code length (4-10 digits).
 	 */
-	public function sanitize_code_length( $value ) {
+	public function sanitize_code_length( mixed $value ): int {
 		$val = (int) $value;
-		return ( $val >= 4 && $val <= 10 ) ? $val : DEFAULT_CODE_LENGTH;
+		return $val >= 4 && $val <= 10 ? $val : DEFAULT_CODE_LENGTH;
 	}
 
 	/**
@@ -264,9 +258,9 @@ class Settings {
 	 * @param mixed $value Input value.
 	 * @return int Sanitized expiry value (5-60 minutes).
 	 */
-	public function sanitize_code_expiry( $value ) {
+	public function sanitize_code_expiry( mixed $value ): int {
 		$val = (int) $value;
-		return ( $val >= 5 && $val <= 60 ) ? $val : DEFAULT_CODE_EXPIRY;
+		return $val >= 5 && $val <= 60 ? $val : DEFAULT_CODE_EXPIRY;
 	}
 
 	/**
@@ -276,9 +270,9 @@ class Settings {
 	 * @param mixed $value Input value.
 	 * @return int Sanitized period value (1-365 days).
 	 */
-	public function sanitize_reminder_period( $value ) {
+	public function sanitize_reminder_period( mixed $value ): int {
 		$val = (int) $value;
-		return ( $val >= 1 && $val <= 365 ) ? $val : DEFAULT_PASSWORD_REMINDER_PERIOD;
+		return $val >= 1 && $val <= 365 ? $val : DEFAULT_PASSWORD_REMINDER_PERIOD;
 	}
 
 	/**
@@ -288,9 +282,9 @@ class Settings {
 	 * @param mixed $value Input value.
 	 * @return int Sanitized cooldown value (1-90 days).
 	 */
-	public function sanitize_reminder_cooldown( $value ) {
+	public function sanitize_reminder_cooldown( mixed $value ): int {
 		$val = (int) $value;
-		return ( $val >= 1 && $val <= 90 ) ? $val : DEFAULT_PASSWORD_REMINDER_COOLDOWN;
+		return $val >= 1 && $val <= 90 ? $val : DEFAULT_PASSWORD_REMINDER_COOLDOWN;
 	}
 
 	/**
@@ -300,9 +294,9 @@ class Settings {
 	 * @param mixed $value Input value.
 	 * @return int Sanitized expiry value (1-365 days).
 	 */
-	public function sanitize_trusted_device_expiry( $value ) {
+	public function sanitize_trusted_device_expiry( mixed $value ): int {
 		$val = (int) $value;
-		return ( $val >= 1 && $val <= 365 ) ? $val : DEFAULT_TRUSTED_DEVICE_EXPIRY;
+		return $val >= 1 && $val <= 365 ? $val : DEFAULT_TRUSTED_DEVICE_EXPIRY;
 	}
 
 	/**
@@ -312,9 +306,9 @@ class Settings {
 	 * @param mixed $value Input value.
 	 * @return int Sanitized duration value (1-1440 minutes = 1 min to 24 hours).
 	 */
-	public function sanitize_lockout_duration( $value ) {
+	public function sanitize_lockout_duration( mixed $value ): int {
 		$val = (int) $value;
-		return ( $val >= 1 && $val <= 1440 ) ? $val : DEFAULT_LOCKOUT_DURATION;
+		return $val >= 1 && $val <= 1440 ? $val : DEFAULT_LOCKOUT_DURATION;
 	}
 
 	/**
@@ -323,34 +317,26 @@ class Settings {
 	 * @since 1.0.0
 	 * @param string $hook Current admin page hook.
 	 */
-	public function enqueue_scripts( $hook ) {
+	public function enqueue_scripts( string $hook ): void {
 		// Only load on our settings page.
 		if ( 'settings_page_quick-2fa' !== $hook ) {
 			return;
 		}
 
 		// Enqueue Select2 CSS.
-		wp_enqueue_style(
-			'q2fa-select2',
-			QUICK_2FA_URL . 'assets/select2/select2.min.css',
-			array(),
-			'4.0.13'
-		);
+		wp_enqueue_style( 'q2fa-select2', QUICK_2FA_URL . 'assets/select2/select2.min.css', array(), '4.0.13' );
 
 		// Enqueue Select2 JS (depends on jQuery).
-		wp_enqueue_script(
-			'q2fa-select2',
-			QUICK_2FA_URL . 'assets/select2/select2.min.js',
-			array( 'jquery' ),
-			'4.0.13',
-			true
-		);
+		wp_enqueue_script( 'q2fa-select2', QUICK_2FA_URL . 'assets/select2/select2.min.js', array( 'jquery' ), '4.0.13', true );
 
 		// Add inline script to initialize Select2.
-		$inline_script = "
+		$inline_script =
+			"
             jQuery(document).ready(function($) {
                 $('#quick2fa_protected_roles').select2({
-                    placeholder: '" . esc_js( __( 'Select roles...', 'quick-2fa' ) ) . "',
+                    placeholder: '" .
+			esc_js( __( 'Select roles...', 'quick-2fa' ) ) .
+			"',
                     width: '100%'
                 });
             });
@@ -363,7 +349,7 @@ class Settings {
 	 *
 	 * @since 1.0.0
 	 */
-	public function render_settings_page() {
+	public function render_settings_page(): void {
 		// Check user capabilities.
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;

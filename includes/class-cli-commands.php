@@ -42,8 +42,8 @@ class CLI_Commands {
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
-	public function lock( $args, $assoc_args ) {
-		list( $user_identifier ) = $args;
+	public function lock( array $args, array $assoc_args ): void {
+		[$user_identifier] = $args;
 
 		// Get user.
 		$user = $this->get_user( $user_identifier );
@@ -88,8 +88,8 @@ class CLI_Commands {
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
-	public function unlock( $args, $assoc_args ) {
-		list( $user_identifier ) = $args;
+	public function unlock( array $args, array $assoc_args ): void {
+		[$user_identifier] = $args;
 
 		// Get user.
 		$user = $this->get_user( $user_identifier );
@@ -142,7 +142,7 @@ class CLI_Commands {
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
-	public function lock_all( $args, $assoc_args ) {
+	public function lock_all( array $args, array $assoc_args ): void {
 		$exclude = isset( $assoc_args['exclude'] ) ? $assoc_args['exclude'] : null;
 
 		// Get excluded user if specified.
@@ -223,7 +223,7 @@ class CLI_Commands {
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
-	public function unlock_all( $args, $assoc_args ) {
+	public function unlock_all( array $args, array $assoc_args ): void {
 		// Get all locked users.
 		$user_query = new \WP_User_Query(
 			array(
@@ -312,8 +312,8 @@ class CLI_Commands {
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
-	public function status( $args, $assoc_args ) {
-		list( $user_identifier ) = $args;
+	public function status( array $args, array $assoc_args ): void {
+		[$user_identifier] = $args;
 
 		// Get user.
 		$user = $this->get_user( $user_identifier );
@@ -327,7 +327,7 @@ class CLI_Commands {
 		$locked = $security->is_locked();
 		if ( $locked ) {
 			$locked_until = get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
-			if ( $locked_until > time() + ( 100 * YEAR_IN_SECONDS ) ) {
+			if ( $locked_until > time() + 100 * YEAR_IN_SECONDS ) {
 				$lock_status = 'Locked (permanent)';
 			} else {
 				$lock_status = sprintf( 'Locked until %s', wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $locked_until ) );
@@ -411,7 +411,7 @@ class CLI_Commands {
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
-	public function list_locked( $args, $assoc_args ) {
+	public function list_locked( array $args, array $assoc_args ): void {
 		// Get all locked users.
 		$user_query = new \WP_User_Query(
 			array(
@@ -442,7 +442,7 @@ class CLI_Commands {
 		foreach ( $users as $user ) {
 			$locked_until = get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
 
-			if ( $locked_until > time() + ( 100 * YEAR_IN_SECONDS ) ) {
+			if ( $locked_until > time() + 100 * YEAR_IN_SECONDS ) {
 				$locked_until_display = 'Permanent';
 			} else {
 				$locked_until_display = wp_date( 'Y-m-d H:i:s', $locked_until );
@@ -478,8 +478,8 @@ class CLI_Commands {
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
-	public function clear_devices( $args, $assoc_args ) {
-		list( $user_identifier ) = $args;
+	public function clear_devices( array $args, array $assoc_args ): void {
+		[$user_identifier] = $args;
 
 		// Get user.
 		$user = $this->get_user( $user_identifier );
@@ -505,7 +505,7 @@ class CLI_Commands {
 	 * @param string $user_identifier User ID, login, or email.
 	 * @return \WP_User|\WP_Error User object on success, WP_Error on failure.
 	 */
-	private function get_user( $user_identifier ) {
+	private function get_user( string $user_identifier ): \WP_User|\WP_Error {
 		// Try as ID first.
 		if ( is_numeric( $user_identifier ) ) {
 			$user = get_userdata( (int) $user_identifier );
@@ -535,7 +535,7 @@ class CLI_Commands {
 	 * @since 0.6.0
 	 * @param int $user_id User ID.
 	 */
-	private function destroy_all_sessions( $user_id ) {
+	private function destroy_all_sessions( int $user_id ): void {
 		$sessions = \WP_Session_Tokens::get_instance( $user_id );
 		$sessions->destroy_all();
 	}

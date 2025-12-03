@@ -14,8 +14,7 @@
  */
 
 // Exit if accessed directly.
-defined( 'ABSPATH' ) || die();
-?>
+defined( 'ABSPATH' ) || die(); ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -128,11 +127,11 @@ defined( 'ABSPATH' ) || die();
 			
 			<p>
 			<?php
-				printf(
-					/* translators: %s: user email address */
-					esc_html__( 'A verification code has been sent to %s. Please enter it below.', 'quick-2fa' ),
-					'<strong>' . esc_html( $user->user_email ) . '</strong>'
-				);
+			printf(
+			/* translators: %s: user email address */
+				esc_html__( 'A verification code has been sent to %s. Please enter it below.', 'quick-2fa' ),
+				'<strong>' . esc_html( $user->user_email ) . '</strong>'
+			);
 			?>
 			</p>
 
@@ -156,7 +155,7 @@ defined( 'ABSPATH' ) || die();
 						<span>
 							<?php
 							printf(
-								/* translators: %d: number of days */
+							/* translators: %d: number of days */
 								esc_html( _n( 'Trust this device for %d day', 'Trust this device for %d days', $trusted_device_expiry, 'quick-2fa' ) ),
 								(int) $trusted_device_expiry
 							);

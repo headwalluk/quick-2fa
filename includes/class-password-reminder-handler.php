@@ -39,7 +39,7 @@ class Password_Reminder_Handler {
 	 * @since 0.4.0
 	 * @param int $user_id User ID to handle password reminders for.
 	 */
-	public function __construct( $user_id ) {
+	public function __construct( int $user_id ) {
 		$this->user_id = $user_id;
 	}
 
@@ -49,7 +49,7 @@ class Password_Reminder_Handler {
 	 * @since 0.4.0
 	 * @return bool True if password reminder is needed.
 	 */
-	public function needs_reminder() {
+	public function needs_reminder(): bool {
 		// Check if feature is enabled.
 		if ( ! get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED ) ) {
 			return false;
@@ -85,7 +85,7 @@ class Password_Reminder_Handler {
 	 * @since 0.4.0
 	 * @return int Password age in days.
 	 */
-	public function get_password_age() {
+	public function get_password_age(): int {
 		$last_pass_change = get_user_meta( $this->user_id, '_password_last_changed', true );
 
 		if ( empty( $last_pass_change ) ) {
@@ -118,7 +118,7 @@ class Password_Reminder_Handler {
 	 * @since 0.4.0
 	 * @return bool True if in cooldown period.
 	 */
-	public function is_in_cooldown() {
+	public function is_in_cooldown(): bool {
 		$last_reminder = get_user_meta( $this->user_id, META_LAST_PASSWORD_REMINDER, true );
 
 		if ( empty( $last_reminder ) ) {
@@ -143,7 +143,7 @@ class Password_Reminder_Handler {
 	 * @param string $new_password New password.
 	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
-	public function update_password( $new_password ) {
+	public function update_password( string $new_password ): true|\WP_Error {
 		// Validate password.
 		if ( empty( $new_password ) ) {
 			return new \WP_Error( 'empty_password', __( 'Please enter a password.', 'quick-2fa' ) );
@@ -181,7 +181,7 @@ class Password_Reminder_Handler {
 	 *
 	 * @since 0.4.0
 	 */
-	public function dismiss_reminder() {
+	public function dismiss_reminder(): void {
 		update_user_meta( $this->user_id, META_LAST_PASSWORD_REMINDER, time() );
 		$security = new Account_Security_Handler( $this->user_id );
 		$security->log_event( 'password_reminder_dismissed' );
@@ -194,7 +194,7 @@ class Password_Reminder_Handler {
 	 * @param int $length Password length (default 16).
 	 * @return string Generated password.
 	 */
-	public function generate_strong_password( $length = 16 ) {
+	public function generate_strong_password( int $length = 16 ): string {
 		return wp_generate_password( $length, true, true );
 	}
 
@@ -207,7 +207,7 @@ class Password_Reminder_Handler {
 	 * @param \WP_Session_Tokens $sessions      Session tokens instance.
 	 * @param string             $current_token Current session token.
 	 */
-	private function maintain_session( $sessions, $current_token ) {
+	private function maintain_session( \WP_Session_Tokens $sessions, string $current_token ): void {
 		// Force user to stay logged in by updating the session token.
 		$current_session = $sessions->get( $current_token );
 		if ( $current_session ) {

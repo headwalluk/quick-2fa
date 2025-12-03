@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.2
-Stable tag: 0.6.1
+Stable tag: 0.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,15 @@ All commands accept user ID, login, or email address as the user identifier.
 4. Admin notice when 2FA is disabled
 
 == Changelog ==
+
+= 0.7.0 =
+* Added trusted devices profile section - view and manage devices from user profile
+* Added "This Device" indicator on current device in trusted devices list
+* Refactored verification flow - flattened nested conditionals for better readability
+* Improved nonce verification - wrapped all wp_unslash() calls with sanitize_text_field()
+* Removed debug error_log statements from production code
+* Code cleanup and formatting improvements across all files
+* Enhanced WordPress Coding Standards compliance
 
 = 0.6.1 =
 * Added MU plugin compatibility - initialize defaults on first run

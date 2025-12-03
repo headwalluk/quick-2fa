@@ -39,7 +39,7 @@ class Account_Security_Handler {
 	 * @since 0.4.0
 	 * @param int $user_id User ID to handle security for.
 	 */
-	public function __construct( $user_id ) {
+	public function __construct( int $user_id ) {
 		$this->user_id = $user_id;
 	}
 
@@ -49,7 +49,7 @@ class Account_Security_Handler {
 	 * @since 0.4.0
 	 * @return bool True if account is locked.
 	 */
-	public function is_locked() {
+	public function is_locked(): bool {
 		$locked_until = get_user_meta( $this->user_id, META_LOCKED_UNTIL, true );
 
 		if ( empty( $locked_until ) ) {
@@ -71,7 +71,7 @@ class Account_Security_Handler {
 	 * @since 0.4.0
 	 * @param int $duration Lock duration in seconds (default: from OPTION_LOCKOUT_DURATION setting).
 	 */
-	public function lock_account( $duration = null ) {
+	public function lock_account( ?int $duration = null ): void {
 		if ( null === $duration ) {
 			$lockout_minutes = get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION );
 			$duration        = $lockout_minutes * MINUTE_IN_SECONDS;
@@ -96,7 +96,7 @@ class Account_Security_Handler {
 	 *
 	 * @since 0.4.0
 	 */
-	public function unlock_account() {
+	public function unlock_account(): void {
 		delete_user_meta( $this->user_id, META_LOCKED_UNTIL );
 	}
 
@@ -106,7 +106,7 @@ class Account_Security_Handler {
 	 * @since 0.4.0
 	 * @return int Seconds remaining, or 0 if not locked.
 	 */
-	public function get_lock_time_remaining() {
+	public function get_lock_time_remaining(): int {
 		if ( ! $this->is_locked() ) {
 			return 0;
 		}
@@ -122,7 +122,7 @@ class Account_Security_Handler {
 	 * @param string $event_type Event type constant.
 	 * @param array  $data       Additional event data.
 	 */
-	public function log_event( $event_type, $data = array() ) {
+	public function log_event( string $event_type, array $data = array() ): void {
 		$log_entry = array(
 			'event_type' => $event_type,
 			'timestamp'  => time(),
@@ -154,7 +154,7 @@ class Account_Security_Handler {
 	 * @param int $limit Maximum number of entries to return (default: 50).
 	 * @return array Array of log entries.
 	 */
-	public function get_event_log( $limit = 50 ) {
+	public function get_event_log( int $limit = 50 ): array {
 		$logs = get_user_meta( $this->user_id, META_LOGS, true );
 		if ( ! is_array( $logs ) ) {
 			return array();
@@ -168,7 +168,7 @@ class Account_Security_Handler {
 	 *
 	 * @since 0.4.0
 	 */
-	public function clear_event_log() {
+	public function clear_event_log(): void {
 		delete_user_meta( $this->user_id, META_LOGS );
 	}
 
@@ -178,7 +178,7 @@ class Account_Security_Handler {
 	 * @since 0.4.0
 	 * @return string IP address.
 	 */
-	public static function get_client_ip() {
+	public static function get_client_ip(): string {
 		return get_ip_address();
 	}
 
@@ -188,7 +188,7 @@ class Account_Security_Handler {
 	 * @since 0.4.0
 	 * @return string User agent.
 	 */
-	public static function get_client_user_agent() {
+	public static function get_client_user_agent(): string {
 		return get_user_agent();
 	}
 
@@ -271,7 +271,7 @@ class Account_Security_Handler {
 
 		// Add current device with expiration timestamp.
 		$expiry_days                     = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
-		$expiry                          = time() + ( $expiry_days * DAY_IN_SECONDS );
+		$expiry                          = time() + $expiry_days * DAY_IN_SECONDS;
 		$trusted_devices[ $fingerprint ] = $expiry;
 
 		// Update user meta.

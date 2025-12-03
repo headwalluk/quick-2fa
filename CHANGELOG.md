@@ -5,6 +5,46 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-12-03
+
+### Added
+- **Trusted Devices Profile Section**: User profile management for trusted devices
+  - View all trusted devices with expiration dates
+  - "This Device" indicator shows current device in the list
+  - Individual device revocation with nonce security
+  - Bulk "Revoke All Devices" action
+  - Automatic cleanup of expired devices on page load
+  - Permission checks: users can edit own profile, admins can edit others
+  - Event logging for device revocations (single and bulk)
+- **View Template Separation**: Extracted HTML from PHP classes
+  - Created `views/profile-trusted-devices.php` template
+  - Clean MVC pattern with data preparation in controller
+  - Improved maintainability and code organization
+
+### Changed
+- **Verification Flow Refactoring**: Flattened `handle_verification_page()` method
+  - Converted deeply nested if/else statements to flat if/elseif chain
+  - Improved code readability and logic tracing
+  - Easier to debug and maintain
+- **Enhanced Security**: Nonce verification improvements
+  - All `wp_unslash($_POST['_wpnonce'])` now wrapped with `sanitize_text_field()`
+  - All `wp_unslash($_GET['_wpnonce'])` now wrapped with `sanitize_text_field()`
+  - Consistent pattern across all 8 nonce verification points
+  - Meets WordPress Coding Standards requirements
+
+### Removed
+- **Debug Code Cleanup**: Removed development artifacts
+  - Removed 6 debug `error_log()` statements from `user_needs_verification()`
+  - Cleaned up unused `$user` variable in `handle_verification_page()`
+  - Production-ready code with no debug output
+
+### Technical Notes
+- Profile section hooks: `show_user_profile` and `edit_user_profile`
+- Admin actions: `admin_action_quick2fa_revoke_device` and `admin_action_quick2fa_revoke_all_devices`
+- Current device fingerprint passed to template for comparison
+- Template uses WordPress table styling (form-table, widefat)
+- All device management respects `OPTION_ENABLE_TRUSTED_DEVICES` setting
+
 ## [0.6.1] - 2025-12-02
 
 ### Added

@@ -3,7 +3,7 @@
  * Plugin Name: Quick 2FA
  * Plugin URI: https://github.com/create-element/quick-2fa
  * Description: Lightweight email-based two-factor authentication for WordPress admin access.
- * Version: 0.6.1
+ * Version: 0.7.0
  * Requires at least: 6.0
  * Requires PHP: 8.2
  * Author: Paul Faulkner
@@ -20,7 +20,7 @@
 defined( 'ABSPATH' ) || die();
 
 // Define plugin constants.
-define( 'QUICK_2FA_VERSION', '0.6.1' );
+define( 'QUICK_2FA_VERSION', '0.7.0' );
 define( 'QUICK_2FA_FILE', __FILE__ );
 define( 'QUICK_2FA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'QUICK_2FA_URL', plugin_dir_url( __FILE__ ) );
@@ -80,7 +80,7 @@ register_activation_hook( __FILE__, 'quick_2fa_activate' );
 function quick_2fa_deactivate() {
 	global $wpdb;
 
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 	$wpdb->query(
 		"DELETE FROM {$wpdb->options} 
 		 WHERE option_name LIKE '_transient_q2fa_%' 

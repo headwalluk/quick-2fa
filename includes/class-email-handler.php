@@ -33,7 +33,7 @@ class Email_Handler {
 	 * @param string   $code Verification code.
 	 * @return array{success: bool, error?: string} Result array with success status and optional error message.
 	 */
-	public function send_verification_code( $user, $code ) {
+	public function send_verification_code( \WP_User $user, string $code ): array {
 		$to      = $user->user_email;
 		$subject = get_option( OPTION_EMAIL_SUBJECT, __( 'Your verification code', 'quick-2fa' ) );
 		$message = $this->get_message( $code, $user );
@@ -56,7 +56,8 @@ class Email_Handler {
 	 * @param \WP_User $user User object.
 	 * @return string Formatted email message.
 	 */
-	public function get_message( $code, $user ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Variables extracted in template.
+	public function get_message( string $code, \WP_User $user ): string {
+        // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Variables extracted in template.
 		$code_expiry = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
 
 		ob_start();
@@ -70,17 +71,14 @@ class Email_Handler {
 	 * @since 0.4.0
 	 * @return array Email headers.
 	 */
-	public function get_headers() {
+	public function get_headers(): array {
 		$from_name  = get_option( OPTION_EMAIL_FROM_NAME, get_bloginfo( 'name' ) );
 		$from_email = get_option( OPTION_EMAIL_FROM_ADDRESS, get_option( 'admin_email' ) );
 
 		// Sanitize headers.
-		list( $from_name, $from_email ) = $this->sanitize_headers( $from_name, $from_email );
+		[$from_name, $from_email] = $this->sanitize_headers( $from_name, $from_email );
 
-		$headers = array(
-			'Content-Type: text/plain; charset=UTF-8',
-			sprintf( 'From: %s <%s>', $from_name, $from_email ),
-		);
+		$headers = array( 'Content-Type: text/plain; charset=UTF-8', sprintf( 'From: %s <%s>', $from_name, $from_email ) );
 
 		return $headers;
 	}
@@ -93,7 +91,7 @@ class Email_Handler {
 	 * @param string $from_email From email address.
 	 * @return array{0: string, 1: string} Sanitized from name and email.
 	 */
-	public function sanitize_headers( $from_name, $from_email ) {
+	public function sanitize_headers( string $from_name, string $from_email ): array {
 		// Sanitize name to prevent header injection.
 		$from_name = sanitize_text_field( $from_name );
 		$from_name = str_replace( array( "\r", "\n", '%0a', '%0d' ), '', $from_name );

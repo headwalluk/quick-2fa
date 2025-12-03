@@ -39,7 +39,7 @@ class Verification_Code_Handler {
 	 * @since 0.4.0
 	 * @param int $user_id User ID to handle codes for.
 	 */
-	public function __construct( $user_id ) {
+	public function __construct( int $user_id ) {
 		$this->user_id = $user_id;
 	}
 
@@ -49,7 +49,7 @@ class Verification_Code_Handler {
 	 * @since 0.4.0
 	 * @return string Verification code.
 	 */
-	public function generate() {
+	public function generate(): string {
 		$length = get_option( OPTION_CODE_LENGTH, DEFAULT_CODE_LENGTH );
 
 		// Generate cryptographically secure random code.
@@ -66,7 +66,7 @@ class Verification_Code_Handler {
 	 * @since 0.4.0
 	 * @param string $code Plain text code.
 	 */
-	public function store( $code ) {
+	public function store( string $code ): void {
 		// Hash the code.
 		$hash = wp_hash_password( $code );
 
@@ -94,7 +94,7 @@ class Verification_Code_Handler {
 	 * @since 0.4.0
 	 * @return true|\WP_Error True if allowed, WP_Error if rate limited.
 	 */
-	public function check_rate_limit() {
+	public function check_rate_limit(): true|\WP_Error {
 		$key        = TRANSIENT_RATE_LIMIT . 'code_gen_' . $this->user_id;
 		$limit_data = get_transient( $key );
 
@@ -124,6 +124,11 @@ class Verification_Code_Handler {
 		// Check if limit exceeded.
 		if ( $limit_data['count'] >= RATE_LIMIT_CODE_GENERATION_MAX ) {
 			$wait_time = ceil( ( RATE_LIMIT_CODE_GENERATION_WINDOW - $elapsed ) / 60 );
+
+			if ( $wait_time < 1 ) {
+				return new \WP_Error( 'rate_limited', __( 'Too many verification codes requested. Please wait a few more seconds before requesting another code.', 'quick-2fa' ) );
+			}
+
 			return new \WP_Error(
 				'rate_limited',
 				sprintf(
@@ -147,7 +152,7 @@ class Verification_Code_Handler {
 	 * @since 0.4.0
 	 * @return bool True if expired, false otherwise.
 	 */
-	public function is_expired() {
+	public function is_expired(): bool {
 		$code_timestamp = get_user_meta( $this->user_id, META_CODE_TIMESTAMP, true );
 
 		if ( empty( $code_timestamp ) ) {
@@ -157,7 +162,7 @@ class Verification_Code_Handler {
 		$expiry_minutes = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
 		$expiry_seconds = $expiry_minutes * MINUTE_IN_SECONDS;
 
-		return ( time() - $code_timestamp ) > $expiry_seconds;
+		return time() - $code_timestamp > $expiry_seconds;
 	}
 
 	/**
@@ -166,7 +171,7 @@ class Verification_Code_Handler {
 	 * @since 0.4.0
 	 * @return int Number of attempts remaining.
 	 */
-	public function get_remaining_attempts() {
+	public function get_remaining_attempts(): int {
 		$attempts = (int) get_user_meta( $this->user_id, META_CODE_ATTEMPTS, true );
 		return max( 0, RATE_LIMIT_VERIFICATION_MAX - $attempts );
 	}
@@ -180,7 +185,7 @@ class Verification_Code_Handler {
 	 * @since 0.4.0
 	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
-	public function send_via_email() {
+	public function send_via_email(): true|\WP_Error {
 		// Check rate limiting.
 		$rate_check = $this->check_rate_limit();
 		if ( is_wp_error( $rate_check ) ) {
@@ -231,7 +236,7 @@ class Verification_Code_Handler {
 	 * @param string $code Submitted code.
 	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
-	public function verify( $code ) {
+	public function verify( string $code ): true|\WP_Error {
 		$security = new Account_Security_Handler( $this->user_id );
 
 		// Check if account is locked.
@@ -277,10 +282,7 @@ class Verification_Code_Handler {
 		if ( $attempts >= RATE_LIMIT_VERIFICATION_MAX ) {
 			$security->lock_account();
 
-			return new \WP_Error(
-				'too_many_attempts',
-				__( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' )
-			);
+			return new \WP_Error( 'too_many_attempts', __( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' ) );
 		}
 
 		// Verify code against hash.
@@ -304,23 +306,15 @@ class Verification_Code_Handler {
 					'invalid_code',
 					sprintf(
 						/* translators: %d: number of attempts remaining */
-						_n(
-							'Invalid verification code. You have %d attempt remaining.',
-							'Invalid verification code. You have %d attempts remaining.',
-							$remaining,
-							'quick-2fa'
-						),
+						_n( 'Invalid verification code. You have %d attempt remaining.', 'Invalid verification code. You have %d attempts remaining.', $remaining, 'quick-2fa' ),
 						$remaining
 					)
 				);
 			} else {
 				$security->lock_account();
-				return new \WP_Error(
-					'too_many_attempts',
-					__( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' )
-				);
+				return new \WP_Error( 'too_many_attempts', __( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' ) );
 			}
-		}       // Success! Update verification timestamp and clean up.
+		} // Success! Update verification timestamp and clean up.
 		update_user_meta( $this->user_id, META_LAST_VERIFIED, time() );
 		$this->cleanup();
 
@@ -340,7 +334,7 @@ class Verification_Code_Handler {
 	 *
 	 * @since 0.4.0
 	 */
-	private function cleanup() {
+	private function cleanup(): void {
 		delete_user_meta( $this->user_id, META_CODE_HASH );
 		delete_user_meta( $this->user_id, META_CODE_TIMESTAMP );
 		delete_user_meta( $this->user_id, META_CODE_ATTEMPTS );

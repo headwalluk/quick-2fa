@@ -127,7 +127,7 @@ function get_password_url(): string {
  * @return bool True if on a 2FA page.
  */
 function is_2fa_page(): bool {
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking if parameter exists.
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking if parameter exists.
 	return isset( $_GET[ QUERY_PARAM ] );
 }
 

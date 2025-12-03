@@ -14,8 +14,7 @@
  */
 
 // Exit if accessed directly.
-defined( 'ABSPATH' ) || die();
-?>
+defined( 'ABSPATH' ) || die(); ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -160,7 +159,7 @@ defined( 'ABSPATH' ) || die();
 			<p>
 				<?php
 				printf(
-					/* translators: %d: number of days since last password change */
+				/* translators: %d: number of days since last password change */
 					esc_html__( "It's been %d days since you last changed your password. For your security, we recommend updating it regularly.", 'quick-2fa' ),
 					(int) $days_since
 				);

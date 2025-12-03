@@ -41,8 +41,7 @@
  */
 
 // Exit if accessed directly.
-defined( 'ABSPATH' ) || die();
-?>
+defined( 'ABSPATH' ) || die(); ?>
 <div class="wrap">
 	<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
