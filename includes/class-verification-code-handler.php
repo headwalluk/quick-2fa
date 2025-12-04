@@ -95,8 +95,8 @@ class Verification_Code_Handler {
 	 * @return true|\WP_Error True if allowed, WP_Error if rate limited.
 	 */
 	public function check_rate_limit(): true|\WP_Error {
-		$key        = TRANSIENT_RATE_LIMIT . 'code_gen_' . $this->user_id;
-		$limit_data = get_transient( $key );
+		$cache_key  = TRANSIENT_RATE_LIMIT . 'code_gen_' . $this->user_id;
+		$limit_data = get_transient( $cache_key );
 
 		if ( false === $limit_data ) {
 			// No existing limit, start new window.
@@ -104,7 +104,7 @@ class Verification_Code_Handler {
 				'count'        => 1,
 				'window_start' => time(),
 			);
-			set_transient( $key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
+			set_transient( $cache_key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
 			return true;
 		}
 
@@ -117,7 +117,7 @@ class Verification_Code_Handler {
 				'count'        => 1,
 				'window_start' => time(),
 			);
-			set_transient( $key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
+			set_transient( $cache_key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
 			return true;
 		}
 
@@ -141,7 +141,7 @@ class Verification_Code_Handler {
 
 		// Increment counter.
 		++$limit_data['count'];
-		set_transient( $key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
+		set_transient( $cache_key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
 
 		return true;
 	}

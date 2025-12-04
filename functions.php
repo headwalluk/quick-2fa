@@ -276,6 +276,11 @@ function should_skip_check(): bool {
 		return true;
 	}
 
+	// User Switching plugin - skip verification when switching between users.
+	if ( function_exists( 'current_user_switched' ) && current_user_switched() ) {
+		return true;
+	}
+
 	// Already on a 2FA page (prevents redirect loops).
 	if ( is_2fa_page() ) {
 		return true;

@@ -5,6 +5,22 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] - 2025-12-04
+
+### Added
+- **User Switching Plugin Compatibility**: Automatic bypass for User Switching plugin
+  - Detects when admin has switched into another user account
+  - Skips 2FA verification when `current_user_switched()` returns true
+  - Improves admin UX when managing multiple user accounts
+  - No configuration needed - works automatically when User Switching is active
+  - Safe implementation: User Switching has own authorization checks
+
+### Technical Notes
+- Added check in `should_skip_check()` function
+- Uses `function_exists('current_user_switched')` for graceful degradation
+- Only bypasses when User Switching plugin is active and user was switched
+- Maintains security: User Switching requires `switch_to_user` capability
+
 ## [0.7.1] - 2025-12-03
 
 ### Changed

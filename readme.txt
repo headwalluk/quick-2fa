@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.2
-Stable tag: 0.7.1
+Stable tag: 0.7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,11 @@ All commands accept user ID, login, or email address as the user identifier.
 4. Admin notice when 2FA is disabled
 
 == Changelog ==
+
+= 0.7.2 =
+* Added User Switching plugin compatibility - automatic bypass when switching users
+* Improves admin UX when managing multiple accounts
+* No configuration needed - works automatically when User Switching is active
 
 = 0.7.1 =
 * Trusted devices now always enabled - removed admin toggle setting
