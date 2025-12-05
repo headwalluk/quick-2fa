@@ -190,12 +190,57 @@ class Password_Reminder_Handler {
 	/**
 	 * Generate a strong password.
 	 *
+	 * Allows customization via 'quick2fa_password_parameters' filter.
+	 * Falls back to secure defaults if filter returns invalid data.
+	 *
 	 * @since 0.4.0
-	 * @param int $length Password length (default 16).
 	 * @return string Generated password.
 	 */
-	public function generate_strong_password( int $length = 16 ): string {
-		return wp_generate_password( $length, true, true );
+	public function generate_strong_password(): string {
+		// Set default parameters.
+		$defaults = array(
+			'length'              => random_int( DEFAULT_PASSWORD_LENGTH_MIN, DEFAULT_PASSWORD_LENGTH_MAX ),
+			'special_chars'       => DEFAULT_PASSWORD_SPECIAL_CHARS,
+			'extra_special_chars' => DEFAULT_PASSWORD_EXTRA_SPECIAL,
+		);
+
+		/**
+		 * Filter password generation parameters.
+		 *
+		 * @since 0.8.0
+		 *
+		 * @param array $parameters {
+		 *     Password generation parameters.
+		 *
+		 *     @type int  $length              Password length (8-64 characters).
+		 *     @type bool $special_chars       Include special characters (!@#$%).
+		 *     @type bool $extra_special_chars Include extra special characters (\-_ []{}<>~`+=,.;:/?|).
+		 * }
+		 */
+		$parameters = apply_filters( 'quick2fa_password_parameters', $defaults );
+
+		// Validate filtered parameters to prevent security issues.
+		if ( ! is_array( $parameters ) || empty( $parameters ) ) {
+			$parameters = $defaults;
+		}
+
+		// Validate and sanitize length (enforce minimum 8, maximum 64).
+		$length = isset( $parameters['length'] ) && is_int( $parameters['length'] )
+			? $parameters['length']
+			: $defaults['length'];
+
+		$length = max( 8, min( 64, $length ) );
+
+		// Validate boolean flags.
+		$special_chars = isset( $parameters['special_chars'] ) && is_bool( $parameters['special_chars'] )
+			? $parameters['special_chars']
+			: $defaults['special_chars'];
+
+		$extra_special_chars = isset( $parameters['extra_special_chars'] ) && is_bool( $parameters['extra_special_chars'] )
+			? $parameters['extra_special_chars']
+			: $defaults['extra_special_chars'];
+
+		return wp_generate_password( $length, $special_chars, $extra_special_chars );
 	}
 
 	/**

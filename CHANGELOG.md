@@ -5,6 +5,43 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-12-05
+
+### Added
+- **Customizable Password Generation**: New `quick2fa_password_parameters` filter
+  - Allows developers to customize suggested passwords on password reminder page
+  - Control password length (8-64 characters, randomized 10-16 by default)
+  - Toggle special characters and extra special characters
+  - Automatic fallback to secure defaults for malformed filter returns
+  - Validates all parameters to prevent security issues
+- **Password Generation Constants**: Added to `constants.php`
+  - `DEFAULT_PASSWORD_LENGTH_MIN = 10`
+  - `DEFAULT_PASSWORD_LENGTH_MAX = 16`
+  - `DEFAULT_PASSWORD_SPECIAL_CHARS = true`
+  - `DEFAULT_PASSWORD_EXTRA_SPECIAL = false`
+
+### Changed
+- **Enhanced `generate_strong_password()` Method**:
+  - Now accepts customization via filter hook
+  - Randomizes password length between min/max by default
+  - Robust validation prevents empty/malformed arrays
+  - Type checking for all parameters (int for length, bool for flags)
+  - Length automatically clamped to safe 8-64 character range
+
+### Security
+- All filter returns validated before use
+- Empty arrays fall back to secure defaults
+- Non-array returns fall back to secure defaults
+- Invalid types fall back to secure defaults
+- Minimum 8 character length enforced
+- Maximum 64 character length enforced
+
+### Technical Notes
+- Filter hook: `quick2fa_password_parameters`
+- Parameters: `length` (int), `special_chars` (bool), `extra_special_chars` (bool)
+- Default behavior: Random length 10-16 chars with standard special chars
+- Example usage documented in README.md
+
 ## [0.7.2] - 2025-12-04
 
 ### Added

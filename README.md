@@ -98,6 +98,32 @@ All commands accept user ID, login, or email address as the `<user>` identifier.
 - PHP 8.2 or higher
 - Working email delivery (wp_mail)
 
+## Filters
+
+### quick2fa_password_parameters
+
+Customize suggested password generation when prompting users to change their password.
+
+**Example:**
+
+```php
+add_filter( 'quick2fa_password_parameters', function( $params ) {
+    return array(
+        'length'              => random_int( 12, 20 ), // Random length between 12-20 chars
+        'special_chars'       => true,                 // Include !@#$%
+        'extra_special_chars' => false,                // Exclude \-_[]{}<>~`+=,.;:/?|
+    );
+} );
+```
+
+**Parameters:**
+
+- `length` (int): Password length, automatically clamped to 8-64 characters
+- `special_chars` (bool): Include standard special characters
+- `extra_special_chars` (bool): Include additional special characters
+
+**Security:** Returns empty or malformed arrays automatically fall back to secure defaults (10-16 chars, special chars enabled).
+
 ## Support
 
 For issues and questions:

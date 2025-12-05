@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.2
-Stable tag: 0.7.2
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,15 @@ All commands accept user ID, login, or email address as the user identifier.
 4. Admin notice when 2FA is disabled
 
 == Changelog ==
+
+= 0.8.0 =
+* Added customizable password generation via quick2fa_password_parameters filter
+* Allows developers to control suggested password length and complexity
+* Randomized password length (10-16 characters) by default for variety
+* Robust validation prevents security issues from malformed filter data
+* Added password generation constants to constants.php
+* Enhanced generate_strong_password() method with type checking
+* Documented filter usage with examples in README.md
 
 = 0.7.2 =
 * Added User Switching plugin compatibility - automatic bypass when switching users
