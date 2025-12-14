@@ -1,5 +1,11 @@
 # Quick 2FA
 
+[![Version](https://img.shields.io/badge/version-0.8.1-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.8.1)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-purple.svg)](https://www.php.net/)
+[![WordPress](https://img.shields.io/badge/WordPress-6.0+-21759B.svg)](https://wordpress.org/)
+[![License](https://img.shields.io/badge/license-GPL--2.0+-green.svg)](LICENSE)
+[![Coding Standards](https://img.shields.io/badge/WordPress-Coding%20Standards-blue.svg)](https://github.com/WordPress/WordPress-Coding-Standards)
+
 Lightweight email-based two-factor authentication for WordPress admin access.
 
 ## Documentation

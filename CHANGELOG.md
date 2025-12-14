@@ -5,6 +5,14 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2025-12-14
+
+### Fixed
+- **Undefined Variable Warning**: Fixed undefined `$user` variable in verification page template
+  - Added `$user = get_userdata( $user_id );` before requiring template
+  - Resolves PHP warnings in error logs
+  - Template now receives expected user object as documented
+
 ## [0.8.0] - 2025-12-05
 
 ### Added

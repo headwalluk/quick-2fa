@@ -535,6 +535,9 @@ class Plugin {
 		$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
 		$trusted_device_expiry   = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 
+		// Get user object for template.
+		$user = get_userdata( $user_id );
+
 		// Load verification page template.
 		require QUICK_2FA_PATH . 'views/verification-page.php';
 	}
