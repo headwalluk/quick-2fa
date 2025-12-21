@@ -301,3 +301,45 @@ function should_skip_check(): bool {
 
 	return false;
 }
+
+/**
+ * Mask an email address for privacy.
+ *
+ * Masks the local part and domain to prevent email disclosure.
+ * Example: paul@headwall.co.uk becomes p***@h***********.uk
+ *
+ * @since 0.9.1
+ * @param string $email Email address to mask.
+ * @return string Masked email address.
+ */
+function mask_email( string $email ): string {
+	// Validate email format.
+	if ( ! is_email( $email ) ) {
+		return $email;
+	}
+
+	// Split email into parts.
+	$parts = explode( '@', $email );
+	if ( count( $parts ) !== 2 ) {
+		return $email;
+	}
+
+	list( $local, $domain ) = $parts;
+
+	// Mask local part (show first char + asterisks).
+	$local_masked = mb_substr( $local, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $local ) - 1 ) );
+
+	// Split domain into name and TLD.
+	$domain_parts = explode( '.', $domain );
+	if ( count( $domain_parts ) < 2 ) {
+		// No TLD, mask entire domain.
+		$domain_masked = mb_substr( $domain, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain ) - 1 ) );
+	} else {
+		// Mask domain name, keep TLD visible.
+		$tld          = array_pop( $domain_parts );
+		$domain_name  = implode( '.', $domain_parts );
+		$domain_masked = mb_substr( $domain_name, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain_name ) - 1 ) ) . '.' . $tld;
+	}
+
+	return $local_masked . '@' . $domain_masked;
+}

@@ -126,14 +126,11 @@ defined( 'ABSPATH' ) || die(); ?>
 			<p><?php esc_html_e( 'For your security, we need to verify your identity before you can access the admin area.', 'quick-2fa' ); ?></p>
 			
 			<p>
-			<?php
-			printf(
-			/* translators: %s: user email address */
-				esc_html__( 'A verification code has been sent to %s. Please enter it below.', 'quick-2fa' ),
-				'<strong>' . esc_html( $user->user_email ) . '</strong>'
-			);
-			?>
+				<?php esc_html_e( 'A verification code has been sent to:', 'quick-2fa' ); ?><br>
+				<strong><?php echo esc_html( \Quick_2FA\mask_email( $user->user_email ) ); ?></strong>
 			</p>
+			
+			<p><?php esc_html_e( 'Please enter it below.', 'quick-2fa' ); ?></p>
 
 			<form method="post" action="">
 				<?php wp_nonce_field( 'quick2fa_verify' ); ?>

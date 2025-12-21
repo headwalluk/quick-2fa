@@ -5,6 +5,25 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2025-12-21
+
+### Added
+- **Email Masking Function**: New `mask_email()` function for privacy protection
+  - Masks email addresses displayed on verification page
+  - Example: `paul@headwall.co.uk` becomes `p***@h***********.uk`
+  - Shows first character of local part and domain name, plus full TLD
+
+### Changed
+- **Verification Page Layout**: Improved email address display
+  - Email address now on separate line to prevent word wrap issues
+  - Changed from inline text to multi-line format for better readability
+  - Masked email prevents disclosure to attackers with only username/password
+
+### Security
+- **Privacy Enhancement**: Email addresses no longer exposed on verification page
+  - Prevents email harvesting by attackers with stolen credentials
+  - Maintains user confirmation while protecting privacy
+
 ## [0.9.0] - 2025-12-21
 
 ### Added

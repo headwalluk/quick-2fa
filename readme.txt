@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.3
-Stable tag: 0.9.0
+Stable tag: 0.9.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -168,6 +168,12 @@ All commands accept user ID, login, or email address as the user identifier.
 
 == Changelog ==
 
+= 0.9.1 =
+* Added email masking function for privacy protection on verification page
+* Changed verification page to display masked email address (e.g., p***@h***********.uk)
+* Fixed email address word wrap issue by placing it on separate line
+* Security enhancement: Prevents email disclosure to attackers with only username/password
+
 = 0.9.0 =
 * Added WP-CLI emergency_disable command for emergency recovery situations
 * Added comprehensive SECURITY.md file with vulnerability reporting process
@@ -261,6 +267,9 @@ All commands accept user ID, login, or email address as the user identifier.
 * Event logging system
 
 == Upgrade Notice ==
+
+= 0.9.1 =
+Privacy enhancement: Email addresses now masked on verification page to prevent disclosure.
 
 = 0.9.0 =
 Requires PHP 8.3+. Adds WP-CLI emergency disable command and comprehensive security documentation. Multiple bug fixes and code quality improvements.
