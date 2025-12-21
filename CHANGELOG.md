@@ -5,6 +5,21 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.2] - 2025-12-21
+
+### Fixed
+- **Password Manager Compatibility**: Fixed password update form field names
+  - Changed password field name from `q2fa_new_password` to standard `password`
+  - Changed hidden username field from email to actual `user_login` value
+  - Added separate hidden email field for password managers that match on email
+  - Password managers now correctly update password field instead of username
+
+### Security
+- **Template Protection**: Added `is_user_logged_in()` checks to view templates
+  - Both verification-page.php and password-page.php now verify user is logged in
+  - Defense-in-depth approach prevents accidental data exposure
+  - Redirects to login page if accessed without authentication
+
 ## [0.9.1] - 2025-12-21
 
 ### Added

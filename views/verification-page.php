@@ -14,7 +14,14 @@
  */
 
 // Exit if accessed directly.
-defined( 'ABSPATH' ) || die(); ?>
+defined( 'ABSPATH' ) || die();
+
+// Security: Ensure user is logged in.
+if ( ! is_user_logged_in() ) {
+	wp_safe_redirect( wp_login_url() );
+	exit();
+}
+?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -126,7 +133,7 @@ defined( 'ABSPATH' ) || die(); ?>
 			<p><?php esc_html_e( 'For your security, we need to verify your identity before you can access the admin area.', 'quick-2fa' ); ?></p>
 			
 			<p>
-				<?php esc_html_e( 'A verification code has been sent to:', 'quick-2fa' ); ?><br>
+				<?php esc_html_e( 'A verification code has been sent to:', 'quick-2fa' ); ?><br><br>
 				<strong><?php echo esc_html( \Quick_2FA\mask_email( $user->user_email ) ); ?></strong>
 			</p>
 			

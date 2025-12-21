@@ -14,7 +14,14 @@
  */
 
 // Exit if accessed directly.
-defined( 'ABSPATH' ) || die(); ?>
+defined( 'ABSPATH' ) || die();
+
+// Security: Ensure user is logged in.
+if ( ! is_user_logged_in() ) {
+	wp_safe_redirect( wp_login_url() );
+	exit();
+}
+?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -170,14 +177,15 @@ defined( 'ABSPATH' ) || die(); ?>
 		<form method="post" action="" autocomplete="on">
 			<?php wp_nonce_field( 'quick2fa_password' ); ?>
 			
-			<!-- Hidden username field for password manager compatibility -->
-			<input type="hidden" name="username" value="<?php echo esc_attr( $user->user_email ); ?>" autocomplete="username">
+			<!-- Hidden fields for password manager compatibility -->
+			<input type="hidden" name="username" value="<?php echo esc_attr( $user->user_login ); ?>" autocomplete="username">
+			<input type="hidden" name="email" value="<?php echo esc_attr( $user->user_email ); ?>" autocomplete="email">
 			
 			<label for="q2fa_new_password"><?php esc_html_e( 'New Password:', 'quick-2fa' ); ?></label>
 			<div class="password-wrapper">
 				<input 
 					type="password" 
-					name="q2fa_new_password" 
+					name="password" 
 					id="q2fa_new_password" 
 					value="<?php echo esc_attr( $new_password ); ?>" 
 					required 

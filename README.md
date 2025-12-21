@@ -1,6 +1,6 @@
 # Quick 2FA
 
-[![Version](https://img.shields.io/badge/version-0.9.1-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.9.1)
+[![Version](https://img.shields.io/badge/version-0.9.2-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.9.2)
 [![PHP](https://img.shields.io/badge/PHP-8.3+-purple.svg)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0+-21759B.svg)](https://wordpress.org/)
 [![License](https://img.shields.io/badge/license-GPL--2.0+-green.svg)](LICENSE)
