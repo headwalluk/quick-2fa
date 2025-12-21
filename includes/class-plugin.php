@@ -529,6 +529,8 @@ class Plugin {
 			if ( is_wp_error( $result ) ) {
 				$error = $result;
 			}
+		} else {
+			// POST request but not a submit action - treat as GET.
 		}
 
 		// Check if trusted devices feature is enabled.
@@ -599,6 +601,8 @@ class Plugin {
 					wp_safe_redirect( $return_url );
 					exit();
 				}
+			} else {
+				// POST request but no recognized action.
 			}
 		}
 

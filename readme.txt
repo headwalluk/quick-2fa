@@ -3,8 +3,8 @@ Contributors: yourusername
 Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
-Requires PHP: 8.2
-Stable tag: 0.8.1
+Requires PHP: 8.3
+Stable tag: 0.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,9 +41,12 @@ Quick 2FA is a lightweight security plugin that adds email-based two-factor auth
 = Emergency Access =
 
 If you lose email access, you can disable the plugin by:
+* Using WP-CLI: `wp quick-2fa emergency_disable`
 * Deleting `/wp-content/plugins/quick-2fa/` via FTP/SFTP
 * Or for MU plugin: `/wp-content/mu-plugins/quick-2fa/`
 * Contact your hosting provider if you need assistance
+
+See the SECURITY.md file for complete emergency recovery procedures.
 
 == Installation ==
 
@@ -75,7 +78,7 @@ Yes! Quick 2FA only affects admin page access via browser. REST API, Application
 
 = What if I lose access to my email? =
 
-Delete the plugin directory via FTP/SFTP, or contact your hosting provider. This is why we recommend documenting your FTP credentials before activation.
+Use WP-CLI emergency disable (`wp quick-2fa emergency_disable`), delete the plugin directory via FTP/SFTP, or contact your hosting provider. See SECURITY.md for complete recovery procedures.
 
 = Can I customize the verification pages? =
 
@@ -132,6 +135,11 @@ List all locked users. Supports table, CSV, JSON, and YAML formats.
 `wp quick-2fa clear-devices <user>`
 Remove all trusted devices for a user.
 
+= Emergency Access =
+
+`wp quick-2fa emergency_disable [--yes]`
+Emergency disable 2FA across all users. Requires confirmation unless --yes flag provided.
+
 = Examples =
 
     # Emergency: Lock down entire site except admin
@@ -146,6 +154,9 @@ Remove all trusted devices for a user.
     # Unlock a specific user
     wp quick-2fa unlock jane_smith
 
+    # Emergency disable 2FA (if administrators locked out)
+    wp quick-2fa emergency_disable --yes
+
 All commands accept user ID, login, or email address as the user identifier.
 
 == Screenshots ==
@@ -156,6 +167,22 @@ All commands accept user ID, login, or email address as the user identifier.
 4. Admin notice when 2FA is disabled
 
 == Changelog ==
+
+= 0.9.0 =
+* Added WP-CLI emergency_disable command for emergency recovery situations
+* Added comprehensive SECURITY.md file with vulnerability reporting process
+* Changed minimum PHP requirement from 8.2 to 8.3
+* Fixed float-string conversion warning with PHP_INT_MAX in user meta
+* Fixed missing return statement in user lockout column rendering
+* Fixed undefined array key warnings for PHP superglobal accesses
+* Removed reference to non-existent wp_get_user_ip() function
+* Added type validation for all WordPress meta and option retrieval
+* Added isset() checks for all $_SERVER, $_GET, $_POST accesses
+* Added empty else blocks with explanatory comments for code clarity
+* Refactored switch statement to if/else in render_lockout_column()
+* Enhanced numeric validation in get_user_lockout_status()
+* Verified 100% PHPDoc documentation coverage
+* Confirmed WordPress Coding Standards compliance via phpcs
 
 = 0.8.1 =
 * Fixed undefined $user variable warning in verification page template
@@ -235,8 +262,8 @@ All commands accept user ID, login, or email address as the user identifier.
 
 == Upgrade Notice ==
 
-= 1.0.0 =
-Initial release of Quick 2FA.
+= 0.9.0 =
+Requires PHP 8.3+. Adds WP-CLI emergency disable command and comprehensive security documentation. Multiple bug fixes and code quality improvements.
 
 == Support ==
 

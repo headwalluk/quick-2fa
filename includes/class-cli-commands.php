@@ -539,4 +539,58 @@ class CLI_Commands {
 		$sessions = \WP_Session_Tokens::get_instance( $user_id );
 		$sessions->destroy_all();
 	}
+
+	/**
+	 * Emergency disable Quick 2FA across all users.
+	 *
+	 * This command sets Quick 2FA to disabled mode, bypassing all 2FA checks.
+	 * Use this only in emergency situations where administrators are locked out.
+	 * Requires --yes flag to confirm the action.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--yes]
+	 * : Skip confirmation prompt.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Emergency disable with confirmation
+	 *     wp quick-2fa emergency_disable
+	 *
+	 *     # Emergency disable without confirmation
+	 *     wp quick-2fa emergency_disable --yes
+	 *
+	 * @since 0.8.0
+	 * @param array<string,mixed> $args       Positional arguments.
+	 * @param array<string,mixed> $assoc_args Associative arguments.
+	 */
+	public function emergency_disable( array $args, array $assoc_args ): void {
+		// Check if already disabled.
+		$current_mode = get_option( OPTION_MODE, DEFAULT_MODE );
+		if ( MODE_DISABLED === $current_mode ) {
+			\WP_CLI::warning( 'Quick 2FA is already in disabled mode.' );
+			return;
+		}
+
+		// Require confirmation unless --yes flag provided.
+		if ( ! isset( $assoc_args['yes'] ) ) {
+			\WP_CLI::confirm( 'This will disable Quick 2FA for all users. Continue?', $assoc_args );
+		}
+
+		// Set mode to disabled.
+		update_option( OPTION_MODE, MODE_DISABLED );
+
+		// Log the emergency disable event.
+		error_log(
+			sprintf(
+				'[Quick 2FA] Emergency disable activated via WP-CLI at %s',
+				gmdate( 'Y-m-d H:i:s' )
+			)
+		);
+
+		\WP_CLI::success( 'Quick 2FA has been emergency disabled.' );
+		\WP_CLI::line( '' );
+		\WP_CLI::line( 'IMPORTANT: Quick 2FA is now bypassed for all users.' );
+		\WP_CLI::line( 'To re-enable, visit Settings > Quick 2FA in WordPress admin.' );
+	}
 }

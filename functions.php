@@ -142,13 +142,8 @@ function is_2fa_page(): bool {
  * @return string IP address.
  */
 function get_ip_address(): string {
-	// Use WordPress function if available (WP 5.9+).
-	if ( function_exists( 'wp_get_user_ip' ) ) {
-		return wp_get_user_ip();
-	}
-
-	// Fallback.
 	$ip = '';
+
 	if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
 		$ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
 	} elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
@@ -158,9 +153,9 @@ function get_ip_address(): string {
 		$ip        = trim( $ips[0] );
 	} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
 		$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+	} else {
+		// No IP address available - $ip remains empty string.
 	}
-
-	// Validate IP address format (already sanitized above).
 
 	// Validate IP address format.
 	if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 ) ) {
@@ -177,7 +172,17 @@ function get_ip_address(): string {
  * @return string User agent.
  */
 function get_user_agent(): string {
-	return ! empty( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
+	$user_agent = '';
+
+	if ( ! isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
+		// HTTP_USER_AGENT not available - return empty string.
+	} elseif ( empty( $user_agent = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) ) ) {
+		// HTTP_USER_AGENT exists but is empty after sanitization - return empty string.
+	} else {
+		// Valid user agent assigned - return sanitized value.
+	}
+
+	return $user_agent;
 }
 
 /**
@@ -189,9 +194,11 @@ function get_user_agent(): string {
 function get_current_admin_url(): string {
 	$url = admin_url();
 
-	if ( ! empty( $_SERVER['REQUEST_URI'] ) ) {
-		$request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) );
-
+	if ( ! isset( $_SERVER['REQUEST_URI'] ) ) {
+		// REQUEST_URI not available (e.g., WP-CLI) - use default admin_url().
+	} elseif ( empty( $request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) ) {
+		// REQUEST_URI exists but is empty after sanitization - use default admin_url().
+	} else {
 		// Parse the request URI to get just the path and query.
 		$parsed = wp_parse_url( $request_uri );
 		$path   = isset( $parsed['path'] ) ? $parsed['path'] : '';

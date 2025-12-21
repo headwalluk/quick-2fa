@@ -1,7 +1,7 @@
 # Quick 2FA
 
-[![Version](https://img.shields.io/badge/version-0.8.1-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.8.1)
-[![PHP](https://img.shields.io/badge/PHP-8.2+-purple.svg)](https://www.php.net/)
+[![Version](https://img.shields.io/badge/version-0.9.0-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.9.0)
+[![PHP](https://img.shields.io/badge/PHP-8.3+-purple.svg)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0+-21759B.svg)](https://wordpress.org/)
 [![License](https://img.shields.io/badge/license-GPL--2.0+-green.svg)](LICENSE)
 [![Coding Standards](https://img.shields.io/badge/WordPress-Coding%20Standards-blue.svg)](https://github.com/WordPress/WordPress-Coding-Standards)
@@ -80,6 +80,16 @@ wp quick-2fa list-locked --format=csv
 wp quick-2fa clear-devices <user>
 ```
 
+### Emergency Access
+
+```bash
+# Emergency disable 2FA (if administrators are locked out)
+wp quick-2fa emergency_disable
+
+# Skip confirmation prompt
+wp quick-2fa emergency_disable --yes
+```
+
 ### Examples
 
 ```bash
@@ -101,7 +111,7 @@ All commands accept user ID, login, or email address as the `<user>` identifier.
 ## Requirements
 
 - WordPress 6.0 or higher
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - Working email delivery (wp_mail)
 
 ## Filters

@@ -5,6 +5,46 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2025-12-21
+
+### Added
+- **WP-CLI Emergency Disable Command**: New `emergency_disable` command for emergency recovery
+  - Sets plugin mode to disabled, bypassing all 2FA checks
+  - Requires `--yes` flag to confirm or prompts for confirmation
+  - Logs emergency disable events to error log
+  - Use: `wp quick-2fa emergency_disable` or `wp quick-2fa emergency_disable --yes`
+- **Security Policy Documentation**: Added comprehensive SECURITY.md file
+  - Vulnerability reporting process with security@power-plugins.com contact
+  - 48-hour response time commitment
+  - Complete security features documentation
+  - Emergency recovery procedures via WP-CLI, database, and FTP
+  - Known limitations and administrator security checklist
+
+### Changed
+- **PHP Requirement**: Minimum PHP version bumped from 8.2 to 8.3
+- **Code Quality Improvements**: Comprehensive defensive coding enhancements
+  - Added type validation for all WordPress meta and option retrieval
+  - Added `isset()` checks for all PHP superglobal accesses ($_SERVER, $_GET, $_POST)
+  - Added empty else blocks with explanatory comments to all if/elseif chains
+  - Improved code path coverage and clarity throughout codebase
+
+### Fixed
+- **PHP 8.2+ Compatibility**: Fixed float-string conversion warning
+  - Added `is_numeric()` validation before casting user meta values to integers
+  - Handles PHP_INT_MAX scientific notation safely in lockout status checks
+- **Missing Return Statement**: Fixed missing return in user lockout column rendering
+- **Superglobal Access**: Fixed undefined array key warnings
+  - `get_current_admin_url()` now handles missing $_SERVER['REQUEST_URI']
+  - `get_user_agent()` safely accesses $_SERVER['HTTP_USER_AGENT']
+- **Dead Code Removal**: Removed reference to non-existent `wp_get_user_ip()` function
+
+### Technical
+- **Switch to If/Else**: Refactored switch statement to cleaner if/else structure in `render_lockout_column()`
+- **Type Safety**: Enhanced numeric validation in `get_user_lockout_status()`
+- **WordPress Coding Standards**: Verified compliance via phpcs (all informational warnings only)
+- **PHPDoc Coverage**: Confirmed 100% documentation coverage across all files
+- **Admin Notifications**: Already includes warning when MODE_DISABLED is active
+
 ## [0.8.1] - 2025-12-14
 
 ### Fixed

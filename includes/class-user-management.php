@@ -92,18 +92,19 @@ class User_Management {
 
 		$status = $this->get_user_lockout_status( $user_id );
 
-		switch ( $status ) {
-			case 'locked':
-				$locked_until = (int) get_user_meta( $user_id, META_LOCKED_UNTIL, true );
-				$tooltip      = $this->format_lockout_expiry( $locked_until );
-				return sprintf( '<span class="dashicons dashicons-lock" style="color: #d63638;" title="%s"></span>', esc_attr( $tooltip ) );
+		if ( 'locked' === $status ) {
+			$locked_until_raw = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
+			$locked_until     = is_numeric( $locked_until_raw ) ? (int) min( (float) $locked_until_raw, PHP_INT_MAX ) : 0;
+			$tooltip          = $this->format_lockout_expiry( $locked_until );
 
-			case 'unlocked':
-				return '<span class="dashicons dashicons-yes-alt" style="color: #00a32a;" title="' . esc_attr__( 'Not locked out', 'quick-2fa' ) . '"></span>';
-
-			default:
-				return '<span style="color: #dcdcde;">—</span>';
+			return sprintf( '<span class="dashicons dashicons-lock" style="color: #d63638;" title="%s"></span>', esc_attr( $tooltip ) );
 		}
+
+		if ( 'unlocked' === $status ) {
+			return '<span class="dashicons dashicons-yes-alt" style="color: #00a32a;" title="' . esc_attr__( 'Not locked out', 'quick-2fa' ) . '"></span>';
+		}
+
+		return '<span style="color: #dcdcde;">—</span>';
 	}
 
 	/**
@@ -146,7 +147,7 @@ class User_Management {
 	public function add_lockout_filters( array $views ): array {
 		$locked_count = $this->count_locked_users();
 		$total_count  = count_users();
-		$total_users  = $total_count['total_users'];
+		$total_users  = isset( $total_count['total_users'] ) && is_numeric( $total_count['total_users'] ) ? (int) $total_count['total_users'] : 0;
 
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking filter state.
 		$current_filter = isset( $_GET['quick2fa_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['quick2fa_filter'] ) ) : '';
@@ -227,6 +228,8 @@ class User_Management {
 					),
 				)
 			);
+		} else {
+			// No filter applied - show all users.
 		}
 	}
 
@@ -415,11 +418,12 @@ class User_Management {
 	private function get_user_lockout_status( int $user_id ): string {
 		$locked_until = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
 
-		if ( empty( $locked_until ) ) {
+		// Validate we have a numeric value.
+		if ( empty( $locked_until ) || ! is_numeric( $locked_until ) ) {
 			return 'unlocked';
 		}
 
-		if ( $locked_until > time() ) {
+		if ( (int) $locked_until > time() ) {
 			return 'locked';
 		}
 
@@ -439,10 +443,16 @@ class User_Management {
 			return __( 'Locked out (manual)', 'quick-2fa' );
 		}
 
+		// Safely get date/time formats with fallbacks.
+		$date_format = get_option( 'date_format' );
+		$time_format = get_option( 'time_format' );
+		$date_format = ! empty( $date_format ) ? $date_format : 'Y-m-d';
+		$time_format = ! empty( $time_format ) ? $time_format : 'H:i:s';
+
 		return sprintf(
 			/* translators: %s: Formatted date and time */
 			__( 'Locked out until %s', 'quick-2fa' ),
-			wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp )
+			wp_date( $date_format . ' ' . $time_format, $timestamp )
 		);
 	}
 
