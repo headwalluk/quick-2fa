@@ -5,6 +5,33 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] - 2026-01-17
+
+### Changed
+- **WordPress Login Page Compliance**: Refactored verification page to match WordPress core patterns
+  - Uses WordPress login page structure (`#login`, `#loginform`, `.message`, etc.)
+  - Replaced `wp_head()` with `login_head` action to prevent theme asset loading
+  - Replaced `wp_footer()` with `login_footer` action for proper login page footer
+  - Consolidated CSS from 245 lines (2 files) to 40 lines (1 file)
+  - Leverages WordPress core login styles for consistency
+
+### Added
+- **Query Monitor Suppression**: Added `do_action('qm/cease')` to prevent debug output on 2FA pages
+  - Prevents sensitive debugging information from displaying on login pages
+  - Security enhancement to avoid information leakage
+
+### Fixed
+- **Asset Loading**: Eliminated theme/frontend CSS/JS from loading on verification page
+  - Previously loaded all theme assets via `wp_head()` and `wp_footer()`
+  - Now uses login-specific hooks for isolated, minimal asset loading
+  - Improves performance and prevents visual conflicts
+
+### Improved
+- **Code Standards**: All view template code now follows WordPress coding standards
+  - Code-first template approach using `printf()` and `echo`
+  - No inline HTML mixed with PHP snippets
+  - Passes phpcs with 0 errors, 0 warnings
+
 ## [0.9.2] - 2025-12-21
 
 ### Fixed
@@ -55,7 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Known limitations and administrator security checklist
 
 ### Changed
-- **PHP Requirement**: Minimum PHP version bumped from 8.2 to 8.3
+- **PHP Requirement**: Minimum PHP version is 8.0 (supports 8.0+)
 - **Code Quality Improvements**: Comprehensive defensive coding enhancements
   - Added type validation for all WordPress meta and option retrieval
   - Added `isset()` checks for all PHP superglobal accesses ($_SERVER, $_GET, $_POST)

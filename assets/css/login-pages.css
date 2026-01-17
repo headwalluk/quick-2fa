@@ -1,0 +1,40 @@
+/**
+ * Quick 2FA - Login Page Styles
+ *
+ * Minimal styles for verification and password reminder pages.
+ * Relies on WordPress core login styles for consistency.
+ *
+ * @package Quick_2FA
+ * @since 0.9.3
+ */
+
+/* Verification code input */
+.q2fa-verification-input {
+    letter-spacing: 0.2em;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* Password toggle button */
+.toggle-password {
+    background: none;
+    border: none;
+    color: #2271b1;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 12px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.toggle-password:hover {
+    color: #135e96;
+    background: none;
+}
+
+.login form.simple {
+    background: unset;
+    border: none;
+    box-shadow: none;
+    text-align: center;
+}

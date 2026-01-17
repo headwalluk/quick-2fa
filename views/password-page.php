@@ -144,6 +144,11 @@ if ( ! is_user_logged_in() ) {
 			font-size: 13px;
 		}
 	</style>
+	<?php
+	// Disable Query Monitor output for security (prevents debug info leakage on login pages).
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.ValidHookName.UseUnderscores -- Query Monitor hook.
+	do_action( 'qm/cease' );
+	?>
 </head>
 <body>
 	<div class="q2fa-container">
@@ -191,7 +196,7 @@ if ( ! is_user_logged_in() ) {
 					required 
 					autocomplete="new-password"
 				>
-				<button type="button" class="toggle-password" onclick="togglePassword()">
+				<button type="button" class="toggle-password button" onclick="togglePassword()">
 					<?php esc_html_e( 'Show password', 'quick-2fa' ); ?>
 				</button>
 			</div>
@@ -200,7 +205,7 @@ if ( ! is_user_logged_in() ) {
 			</p>
 
 			<div style="margin-top: 20px;">
-				<button type="submit" name="q2fa_update_password">
+				<button type="submit" name="q2fa_update_password" class="button button-primary">
 					<?php esc_html_e( 'Update Password', 'quick-2fa' ); ?>
 				</button>
 			</div>
@@ -209,7 +214,7 @@ if ( ! is_user_logged_in() ) {
 		<div class="q2fa-actions">
 			<form method="post" action="" style="display: inline;">
 				<?php wp_nonce_field( 'quick2fa_remind_later' ); ?>
-				<button type="submit" name="q2fa_remind_later" class="button-secondary">
+				<button type="submit" name="q2fa_remind_later" class="button button-secondary">
 					<?php esc_html_e( 'Remind Me Later', 'quick-2fa' ); ?>
 				</button>
 			</form>

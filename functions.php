@@ -336,8 +336,8 @@ function mask_email( string $email ): string {
 		$domain_masked = mb_substr( $domain, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain ) - 1 ) );
 	} else {
 		// Mask domain name, keep TLD visible.
-		$tld          = array_pop( $domain_parts );
-		$domain_name  = implode( '.', $domain_parts );
+		$tld           = array_pop( $domain_parts );
+		$domain_name   = implode( '.', $domain_parts );
 		$domain_masked = mb_substr( $domain_name, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain_name ) - 1 ) ) . '.' . $tld;
 	}
 

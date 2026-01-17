@@ -72,6 +72,9 @@ class Plugin {
 		// Handle 2FA pages on login init.
 		add_action( 'login_init', array( $this, 'handle_login_actions' ) );
 
+		// Enqueue login page styles.
+		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_login_styles' ) );
+
 		// Admin notices.
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 
@@ -86,6 +89,27 @@ class Plugin {
 	 */
 	public function load_textdomain(): void {
 		load_plugin_textdomain( 'quick-2fa', false, dirname( QUICK_2FA_BASENAME ) . '/languages' );
+	}
+
+	/**
+	 * Enqueue styles for 2FA login pages.
+	 *
+	 * @since 0.9.3
+	 */
+	public function enqueue_login_styles(): void {
+		// Only enqueue on our 2FA pages.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Public login page, no nonce needed.
+		if ( ! isset( $_GET['q2fa'] ) ) {
+			return;
+		}
+		// phpcs:enable
+
+		wp_enqueue_style(
+			'quick-2fa-login',
+			QUICK_2FA_URL . 'assets/css/login-pages.css',
+			array( 'login' ),
+			QUICK_2FA_VERSION
+		);
 	}
 
 	/**

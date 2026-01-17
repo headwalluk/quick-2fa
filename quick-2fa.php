@@ -3,9 +3,9 @@
  * Plugin Name: Quick 2FA
  * Plugin URI: https://github.com/create-element/quick-2fa
  * Description: Lightweight email-based two-factor authentication for WordPress admin access.
- * Version: 0.9.2
+ * Version: 0.9.3
  * Requires at least: 6.0
- * Requires PHP: 8.3
+ * Requires PHP: 8.0
  * Author: Paul Faulkner
  * Author URI: https://power-plugins.com
  * License: GPL v2 or later
@@ -20,7 +20,7 @@
 defined( 'ABSPATH' ) || die();
 
 // Define plugin constants.
-define( 'QUICK_2FA_VERSION', '0.9.2' );
+define( 'QUICK_2FA_VERSION', '0.9.3' );
 define( 'QUICK_2FA_FILE', __FILE__ );
 define( 'QUICK_2FA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'QUICK_2FA_URL', plugin_dir_url( __FILE__ ) );

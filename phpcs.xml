@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<ruleset name="Quick 2FA Standards">
+	<description>WordPress Coding Standards for Quick 2FA</description>
+	
+	<file>.</file>
+	
+	<!-- Exclude patterns -->
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/assets/*</exclude-pattern>
+	<exclude-pattern>*/.git/*</exclude-pattern>
+	<exclude-pattern>*/dev-notes/*</exclude-pattern>
+	<exclude-pattern>*/docs/*</exclude-pattern>
+	
+	<!-- Arguments -->
+	<arg value="sp"/>
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg name="extensions" value="php"/>
+	<arg name="parallel" value="8"/>
+	
+	<!-- Rules -->
+	<rule ref="WordPress">
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+	</rule>
+	
+	<!-- Prefixes -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="quick_2fa"/>
+				<element value="quick2fa"/>
+				<element value="q2fa"/>
+				<element value="Quick_2FA"/>
+				<element value="QUICK_2FA"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

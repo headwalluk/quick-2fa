@@ -3,8 +3,8 @@ Contributors: yourusername
 Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
-Requires PHP: 8.3
-Stable tag: 0.9.2
+Requires PHP: 8.0
+Stable tag: 0.9.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -185,7 +185,7 @@ All commands accept user ID, login, or email address as the user identifier.
 = 0.9.0 =
 * Added WP-CLI emergency_disable command for emergency recovery situations
 * Added comprehensive SECURITY.md file with vulnerability reporting process
-* Changed minimum PHP requirement from 8.2 to 8.3
+* Minimum PHP requirement: 8.0 (supports 8.0+)
 * Fixed float-string conversion warning with PHP_INT_MAX in user meta
 * Fixed missing return statement in user lockout column rendering
 * Fixed undefined array key warnings for PHP superglobal accesses
@@ -283,7 +283,7 @@ Password manager compatibility improvements and enhanced template security with 
 Privacy enhancement: Email addresses now masked on verification page to prevent disclosure.
 
 = 0.9.0 =
-Requires PHP 8.3+. Adds WP-CLI emergency disable command and comprehensive security documentation. Multiple bug fixes and code quality improvements.
+Requires PHP 8.0+. Adds WP-CLI emergency disable command and comprehensive security documentation. Multiple bug fixes and code quality improvements.
 
 == Support ==
 

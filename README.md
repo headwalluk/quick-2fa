@@ -1,21 +1,16 @@
 # Quick 2FA
 
-[![Version](https://img.shields.io/badge/version-0.9.2-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.9.2)
-[![PHP](https://img.shields.io/badge/PHP-8.3+-purple.svg)](https://www.php.net/)
+[![Version](https://img.shields.io/badge/version-0.9.3-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.9.3)
+[![PHP](https://img.shields.io/badge/PHP-8.0+-purple.svg)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0+-21759B.svg)](https://wordpress.org/)
 [![License](https://img.shields.io/badge/license-GPL--2.0+-green.svg)](LICENSE)
 [![Coding Standards](https://img.shields.io/badge/WordPress-Coding%20Standards-blue.svg)](https://github.com/WordPress/WordPress-Coding-Standards)
 
 Lightweight email-based two-factor authentication for WordPress admin access.
 
-## Documentation
+---
 
-See the `docs/` directory for:
-
-- `requirements.md` - Complete requirements specification
-- `implementation.md` - Technical implementation guide
-
-## Installation
+## Quick Start
 
 ### Standard WordPress Plugin
 
@@ -29,6 +24,26 @@ See the `docs/` directory for:
 2. Plugin activates automatically
 3. Access settings at Settings > Quick 2FA
 
+---
+
+## Documentation
+
+### For Developers
+
+See [`dev-notes/`](dev-notes/) for:
+- [Project Tracker](dev-notes/00-project-tracker.md) - Current development status and milestones
+- [Implementation Guide](dev-notes/implementation.md) - Technical architecture and design decisions
+- [Refactoring History](dev-notes/refactoring-summary.md) - Code evolution and improvements
+- Patterns and workflows in [`dev-notes/patterns/`](dev-notes/patterns/) and [`dev-notes/workflows/`](dev-notes/workflows/)
+
+### For Users
+
+See [`docs/`](docs/) for:
+- [Requirements Specification](docs/requirements.md) - Complete feature specification
+- [Security Review](docs/security-review.md) - Security audit and best practices
+
+---
+
 ## Features
 
 - ✅ Email-based 2FA verification
@@ -40,152 +55,64 @@ See the `docs/` directory for:
 - ✅ User lock-out management (admin UI + WP-CLI)
 - ✅ Trusted devices (optional)
 
+---
+
 ## WP-CLI Commands
 
-Quick 2FA provides comprehensive command-line tools for managing user security:
-
-### Lock/Unlock Users
+Quick 2FA provides comprehensive WP-CLI tools for user management:
 
 ```bash
-# Lock a user account (terminates all sessions)
+# Lock/unlock users
 wp quick-2fa lock <user>
-
-# Unlock a user account
 wp quick-2fa unlock <user>
-```
 
-### Emergency Lockdown
-
-```bash
-# Lock ALL users except one (emergency use)
+# Emergency lockdown (lock all except one user)
 wp quick-2fa lock-all --exclude=admin
-
-# Unlock all locked users
 wp quick-2fa unlock-all
-```
 
-### User Management
-
-```bash
-# Show comprehensive user status
+# User management
 wp quick-2fa status <user>
-
-# List all locked users
 wp quick-2fa list-locked
-
-# Export locked users as CSV
-wp quick-2fa list-locked --format=csv
-
-# Clear all trusted devices for a user
 wp quick-2fa clear-devices <user>
-```
 
-### Emergency Access
-
-```bash
-# Emergency disable 2FA (if administrators are locked out)
-wp quick-2fa emergency_disable
-
-# Skip confirmation prompt
+# Emergency disable 2FA
 wp quick-2fa emergency_disable --yes
 ```
 
-### Examples
+All commands accept user ID, login, or email address as `<user>`.
 
-```bash
-# Emergency: Site under attack, lock everyone except your admin
-wp quick-2fa lock-all --exclude=admin
-
-# Check if a user is locked
-wp quick-2fa status john_doe
-
-# Unlock a user who can't access their email
-wp quick-2fa unlock jane_smith
-
-# View all locked users
-wp quick-2fa list-locked --format=table
-```
-
-All commands accept user ID, login, or email address as the `<user>` identifier.
+---
 
 ## Requirements
 
 - WordPress 6.0 or higher
-- PHP 8.3 or higher
+- PHP 8.0 or higher
 - Working email delivery (wp_mail)
 
-## Filters
+---
 
-### quick2fa_password_parameters
+## Customization
 
-Customize suggested password generation when prompting users to change their password.
-
-**Example:**
+### Password Generator Filter
 
 ```php
 add_filter( 'quick2fa_password_parameters', function( $params ) {
     return array(
-        'length'              => random_int( 12, 20 ), // Random length between 12-20 chars
-        'special_chars'       => true,                 // Include !@#$%
-        'extra_special_chars' => false,                // Exclude \-_[]{}<>~`+=,.;:/?|
+        'length'              => random_int( 12, 20 ),
+        'special_chars'       => true,
+        'extra_special_chars' => false,
     );
 } );
 ```
 
-**Parameters:**
-
-- `length` (int): Password length, automatically clamped to 8-64 characters
-- `special_chars` (bool): Include standard special characters
-- `extra_special_chars` (bool): Include additional special characters
-
-**Security:** Returns empty or malformed arrays automatically fall back to secure defaults (10-16 chars, special chars enabled).
-
-## Support
-
-For issues and questions:
-
-- GitHub: [Repository URL]
-- WordPress.org: Plugin support forum
+---
 
 ## License
 
-GPL v2 or later. See LICENSE file.
+GPL v2 or later. See [LICENSE](LICENSE) file.
 
-## Development
-
-This plugin follows WordPress coding standards and uses namespaces for organization.
-
-### Architecture (v0.4.0+)
-
-The plugin uses a class-based architecture with focused handler classes:
-
-- `Account_Security_Handler` - Account locking and security event logging
-- `Email_Handler` - Email template rendering and sending
-- `Verification_Code_Handler` - Code generation, storage, and verification
-- `Password_Reminder_Handler` - Password age tracking and updates
-- `Plugin` - Main plugin orchestration
-- `Settings` - Admin settings interface
-
-### Directory Structure
-
-```
-quick-2fa/
-├── assets/          # CSS/JS assets
-├── emails/          # Email template files
-├── includes/        # Core plugin classes
-│   ├── class-account-security-handler.php
-│   ├── class-email-handler.php
-│   ├── class-verification-code-handler.php
-│   ├── class-password-reminder-handler.php
-│   ├── class-plugin.php
-│   └── class-settings.php
-├── views/           # HTML template files
-├── docs/            # Documentation
-├── constants.php    # Plugin constants (namespaced)
-├── functions.php    # Utility functions (namespaced)
-└── quick-2fa.php    # Main plugin file
-```
+---
 
 ## Contributing
 
-Contributions welcome! Please follow WordPress coding standards.
+Contributions welcome! Please follow [WordPress coding standards](.github/copilot-instructions.md).

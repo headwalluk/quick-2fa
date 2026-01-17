@@ -423,7 +423,10 @@ class User_Management {
 			return 'unlocked';
 		}
 
-		if ( (int) $locked_until > time() ) {
+		// Safely convert to int, handling PHP_INT_MAX stored as scientific notation string.
+		$locked_until_int = (int) min( (float) $locked_until, PHP_INT_MAX );
+
+		if ( $locked_until_int > time() ) {
 			return 'locked';
 		}
 
