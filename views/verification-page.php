@@ -40,10 +40,6 @@ do_action( 'login_enqueue_scripts' );
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core hook.
 do_action( 'login_head' );
 
-// Disable Query Monitor output for security (prevents debug info leakage on login pages).
-// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.ValidHookName.UseUnderscores -- Query Monitor hook.
-do_action( 'qm/cease' );
-
 echo '</head>';
 printf( '<body class="login no-js login-action-login wp-core-ui %s">', esc_attr( 'locale-' . sanitize_html_class( strtolower( str_replace( '_', '-', get_locale() ) ) ) ) );
 

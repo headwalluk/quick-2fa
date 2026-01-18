@@ -5,6 +5,37 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-01-18
+
+### Changed
+- **Code-First Template Refactoring**: Completed migration to code-first pattern for all view templates
+  - Refactored password-page.php to match WordPress core login page structure
+  - Refactored settings-page.php to eliminate inline HTML/PHP mixing
+  - All templates now use `printf()` and `echo` exclusively (no inline HTML)
+  - Moved all JavaScript to separate files (no inline `<script>` tags)
+
+### Added
+- **Admin JavaScript**: Created `assets/admin/settings.js` for settings page functionality
+  - Select2 initialization moved from inline script
+  - Protected roles visibility toggle externalized
+  - Uses `wp_localize_script()` for PHP-to-JS data passing
+
+### Improved
+- **Query Monitor Security**: Moved `qm/cease` action to `handle_login_actions()` method
+  - Now prevents Query Monitor output on ALL q2fa pages (including error pages)
+  - Previously only suppressed on successful template loads
+  - Prevents information leakage on invalid action URLs
+- **Code Quality**: Reduced settings-page.php from 365 lines to 210 lines
+  - Eliminated 300+ lines of HTML-first code
+  - Better maintainability and readability
+  - Consistent with WordPress core coding patterns
+
+### Fixed
+- **Settings Page Assets**: Proper JavaScript enqueuing with dependencies
+  - Admin JS now depends on jQuery and Select2
+  - Localized script receives PHP constants for dynamic behavior
+  - No more inline JavaScript mixing PHP and JS syntax
+
 ## [0.9.3] - 2026-01-17
 
 ### Changed

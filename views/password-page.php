@@ -21,223 +21,115 @@ if ( ! is_user_logged_in() ) {
 	wp_safe_redirect( wp_login_url() );
 	exit();
 }
-?>
-<!DOCTYPE html>
-<html <?php language_attributes(); ?>>
-<head>
-	<meta charset="<?php bloginfo( 'charset' ); ?>">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="robots" content="noindex, nofollow">
-	<title><?php esc_html_e( 'Update Your Password', 'quick-2fa' ); ?> - <?php bloginfo( 'name' ); ?></title>
-	<style>
-		body {
-			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-			background: #f0f0f1;
-			margin: 0;
-			padding: 20px;
-		}
-		.q2fa-container {
-			max-width: 450px;
-			margin: 50px auto;
-			background: #fff;
-			padding: 30px;
-			border-radius: 4px;
-			box-shadow: 0 1px 3px rgba(0,0,0,0.13);
-		}
-		h1 {
-			margin-top: 0;
-			font-size: 24px;
-			color: #1d2327;
-		}
-		p {
-			color: #50575e;
-			line-height: 1.5;
-		}
-		.q2fa-error {
-			background: #fcf0f1;
-			border-left: 4px solid #d63638;
-			padding: 12px;
-			margin: 16px 0;
-		}
-		.q2fa-message {
-			background: #edfaff;
-			border-left: 4px solid #00a0d2;
-			padding: 12px;
-			margin: 16px 0;
-		}
-		.q2fa-warning {
-			background: #fcf9e8;
-			border-left: 4px solid #dba617;
-			padding: 12px;
-			margin: 16px 0;
-		}
-		label {
-			display: block;
-			margin: 16px 0 8px;
-			font-weight: 600;
-			color: #1d2327;
-		}
-		input[type="password"],
-		input[type="text"] {
-			width: 100%;
-			padding: 8px;
-			font-size: 14px;
-			box-sizing: border-box;
-			font-family: Consolas, Monaco, monospace;
-		}
-		.password-wrapper {
-			position: relative;
-		}
-		.toggle-password {
-			position: block;
-			/* position: absolute;
-			right: 8px;
-			top: 50%;
-			transform: translateY(-50%); */
-			background: none;
-			border: none;
-			color: #2271b1;
-			cursor: pointer;
-			padding: 4px 8px;
-			font-size: 12px;
-		}
-		.toggle-password:hover {
-			color :white;
-		} 
-		button {
-			background: #2271b1;
-			color: #fff;
-			border: none;
-			padding: 10px 20px;
-			font-size: 14px;
-			cursor: pointer;
-			border-radius: 3px;
-			margin-top: 16px;
-		}
-		button:hover {
-			background: #135e96;
-		}
-		.button-secondary {
-			background: #f6f7f7;
-			color: #2c3338;
-			border: 1px solid #dcdcde;
-			/* margin-left: 8px; */
-		}
-		.button-secondary:hover {
-			background: #f0f0f1;
-			border-color: #8c8f94;
-		}
-		.q2fa-actions {
-			margin-top: 20px;
-			padding-top: 20px;
-			border-top: 1px solid #dcdcde;
-		}
-		.q2fa-footer {
-			margin-top: 20px;
-			padding-top: 20px;
-			border-top: 1px solid #dcdcde;
-			text-align: center;
-			font-size: 13px;
-		}
-		.password-strength {
-			margin-top: 8px;
-			font-size: 13px;
-		}
-	</style>
-	<?php
-	// Disable Query Monitor output for security (prevents debug info leakage on login pages).
-	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.ValidHookName.UseUnderscores -- Query Monitor hook.
-	do_action( 'qm/cease' );
-	?>
-</head>
-<body>
-	<div class="q2fa-container">
-		<h1><?php esc_html_e( 'Update Your Password', 'quick-2fa' ); ?></h1>
-		
-		<?php if ( $error ) : ?>
-			<div class="q2fa-error">
-				<?php echo esc_html( $error->get_error_message() ); ?>
-			</div>
-		<?php endif; ?>
 
-		<?php if ( $message ) : ?>
-			<div class="q2fa-message">
-				<?php echo esc_html( $message ); ?>
-			</div>
-		<?php endif; ?>
+// Start HTML output.
+// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- get_language_attributes() is safe.
+printf( '<!DOCTYPE html><html %s class="wp-core-ui"><head>', get_language_attributes() );
+// phpcs:enable
+printf( '<meta charset="%s">', esc_attr( get_bloginfo( 'charset' ) ) );
+echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+echo '<meta name="robots" content="noindex, nofollow">';
+printf( '<title>%s - %s</title>', esc_html__( 'Update Your Password', 'quick-2fa' ), esc_html( get_bloginfo( 'name' ) ) );
 
-		<div class="q2fa-warning">
-			<strong><?php esc_html_e( 'Password Security Reminder', 'quick-2fa' ); ?></strong>
-			<p>
-				<?php
-				printf(
-				/* translators: %d: number of days since last password change */
-					esc_html__( "It's been %d days since you last changed your password. For your security, we recommend updating it regularly.", 'quick-2fa' ),
-					(int) $days_since
-				);
-				?>
-			</p>
-		</div>
+// Enqueue WordPress login styles and fire hook.
+wp_enqueue_style( 'login' );
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core hook.
+do_action( 'login_enqueue_scripts' );
 
-		<form method="post" action="" autocomplete="on">
-			<?php wp_nonce_field( 'quick2fa_password' ); ?>
-			
-			<!-- Hidden fields for password manager compatibility -->
-			<input type="hidden" name="username" value="<?php echo esc_attr( $user->user_login ); ?>" autocomplete="username">
-			<input type="hidden" name="email" value="<?php echo esc_attr( $user->user_email ); ?>" autocomplete="email">
-			
-			<label for="q2fa_new_password"><?php esc_html_e( 'New Password:', 'quick-2fa' ); ?></label>
-			<div class="password-wrapper">
-				<input 
-					type="password" 
-					name="password" 
-					id="q2fa_new_password" 
-					value="<?php echo esc_attr( $new_password ); ?>" 
-					required 
-					autocomplete="new-password"
-				>
-				<button type="button" class="toggle-password button" onclick="togglePassword()">
-					<?php esc_html_e( 'Show password', 'quick-2fa' ); ?>
-				</button>
-			</div>
-			<p class="description">
-				<?php esc_html_e( 'A strong password has been generated for you. You can use it as-is or change it to your own.', 'quick-2fa' ); ?>
-			</p>
+// Output login page head content (NOT wp_head which includes theme/frontend assets).
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core hook.
+do_action( 'login_head' );
 
-			<div style="margin-top: 20px;">
-				<button type="submit" name="q2fa_update_password" class="button button-primary">
-					<?php esc_html_e( 'Update Password', 'quick-2fa' ); ?>
-				</button>
-			</div>
-		</form>
+echo '</head>';
+printf( '<body class="login no-js login-action-password wp-core-ui %s">', esc_attr( 'locale-' . sanitize_html_class( strtolower( str_replace( '_', '-', get_locale() ) ) ) ) );
 
-		<div class="q2fa-actions">
-			<form method="post" action="" style="display: inline;">
-				<?php wp_nonce_field( 'quick2fa_remind_later' ); ?>
-				<button type="submit" name="q2fa_remind_later" class="button button-secondary">
-					<?php esc_html_e( 'Remind Me Later', 'quick-2fa' ); ?>
-				</button>
-			</form>
-		</div>
+// Main login container - WordPress default structure.
+echo '<div id="login">';
 
-		<div class="q2fa-footer">
-			<p>&larr; <a href="<?php echo esc_url( wp_logout_url() ); ?>"><?php esc_html_e( 'Log out', 'quick-2fa' ); ?></a></p>
-		</div>
-	</div>
+// Heading.
+printf( '<h1><a href="%s">%s</a></h1>', esc_url( home_url( '/' ) ), esc_html( get_bloginfo( 'name' ) ) );
 
-	<script>
-		function togglePassword() {
-			const input = document.getElementById('q2fa_new_password');
-			const button = event.target;
-			
-			if (input.type === 'password') {
-				input.type = 'text';
-				button.textContent = '<?php echo esc_js( __( 'Hide', 'quick-2fa' ) ); ?>';
-			} else {
-				input.type = 'password';
-				button.textContent = '<?php echo esc_js( __( 'Show', 'quick-2fa' ) ); ?>';
-			}
-		}
-	</script>
-</body>
-</html>
+// Error message.
+if ( $error ) {
+	printf( '<div id="login_error">%s</div>', esc_html( $error->get_error_message() ) );
+}
+
+// Success message.
+if ( $message ) {
+	printf( '<div class="message">%s</div>', esc_html( $message ) );
+}
+
+// Password reminder warning.
+printf(
+	'<div class="message" style="border-left-color: #dba617;">%s</div>',
+	sprintf(
+		/* translators: %d: number of days since last password change */
+		esc_html__( "It's been %d days since you last changed your password. For your security, we recommend updating it regularly.", 'quick-2fa' ),
+		(int) $days_since
+	)
+);
+
+// Password update form using WordPress login form structure.
+echo '<form name="q2fa-password-form" id="loginform" action="" method="post" autocomplete="on">';
+
+wp_nonce_field( 'quick2fa_password' );
+
+// Hidden fields for password manager compatibility.
+printf( '<input type="hidden" name="username" value="%s" autocomplete="username">', esc_attr( $user->user_login ) );
+printf( '<input type="hidden" name="email" value="%s" autocomplete="email">', esc_attr( $user->user_email ) );
+
+// New password field.
+echo '<p>';
+printf( '<label for="q2fa_new_password">%s</label>', esc_html__( 'New Password:', 'quick-2fa' ) );
+printf(
+	'<input type="password" name="password" id="q2fa_new_password" class="input" value="%s" size="20" required autocomplete="new-password">',
+	esc_attr( $new_password )
+);
+echo '</p>';
+
+// Show password button.
+printf(
+	'<p><button type="button" class="button button-secondary wp-hide-pw hide-if-no-js" data-toggle="0" aria-label="%s"><span class="dashicons dashicons-visibility" aria-hidden="true"></span></button></p>',
+	esc_attr__( 'Show password', 'quick-2fa' )
+);
+
+// Help text.
+printf(
+	'<p class="description">%s</p>',
+	esc_html__( 'A strong password has been generated for you. You can use it as-is or change it to your own.', 'quick-2fa' )
+);
+
+// Submit button.
+printf(
+	'<p class="submit"><input type="submit" name="q2fa_update_password" id="wp-submit" class="button button-primary button-large" value="%s"></p>',
+	esc_html__( 'Update Password', 'quick-2fa' )
+);
+
+echo '</form>';
+
+// Remind later form.
+echo '<form method="post" action="" style="text-align: center; margin-top: 20px;">';
+wp_nonce_field( 'quick2fa_remind_later' );
+printf(
+	'<button type="submit" name="q2fa_remind_later" class="button button-secondary">%s</button>',
+	esc_html__( 'Remind Me Later', 'quick-2fa' )
+);
+echo '</form>';
+
+// Footer.
+printf(
+	'<p id="backtoblog"><a href="%s">%s</a></p>',
+	esc_url( wp_logout_url() ),
+	esc_html__( '&larr; Log out', 'quick-2fa' )
+);
+
+echo '</div>';
+
+// Output login page footer.
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core hook.
+do_action( 'login_footer' );
+
+// Add password visibility toggle script (WordPress core functionality).
+echo '<script>document.querySelector(".wp-hide-pw").addEventListener("click",function(){var e=document.getElementById("q2fa_new_password"),t=this.getAttribute("data-toggle");e.type="0"===t?"text":"password",this.setAttribute("data-toggle","0"===t?"1":"0"),this.setAttribute("aria-label","0"===t?"' . esc_js( __( 'Hide password', 'quick-2fa' ) ) . '":"' . esc_js( __( 'Show password', 'quick-2fa' ) ) . '")});</script>';
+
+echo '</body></html>';

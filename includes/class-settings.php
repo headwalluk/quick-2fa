@@ -318,19 +318,25 @@ class Settings {
 		// Enqueue Select2 JS (depends on jQuery).
 		wp_enqueue_script( 'q2fa-select2', QUICK_2FA_URL . 'assets/select2/select2.min.js', array( 'jquery' ), '4.0.13', true );
 
-		// Add inline script to initialize Select2.
-		$inline_script =
-			"
-            jQuery(document).ready(function($) {
-                $('#quick2fa_protected_roles').select2({
-                    placeholder: '" .
-			esc_js( __( 'Select roles...', 'quick-2fa' ) ) .
-			"',
-                    width: '100%'
-                });
-            });
-        ";
-		wp_add_inline_script( 'q2fa-select2', $inline_script );
+		// Enqueue settings page JS.
+		wp_enqueue_script(
+			'quick-2fa-settings',
+			QUICK_2FA_URL . 'assets/admin/settings.js',
+			array( 'jquery', 'q2fa-select2' ),
+			QUICK_2FA_VERSION,
+			true
+		);
+
+		// Localize script with data.
+		wp_localize_script(
+			'quick-2fa-settings',
+			'quick2faSettings',
+			array(
+				'selectRolesPlaceholder' => __( 'Select roles...', 'quick-2fa' ),
+				'optionMode'             => OPTION_MODE,
+				'modeRoles'              => MODE_ROLES,
+			)
+		);
 	}
 
 	/**

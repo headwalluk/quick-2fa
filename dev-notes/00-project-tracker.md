@@ -1,8 +1,8 @@
 # Project Tracker - Quick 2FA
 
-**Current Version:** 0.9.3  
-**Last Updated:** 17 January 2026  
-**Status:** Production (Deployed on multiple sites for ~1 month)
+**Current Version:** 0.10.0  
+**Last Updated:** 18 January 2026  
+**Status:** Production (Ready for soak testing on friendly sites)
 
 ---
 
@@ -26,9 +26,15 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
 - Documentation (developer + user)
 - CHANGELOG.md maintenance
 - Security review and SECURITY.md
-- **View template refactoring (v0.9.3)** - WordPress login page compliance
+- **View template refactoring (v0.9.3-v0.10.0)** - Complete code-first migration
+  - verification-page.php (v0.9.3)
+  - password-page.php (v0.10.0)
+  - settings-page.php (v0.10.0)
+- **JavaScript externalization (v0.10.0)** - All inline scripts moved to separate files
+- **Query Monitor security (v0.10.0)** - Comprehensive suppression on all q2fa pages
 
 ### 🔄 In Progress
+- Soak testing on friendly sites (Week of 2026-01-18)
 - WordPress.org submission preparation
 - Final phpcs compliance review (remaining files)
 - Code standards cleanup
@@ -41,14 +47,15 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
 
 #### Code Quality & Standards
 - [x] phpcs.xml configured for WordPress standards
-- [x] **Views refactored to WordPress patterns** - verification-page.php complete (v0.9.3)
+- [x] **Views refactored to WordPress patterns** - All templates complete (v0.9.3-v0.10.0)
   - [x] Code-first templates using printf/echo (no inline HTML)
-  - [x] WordPress login page structure and classes
+  - [x] WordPress login page structure and classes (verification + password pages)
   - [x] Proper asset loading (login_head, login_footer actions)
-  - [x] Query Monitor suppression for security
-  - [x] Consolidated CSS (40 lines vs 245 lines)
-  - [ ] password-page.php still needs refactoring (has inline CSS)
-  - [ ] settings-page.php needs code-first conversion
+  - [x] Query Monitor suppression for security (moved to handle_login_actions)
+  - [x] Consolidated CSS (40 lines vs 245 lines for login pages)
+  - [x] password-page.php refactored (v0.10.0)
+  - [x] settings-page.php converted to code-first (v0.10.0)
+  - [x] All JavaScript externalized to separate files (v0.10.0)
 - [ ] **Fix remaining phpcs errors** - Reduced from 25 to ~18 errors
   - [x] verification-page.php - 0 errors, 0 warnings ✅
   - [x] profile-trusted-devices.php - 0 errors, 0 warnings ✅

@@ -443,6 +443,10 @@ class Plugin {
 			return;
 		}
 
+		// Disable Query Monitor output for security (prevents debug info leakage on login pages).
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.ValidHookName.UseUnderscores -- Query Monitor hook.
+		do_action( 'qm/cease' );
+
 		// Security: Ensure user is logged in.
 		if ( ! is_user_logged_in() ) {
 			wp_safe_redirect( wp_login_url() );
