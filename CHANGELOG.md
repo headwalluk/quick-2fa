@@ -5,6 +5,25 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-02-26
+
+### Fixed
+- **Trusted Device Expiry**: Trusted devices now honour their full configured trust period (e.g., 30 days)
+  - Previously, the time-based verification period (default 3 days) overrode device trust
+  - Device trust check now takes priority when trusted devices are enabled
+  - Time-based verification period is used as fallback when trusted devices are disabled
+
+### Changed
+- **Code Quality**: Achieved 0 phpcs errors and 0 warnings across entire codebase
+  - Rewrote `get_user_agent()` and `get_current_admin_url()` to eliminate empty statement errors
+  - Removed empty else blocks from `class-plugin.php`, `class-user-management.php`, and `functions.php`
+  - Prefixed template foreach variables with `q2fa_` in `settings-page.php`
+  - Added justified `phpcs:ignore` directives for WP-CLI signature requirements and admin-context queries
+
+### Removed
+- Unused `Plugin::get_settings()` method
+- Empty defensive else blocks that served no purpose (previously added in v0.9.0)
+
 ## [0.10.0] - 2026-01-18
 
 ### Changed

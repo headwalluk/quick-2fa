@@ -56,8 +56,7 @@ class Email_Handler {
 	 * @param \WP_User $user User object.
 	 * @return string Formatted email message.
 	 */
-	public function get_message( string $code, \WP_User $user ): string {
-        // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Variables extracted in template.
+	public function get_message( string $code, \WP_User $user ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $code and $user are used in the included email template.
 		$code_expiry = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
 
 		ob_start();

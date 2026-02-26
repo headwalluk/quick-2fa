@@ -137,19 +137,7 @@ class Plugin {
 		} elseif ( get_option( 'quick2fa_version' ) !== QUICK_2FA_VERSION ) {
 			// Version mismatch - update version (for future upgrade logic).
 			update_option( 'quick2fa_version', QUICK_2FA_VERSION );
-		} else {
-			// No change needed.
 		}
-	}
-
-	/**
-	 * Get plugin settings instance.
-	 *
-	 * @since 1.0.0
-	 * @return Settings
-	 */
-	public function get_settings(): Settings {
-		return $this->settings;
 	}
 
 	/**
@@ -242,12 +230,14 @@ class Plugin {
 	/**
 	 * Check if current user needs verification.
 	 *
-	 * Security model:
+	 * Security model (when trusted devices enabled):
 	 * 1. Unknown devices always require verification (device-based security)
-	 * 2. Trusted devices fall back to time-based verification (convenience)
+	 * 2. Trusted devices skip verification until their trust expires (e.g., 30 days)
+	 *
+	 * When trusted devices are disabled, falls back to time-based verification period.
 	 *
 	 * This prevents the security hole where anyone with the password can access
-	 * an account during its "verified period" from any device.
+	 * an account from an unknown device.
 	 *
 	 * @since 1.0.0
 	 * @return bool True if verification is needed.
@@ -272,29 +262,21 @@ class Plugin {
 			return true;
 		}
 
-		// Get verification period (in days).
-		$period_days    = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
-		$period_seconds = $period_days * DAY_IN_SECONDS;
-
-		// Check if verification has expired based on time.
-		$time_since_verified = time() - $last_verified;
-		if ( $time_since_verified > $period_seconds ) {
-			return true;
-		}
-
-		// If trusted devices feature is enabled, check device fingerprint.
-		// This provides additional security by requiring re-verification from unknown devices,
-		// even if the time-based period hasn't expired yet.
+		// If trusted devices feature is enabled, device trust is the primary check.
+		// Each trusted device entry carries its own expiry (e.g., 30 days), so the
+		// time-based verification period is not needed here. Unknown devices will
+		// fail the trust check and require verification regardless.
 		if ( ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
 			$security_handler = new Account_Security_Handler( $user_id );
-			// If device is NOT trusted, require verification.
-			if ( ! $security_handler->is_device_trusted() ) {
-				return true;
-			}
+			return ! $security_handler->is_device_trusted();
 		}
 
-		// User is verified and either device is trusted or feature is disabled.
-		return false;
+		// Trusted devices disabled — fall back to time-based verification period.
+		$period_days         = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
+		$period_seconds      = $period_days * DAY_IN_SECONDS;
+		$time_since_verified = time() - $last_verified;
+
+		return $time_since_verified > $period_seconds;
 	}
 
 	/**
@@ -557,8 +539,6 @@ class Plugin {
 			if ( is_wp_error( $result ) ) {
 				$error = $result;
 			}
-		} else {
-			// POST request but not a submit action - treat as GET.
 		}
 
 		// Check if trusted devices feature is enabled.
@@ -629,8 +609,6 @@ class Plugin {
 					wp_safe_redirect( $return_url );
 					exit();
 				}
-			} else {
-				// POST request but no recognized action.
 			}
 		}
 

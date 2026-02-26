@@ -1,7 +1,7 @@
 # Project Tracker - Quick 2FA
 
-**Current Version:** 0.10.0  
-**Last Updated:** 18 January 2026  
+**Current Version:** 0.11.0
+**Last Updated:** 26 February 2026
 **Status:** Production (Ready for soak testing on friendly sites)
 
 ---
@@ -56,15 +56,15 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
   - [x] password-page.php refactored (v0.10.0)
   - [x] settings-page.php converted to code-first (v0.10.0)
   - [x] All JavaScript externalized to separate files (v0.10.0)
-- [ ] **Fix remaining phpcs errors** - Reduced from 25 to ~18 errors
+- [x] **Fix remaining phpcs errors** - 0 errors, 0 warnings ✅ (v0.11.0)
   - [x] verification-page.php - 0 errors, 0 warnings ✅
   - [x] profile-trusted-devices.php - 0 errors, 0 warnings ✅
-  - [ ] settings-page.php - 2 errors (foreach variable prefixing)
-  - [ ] class-user-management.php - 1 error, 3 warnings (empty ELSE)
-  - [ ] class-plugin.php - 3 errors (empty ELSE statements)
-  - [ ] functions.php - 8 errors (empty IF/ELSEIF/ELSE in validation)
-  - [ ] class-cli-commands.php - 6 warnings (unused params)
-  - [ ] class-email-handler.php - 2 warnings (unused params)
+  - [x] settings-page.php - 0 errors, 0 warnings ✅ (prefixed foreach variables)
+  - [x] class-user-management.php - 0 errors, 0 warnings ✅ (removed empty ELSE, added justified ignores)
+  - [x] class-plugin.php - 0 errors, 0 warnings ✅ (removed empty ELSE blocks, removed unused method)
+  - [x] functions.php - 0 errors, 0 warnings ✅ (rewrote verbose functions)
+  - [x] class-cli-commands.php - 0 errors, 0 warnings ✅ (justified ignores for WP-CLI signatures)
+  - [x] class-email-handler.php - 0 errors, 0 warnings ✅ (fixed misplaced ignore directive)
 - [x] All code properly namespaced (Quick_2FA)
 - [x] No direct SQL queries (uses WordPress ORM)
 - [x] Proper sanitization and escaping
@@ -107,19 +107,9 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
 
 ### High Priority (WordPress.org Submission Blockers)
 
-1. **Fix remaining phpcs violations** (~18 errors, ~11 warnings)
-   - [ ] settings-page.php: Foreach variable prefixing
-   - [ ] class-plugin.php: Empty ELSE statements (add phpcs:ignore with explanation)
-   - [ ] functions.php: Empty IF/ELSEIF/ELSE in validation (add phpcs:ignore)
-   - [ ] class-user-management.php: Empty ELSE, SlowDBQuery warnings
-   - [ ] class-cli-commands.php: Unused parameters (add phpcs:ignore)
-   - [ ] class-email-handler.php: Unused parameters (add phpcs:ignore)
+1. ~~**Fix remaining phpcs violations**~~ ✅ Completed in v0.11.0 (0 errors, 0 warnings)
 
-2. **Complete view template refactoring**
-   - [x] verification-page.php - WordPress login page compliance ✅
-   - [x] profile-trusted-devices.php - Code-first refactoring ✅
-   - [ ] password-page.php - Refactor to WordPress login page structure
-   - [ ] settings-page.php - Convert to code-first approach
+2. ~~**Complete view template refactoring**~~ ✅ Completed in v0.10.0
 
 3. **Update readme.txt**
    - [ ] Replace placeholder contributor name
@@ -185,52 +175,28 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
 - Needs code-first conversion
 - Foreach variable prefixing needed
 
-### phpcs Violations Requiring Manual Fix
+### phpcs Violations — All Resolved ✅ (v0.11.0)
 
-**views/settings-page.php (2 errors)**
-- Variables in foreach loop need prefixing: `$role_slug`, `$role_name` (line 112)
-
-**includes/class-user-management.php (1 error, 3 warnings)**
-- Empty ELSE statement at line 231 (defensive coding pattern)
-- SlowDBQuery warnings (meta_query usage - acceptable for admin context)
-- NonceVerification.Recommended warnings (may be false positive, need review)
-
-**includes/class-email-handler.php (2 warnings)**
-- Unused parameters in get_message() method (signature compatibility)
-
-**includes/class-plugin.php (3 errors)**
-- Empty ELSE statements at lines 138, 554, 626 (defensive coding pattern)
-
-**functions.php (8 errors, 2 warnings)**
-- Empty IF/ELSEIF/ELSE statements in validation functions (defensive coding)
-- Assignment in condition warnings (intentional pattern, may suppress)
-
-**includes/class-cli-commands.php (6 warnings)**
-- Unused `$assoc_args` parameters (WP-CLI signature requirement)
-- SlowDBQuery warnings (acceptable for CLI context)
-- error_log() in emergency_disable (intentional for emergency logging)
-
-### Resolution Strategy
-
-1. **Template variables** - Prefix with `q2fa_` to comply with global naming ✅
-2. **View templates** - Convert to code-first, WordPress login patterns ✅ (verification page done)
-3. **Empty statements** - Add phpcs:ignore with explanatory comments (defensive coding pattern)
-4. **Unused parameters** - Add phpcs:ignore (required by WP-CLI/interface signatures)
-5. **error_log in CLI** - Keep as-is (emergency logging), add phpcs:ignore if needed
-6. **Output escaping** - Ensure all template output is escaped ✅
+All phpcs errors resolved by restructuring code (not adding blanket suppressions):
+- Rewrote `get_user_agent()` and `get_current_admin_url()` to eliminate empty statements and assignment-in-condition patterns
+- Removed empty else blocks from `class-plugin.php`, `class-user-management.php`, and `functions.php`
+- Prefixed foreach variables with `q2fa_` in `settings-page.php`
+- Removed unused `Plugin::get_settings()` method
+- Added justified `phpcs:ignore` directives only where structurally required (WP-CLI signatures, admin-context meta queries, template-extracted parameters, emergency logging)
 
 ---
 
 ## Milestones
 
-### v0.9.x - WordPress.org Submission (Current)
+### v0.9.x-0.11.x - WordPress.org Submission (Current)
 - [x] v0.9.0 - Emergency disable command, PHP 8.0+ support
 - [x] v0.9.1 - Email masking for privacy
 - [x] v0.9.2 - Password manager compatibility
 - [x] v0.9.3 - WordPress login page compliance, Query Monitor suppression, consolidated CSS
-- [ ] v0.9.4 - Complete phpcs compliance, password/settings page refactoring
-- [ ] v0.9.5 - WordPress.org submission preparation (screenshots, assets, readme.txt)
-- [ ] v0.9.6 - WordPress.org submission
+- [x] v0.10.0 - Complete code-first template migration, JS externalization
+- [x] v0.11.0 - Trusted device expiry fix, full phpcs compliance (0 errors, 0 warnings)
+- [ ] v0.12.0 - WordPress.org submission preparation (screenshots, assets, readme.txt)
+- [ ] v0.13.0 - WordPress.org submission
 
 ### v1.0.0 - Official Release (Post WordPress.org Approval)
 - Stable release with wordpress.org listing

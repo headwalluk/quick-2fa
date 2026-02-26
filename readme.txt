@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 0.10.0
+Stable tag: 0.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -168,6 +168,27 @@ All commands accept user ID, login, or email address as the user identifier.
 
 == Changelog ==
 
+= 0.11.0 =
+* Fixed trusted device expiry - devices now honour full trust period (e.g., 30 days) instead of being overridden by verification period (default 3 days)
+* Achieved 0 phpcs errors and 0 warnings across entire codebase
+* Rewrote verbose utility functions for cleaner code
+* Removed unused Plugin::get_settings() method
+* Removed empty defensive else blocks added in v0.9.0
+* Prefixed template variables for WordPress coding standards compliance
+
+= 0.10.0 =
+* Completed code-first template migration for all view files
+* Externalized all inline JavaScript to separate asset files
+* Improved Query Monitor security suppression on all q2fa pages
+* Created admin JavaScript file for settings page
+* Reduced settings-page.php from 365 to 210 lines
+
+= 0.9.3 =
+* Refactored verification page to WordPress core login page patterns
+* Replaced wp_head/wp_footer with login_head/login_footer actions
+* Added Query Monitor suppression on 2FA pages
+* Consolidated CSS from 245 lines to 40 lines
+
 = 0.9.2 =
 * Fixed password manager compatibility on password update form
 * Changed password field name from q2fa_new_password to standard 'password'
@@ -275,6 +296,9 @@ All commands accept user ID, login, or email address as the user identifier.
 * Event logging system
 
 == Upgrade Notice ==
+
+= 0.11.0 =
+Fixes trusted device expiry bug where devices were forgotten after 3 days instead of the configured 30-day period. Full phpcs compliance achieved.
 
 = 0.9.2 =
 Password manager compatibility improvements and enhanced template security with login verification.

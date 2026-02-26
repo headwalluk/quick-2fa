@@ -153,8 +153,6 @@ function get_ip_address(): string {
 		$ip        = trim( $ips[0] );
 	} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
 		$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
-	} else {
-		// No IP address available - $ip remains empty string.
 	}
 
 	// Validate IP address format.
@@ -172,17 +170,11 @@ function get_ip_address(): string {
  * @return string User agent.
  */
 function get_user_agent(): string {
-	$user_agent = '';
-
 	if ( ! isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
-		// HTTP_USER_AGENT not available - return empty string.
-	} elseif ( empty( $user_agent = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) ) ) {
-		// HTTP_USER_AGENT exists but is empty after sanitization - return empty string.
-	} else {
-		// Valid user agent assigned - return sanitized value.
+		return '';
 	}
 
-	return $user_agent;
+	return sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
 }
 
 /**
@@ -192,23 +184,21 @@ function get_user_agent(): string {
  * @return string Current admin URL.
  */
 function get_current_admin_url(): string {
-	$url = admin_url();
-
 	if ( ! isset( $_SERVER['REQUEST_URI'] ) ) {
-		// REQUEST_URI not available (e.g., WP-CLI) - use default admin_url().
-	} elseif ( empty( $request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) ) {
-		// REQUEST_URI exists but is empty after sanitization - use default admin_url().
-	} else {
-		// Parse the request URI to get just the path and query.
-		$parsed = wp_parse_url( $request_uri );
-		$path   = isset( $parsed['path'] ) ? $parsed['path'] : '';
-		$query  = isset( $parsed['query'] ) ? '?' . $parsed['query'] : '';
-
-		// Build full URL.
-		$url = home_url( $path . $query );
+		return admin_url();
 	}
 
-	return $url;
+	$request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+	if ( empty( $request_uri ) ) {
+		return admin_url();
+	}
+
+	// Parse the request URI to get just the path and query.
+	$parsed = wp_parse_url( $request_uri );
+	$path   = isset( $parsed['path'] ) ? $parsed['path'] : '';
+	$query  = isset( $parsed['query'] ) ? '?' . $parsed['query'] : '';
+
+	return home_url( $path . $query );
 }
 
 /**

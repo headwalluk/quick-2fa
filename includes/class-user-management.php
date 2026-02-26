@@ -228,8 +228,6 @@ class User_Management {
 					),
 				)
 			);
-		} else {
-			// No filter applied - show all users.
 		}
 	}
 
@@ -476,7 +474,7 @@ class User_Management {
 		// Query locked users.
 		$query = new \WP_User_Query(
 			array(
-				'meta_query'  => array(
+				'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Admin-only cached query for locked user count badge.
 					'relation' => 'AND',
 					array(
 						'key'     => META_LOCKED_UNTIL,
@@ -511,17 +509,19 @@ class User_Management {
 	private function get_redirect_url(): string {
 		$redirect_url = admin_url( 'users.php' );
 
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading filter/pagination state for redirect, not processing actions.
+
 		// Preserve current filter.
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking filter state.
 		if ( isset( $_GET['quick2fa_filter'] ) ) {
 			$redirect_url = add_query_arg( 'quick2fa_filter', sanitize_text_field( wp_unslash( $_GET['quick2fa_filter'] ) ), $redirect_url );
 		}
 
 		// Preserve pagination.
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking pagination state.
 		if ( isset( $_GET['paged'] ) ) {
 			$redirect_url = add_query_arg( 'paged', absint( $_GET['paged'] ), $redirect_url );
 		}
+
+		// phpcs:enable
 
 		return $redirect_url;
 	}

@@ -40,9 +40,9 @@ class CLI_Commands {
 	 *
 	 * @since 0.6.0
 	 * @param array $args       Positional arguments.
-	 * @param array $assoc_args Associative arguments.
+	 * @param array $assoc_args Associative arguments (unused, required by WP-CLI).
 	 */
-	public function lock( array $args, array $assoc_args ): void {
+	public function lock( array $args, array $assoc_args ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WP-CLI signature.
 		[$user_identifier] = $args;
 
 		// Get user.
@@ -86,9 +86,9 @@ class CLI_Commands {
 	 *
 	 * @since 0.6.0
 	 * @param array $args       Positional arguments.
-	 * @param array $assoc_args Associative arguments.
+	 * @param array $assoc_args Associative arguments (unused, required by WP-CLI).
 	 */
-	public function unlock( array $args, array $assoc_args ): void {
+	public function unlock( array $args, array $assoc_args ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WP-CLI signature.
 		[$user_identifier] = $args;
 
 		// Get user.
@@ -228,7 +228,7 @@ class CLI_Commands {
 		$user_query = new \WP_User_Query(
 			array(
 				'fields'     => 'ID',
-				'meta_query' => array(
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- CLI command, not a frontend query.
 					'relation' => 'AND',
 					array(
 						'key'     => META_LOCKED_UNTIL,
@@ -416,7 +416,7 @@ class CLI_Commands {
 		$user_query = new \WP_User_Query(
 			array(
 				'fields'     => 'all',
-				'meta_query' => array(
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- CLI command, not a frontend query.
 					'relation' => 'AND',
 					array(
 						'key'     => META_LOCKED_UNTIL,
@@ -476,9 +476,9 @@ class CLI_Commands {
 	 *
 	 * @since 0.6.0
 	 * @param array $args       Positional arguments.
-	 * @param array $assoc_args Associative arguments.
+	 * @param array $assoc_args Associative arguments (unused, required by WP-CLI).
 	 */
-	public function clear_devices( array $args, array $assoc_args ): void {
+	public function clear_devices( array $args, array $assoc_args ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WP-CLI signature.
 		[$user_identifier] = $args;
 
 		// Get user.
@@ -581,7 +581,7 @@ class CLI_Commands {
 		update_option( OPTION_MODE, MODE_DISABLED );
 
 		// Log the emergency disable event.
-		error_log(
+		error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional: emergency action must be logged to server error log.
 			sprintf(
 				'[Quick 2FA] Emergency disable activated via WP-CLI at %s',
 				gmdate( 'Y-m-d H:i:s' )
