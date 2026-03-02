@@ -307,18 +307,12 @@ class Settings {
 	 * @param string $hook Current admin page hook.
 	 */
 	public function enqueue_scripts( string $hook ): void {
-		// Only load on our settings page.
 		if ( 'settings_page_quick-2fa' !== $hook ) {
 			return;
 		}
 
-		// Enqueue Select2 CSS.
 		wp_enqueue_style( 'q2fa-select2', QUICK_2FA_URL . 'assets/select2/select2.min.css', array(), '4.0.13' );
-
-		// Enqueue Select2 JS (depends on jQuery).
 		wp_enqueue_script( 'q2fa-select2', QUICK_2FA_URL . 'assets/select2/select2.min.js', array( 'jquery' ), '4.0.13', true );
-
-		// Enqueue settings page JS.
 		wp_enqueue_script(
 			'quick-2fa-settings',
 			QUICK_2FA_URL . 'assets/admin/settings.js',
@@ -327,7 +321,6 @@ class Settings {
 			true
 		);
 
-		// Localize script with data.
 		wp_localize_script(
 			'quick-2fa-settings',
 			'quick2faSettings',
@@ -345,12 +338,10 @@ class Settings {
 	 * @since 1.0.0
 	 */
 	public function render_settings_page(): void {
-		// Check user capabilities.
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
-		// Get current settings.
 		$mode                       = get_option( OPTION_MODE, DEFAULT_MODE );
 		$protected_roles            = get_option( OPTION_PROTECTED_ROLES, get_default_protected_roles() );
 		$verification_period        = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
@@ -365,11 +356,10 @@ class Settings {
 		$trusted_device_expiry      = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 		$lockout_duration           = get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION );
 
-		// Get all WordPress roles.
 		$wp_roles  = wp_roles();
 		$all_roles = $wp_roles->get_names();
 
-		// Pass constants to template for use outside namespace context.
+		// Constants passed to template for use outside namespace context.
 		$const_option_mode                       = OPTION_MODE;
 		$const_option_protected_roles            = OPTION_PROTECTED_ROLES;
 		$const_option_verification_period        = OPTION_VERIFICATION_PERIOD;
@@ -387,7 +377,6 @@ class Settings {
 		$const_mode_roles                        = MODE_ROLES;
 		$const_mode_disabled                     = MODE_DISABLED;
 
-		// Load settings page template.
 		require QUICK_2FA_PATH . 'views/settings-page.php';
 	}
 }

@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 0.11.0
+Stable tag: 0.11.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -168,6 +168,11 @@ All commands accept user ID, login, or email address as the user identifier.
 
 == Changelog ==
 
+= 0.11.1 =
+* Removed ~150 unnecessary comments that restated what code does, keeping only comments that explain why
+* Fixed Plugin::$instance PHPDoc — added missing @since tag and corrected nullable type
+* Removed historic docs/ directory (superseded by README and SECURITY.md)
+
 = 0.11.0 =
 * Fixed trusted device expiry - devices now honour full trust period (e.g., 30 days) instead of being overridden by verification period (default 3 days)
 * Achieved 0 phpcs errors and 0 warnings across entire codebase
@@ -296,6 +301,9 @@ All commands accept user ID, login, or email address as the user identifier.
 * Event logging system
 
 == Upgrade Notice ==
+
+= 0.11.1 =
+Code cleanup: removed unnecessary comments, fixed PHPDoc gaps, removed historic docs/ directory.
 
 = 0.11.0 =
 Fixes trusted device expiry bug where devices were forgotten after 3 days instead of the configured 30-day period. Full phpcs compliance achieved.

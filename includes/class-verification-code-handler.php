@@ -51,12 +51,9 @@ class Verification_Code_Handler {
 	 */
 	public function generate(): string {
 		$length = get_option( OPTION_CODE_LENGTH, DEFAULT_CODE_LENGTH );
+		$max    = (int) str_repeat( '9', $length );
+		$code   = random_int( 0, $max );
 
-		// Generate cryptographically secure random code.
-		$max  = (int) str_repeat( '9', $length );
-		$code = random_int( 0, $max );
-
-		// Pad with leading zeros.
 		return str_pad( $code, $length, '0', STR_PAD_LEFT );
 	}
 
@@ -67,17 +64,11 @@ class Verification_Code_Handler {
 	 * @param string $code Plain text code.
 	 */
 	public function store( string $code ): void {
-		// Hash the code.
 		$hash = wp_hash_password( $code );
-
-		// Store hash and timestamp.
 		update_user_meta( $this->user_id, META_CODE_HASH, $hash );
 		update_user_meta( $this->user_id, META_CODE_TIMESTAMP, time() );
-
-		// Reset attempt counter.
 		update_user_meta( $this->user_id, META_CODE_ATTEMPTS, 0 );
 
-		// Log code generation.
 		$security = new Account_Security_Handler( $this->user_id );
 		$security->log_event(
 			LOG_CODE_GENERATED,
@@ -121,7 +112,6 @@ class Verification_Code_Handler {
 			return true;
 		}
 
-		// Check if limit exceeded.
 		if ( $limit_data['count'] >= RATE_LIMIT_CODE_GENERATION_MAX ) {
 			$wait_time = ceil( ( RATE_LIMIT_CODE_GENERATION_WINDOW - $elapsed ) / 60 );
 
@@ -139,7 +129,6 @@ class Verification_Code_Handler {
 			);
 		}
 
-		// Increment counter.
 		++$limit_data['count'];
 		set_transient( $cache_key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
 
@@ -186,29 +175,22 @@ class Verification_Code_Handler {
 	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
 	public function send_via_email(): true|\WP_Error {
-		// Check rate limiting.
 		$rate_check = $this->check_rate_limit();
 		if ( is_wp_error( $rate_check ) ) {
 			return $rate_check;
 		}
 
-		// Generate code.
 		$code = $this->generate();
-
-		// Store hashed code.
 		$this->store( $code );
 
-		// Get user.
 		$user = get_userdata( $this->user_id );
 		if ( ! $user ) {
 			return new \WP_Error( 'user_not_found', __( 'User not found.', 'quick-2fa' ) );
 		}
 
-		// Send email via Email_Handler.
 		$email_handler = new Email_Handler();
 		$result        = $email_handler->send_verification_code( $user, $code );
 
-		// Log result.
 		$security = new Account_Security_Handler( $this->user_id );
 		$security->log_event(
 			LOG_CODE_SENT,
@@ -239,7 +221,6 @@ class Verification_Code_Handler {
 	public function verify( string $code ): true|\WP_Error {
 		$security = new Account_Security_Handler( $this->user_id );
 
-		// Check if account is locked.
 		if ( $security->is_locked() ) {
 			$wait_time = ceil( $security->get_lock_time_remaining() / 60 );
 
@@ -253,16 +234,13 @@ class Verification_Code_Handler {
 			);
 		}
 
-		// Get stored hash.
 		$hash = get_user_meta( $this->user_id, META_CODE_HASH, true );
 
 		if ( empty( $hash ) ) {
 			return new \WP_Error( 'no_code', __( 'No verification code found. Please request a new code.', 'quick-2fa' ) );
 		}
 
-		// Check if code has expired.
 		if ( $this->is_expired() ) {
-			// Clean up expired code.
 			$this->cleanup();
 
 			$expiry_minutes = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
@@ -276,7 +254,6 @@ class Verification_Code_Handler {
 			);
 		}
 
-		// Check rate limiting on verification attempts.
 		$attempts = (int) get_user_meta( $this->user_id, META_CODE_ATTEMPTS, true );
 
 		if ( $attempts >= RATE_LIMIT_VERIFICATION_MAX ) {
@@ -285,9 +262,7 @@ class Verification_Code_Handler {
 			return new \WP_Error( 'too_many_attempts', __( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' ) );
 		}
 
-		// Verify code against hash.
 		if ( ! wp_check_password( $code, $hash ) ) {
-			// Increment failure counter.
 			update_user_meta( $this->user_id, META_CODE_ATTEMPTS, $attempts + 1 );
 
 			$security->log_event(
@@ -314,7 +289,8 @@ class Verification_Code_Handler {
 				$security->lock_account();
 				return new \WP_Error( 'too_many_attempts', __( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' ) );
 			}
-		} // Success! Update verification timestamp and clean up.
+		}
+
 		update_user_meta( $this->user_id, META_LAST_VERIFIED, time() );
 		$this->cleanup();
 

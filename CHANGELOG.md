@@ -5,6 +5,15 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] - 2026-03-02
+
+### Changed
+- **Code Cleanup**: Removed ~150 unnecessary comments across all PHP files that restated what the code does, keeping only comments that explain *why* or provide useful context
+- **PHPDoc Fix**: Fixed `Plugin::$instance` property — added missing `@since` tag and corrected type from `Plugin` to `?Plugin`
+
+### Removed
+- **Developer Documentation**: Removed `docs/` directory (historic requirements and security review files superseded by README and SECURITY.md)
+
 ## [0.11.0] - 2026-02-26
 
 ### Fixed

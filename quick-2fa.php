@@ -3,7 +3,7 @@
  * Plugin Name: Quick 2FA
  * Plugin URI: https://github.com/create-element/quick-2fa
  * Description: Lightweight email-based two-factor authentication for WordPress admin access.
- * Version: 0.11.0
+ * Version: 0.11.1
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Paul Faulkner
@@ -19,31 +19,23 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || die();
 
-// Define plugin constants.
 define( 'QUICK_2FA_VERSION', '0.11.0' );
 define( 'QUICK_2FA_FILE', __FILE__ );
 define( 'QUICK_2FA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'QUICK_2FA_URL', plugin_dir_url( __FILE__ ) );
 define( 'QUICK_2FA_BASENAME', plugin_basename( __FILE__ ) );
 
-// Load plugin constants.
 require_once QUICK_2FA_PATH . 'constants.php';
-
-// Load plugin functions.
 require_once QUICK_2FA_PATH . 'functions.php';
 
-// Load plugin classes.
 require_once QUICK_2FA_PATH . 'includes/class-account-security-handler.php';
 require_once QUICK_2FA_PATH . 'includes/class-email-handler.php';
 require_once QUICK_2FA_PATH . 'includes/class-verification-code-handler.php';
 require_once QUICK_2FA_PATH . 'includes/class-password-reminder-handler.php';
 require_once QUICK_2FA_PATH . 'includes/class-user-management.php';
 require_once QUICK_2FA_PATH . 'includes/class-plugin.php';
-
-// Load settings class.
 require_once QUICK_2FA_PATH . 'includes/class-settings.php';
 
-// Load WP-CLI commands.
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	require_once QUICK_2FA_PATH . 'includes/class-cli-commands.php';
 	WP_CLI::add_command( 'quick-2fa', 'Quick_2FA\CLI_Commands' );
@@ -58,7 +50,6 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
  * @since 1.0.0
  */
 function quick_2fa_activate(): void {
-	// Set default options if not already set.
 	$defaults = Quick_2FA\get_default_settings();
 
 	foreach ( $defaults as $key => $value ) {
@@ -67,7 +58,6 @@ function quick_2fa_activate(): void {
 		}
 	}
 
-	// Store plugin version with autoload.
 	add_option( 'quick2fa_version', QUICK_2FA_VERSION, '', 'yes' );
 }
 register_activation_hook( __FILE__, 'quick_2fa_activate' );

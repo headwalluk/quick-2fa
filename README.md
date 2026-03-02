@@ -1,6 +1,6 @@
 # Quick 2FA
 
-[![Version](https://img.shields.io/badge/version-0.11.0-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.11.0)
+[![Version](https://img.shields.io/badge/version-0.11.1-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.11.1)
 [![PHP](https://img.shields.io/badge/PHP-8.0+-purple.svg)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0+-21759B.svg)](https://wordpress.org/)
 [![License](https://img.shields.io/badge/license-GPL--2.0+-green.svg)](LICENSE)
@@ -35,12 +35,6 @@ See [`dev-notes/`](dev-notes/) for:
 - [Implementation Guide](dev-notes/implementation.md) - Technical architecture and design decisions
 - [Refactoring History](dev-notes/refactoring-summary.md) - Code evolution and improvements
 - Patterns and workflows in [`dev-notes/patterns/`](dev-notes/patterns/) and [`dev-notes/workflows/`](dev-notes/workflows/)
-
-### For Users
-
-See [`docs/`](docs/) for:
-- [Requirements Specification](docs/requirements.md) - Complete feature specification
-- [Security Review](docs/security-review.md) - Security audit and best practices
 
 ---
 

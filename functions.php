@@ -222,15 +222,12 @@ function store_return_url( int $user_id ): void {
 function get_return_url( int $user_id ): string {
 	$return_url = get_transient( TRANSIENT_RETURN_URL . $user_id );
 
-	// Clean up transient.
 	delete_transient( TRANSIENT_RETURN_URL . $user_id );
 
-	// Default to main admin page if no return URL.
 	if ( empty( $return_url ) ) {
 		$return_url = admin_url();
 	}
 
-	// Validate return URL is safe.
 	$return_url = wp_validate_redirect( $return_url, admin_url() );
 
 	return $return_url;
@@ -303,12 +300,10 @@ function should_skip_check(): bool {
  * @return string Masked email address.
  */
 function mask_email( string $email ): string {
-	// Validate email format.
 	if ( ! is_email( $email ) ) {
 		return $email;
 	}
 
-	// Split email into parts.
 	$parts = explode( '@', $email );
 	if ( count( $parts ) !== 2 ) {
 		return $email;
@@ -316,16 +311,11 @@ function mask_email( string $email ): string {
 
 	list( $local, $domain ) = $parts;
 
-	// Mask local part (show first char + asterisks).
 	$local_masked = mb_substr( $local, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $local ) - 1 ) );
-
-	// Split domain into name and TLD.
 	$domain_parts = explode( '.', $domain );
 	if ( count( $domain_parts ) < 2 ) {
-		// No TLD, mask entire domain.
 		$domain_masked = mb_substr( $domain, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain ) - 1 ) );
 	} else {
-		// Mask domain name, keep TLD visible.
 		$tld           = array_pop( $domain_parts );
 		$domain_name   = implode( '.', $domain_parts );
 		$domain_masked = mb_substr( $domain_name, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain_name ) - 1 ) ) . '.' . $tld;

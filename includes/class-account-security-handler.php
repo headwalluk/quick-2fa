@@ -131,19 +131,13 @@ class Account_Security_Handler {
 			'data'       => $data,
 		);
 
-		// Get existing logs.
 		$logs = get_user_meta( $this->user_id, META_LOGS, true );
 		if ( ! is_array( $logs ) ) {
 			$logs = array();
 		}
 
-		// Add new log.
 		array_unshift( $logs, $log_entry );
-
-		// Keep only last 50 entries per user.
 		$logs = array_slice( $logs, 0, 50 );
-
-		// Store updated logs.
 		update_user_meta( $this->user_id, META_LOGS, $logs );
 	}
 
@@ -205,10 +199,7 @@ class Account_Security_Handler {
 		$ip         = self::get_client_ip();
 		$user_agent = self::get_client_user_agent();
 
-		// Create fingerprint from IP and user agent.
 		$fingerprint = $ip . '|' . $user_agent;
-
-		// Return hash of fingerprint.
 		return hash( 'sha256', $fingerprint );
 	}
 
@@ -219,21 +210,16 @@ class Account_Security_Handler {
 	 * @return bool True if device is trusted and not expired.
 	 */
 	public function is_device_trusted(): bool {
-		// Get fingerprint for current device.
 		$current_fingerprint = $this->get_device_fingerprint();
-
-		// Get trusted devices for user.
-		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
+		$trusted_devices     = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
 
 		if ( ! is_array( $trusted_devices ) ) {
 			return false;
 		}
 
-		// Check if current device is in the list and not expired.
 		if ( isset( $trusted_devices[ $current_fingerprint ] ) ) {
 			$expiry = $trusted_devices[ $current_fingerprint ];
 
-			// Check if still valid.
 			if ( $expiry > time() ) {
 				return true;
 			}
@@ -256,25 +242,19 @@ class Account_Security_Handler {
 	 * @return bool True on success.
 	 */
 	public function trust_device(): bool {
-		// Get fingerprint for current device.
-		$fingerprint = $this->get_device_fingerprint();
-
-		// Get existing trusted devices.
+		$fingerprint     = $this->get_device_fingerprint();
 		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
 
 		if ( ! is_array( $trusted_devices ) ) {
 			$trusted_devices = array();
 		}
 
-		// Clean up expired devices before adding new one.
 		$this->cleanup_expired_devices();
 
-		// Add current device with expiration timestamp.
 		$expiry_days                     = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 		$expiry                          = time() + $expiry_days * DAY_IN_SECONDS;
 		$trusted_devices[ $fingerprint ] = $expiry;
 
-		// Update user meta.
 		return update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices ) !== false;
 	}
 

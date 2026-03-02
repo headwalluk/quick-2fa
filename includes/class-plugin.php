@@ -21,7 +21,8 @@ class Plugin {
 	/**
 	 * Single instance of the class.
 	 *
-	 * @var Plugin
+	 * @since 1.0.0
+	 * @var ?Plugin
 	 */
 	private static $instance = null;
 
@@ -56,29 +57,16 @@ class Plugin {
 		$this->settings = new Settings();
 		$this->settings->run();
 
-		// Initialize user management features.
 		$user_management = new User_Management();
 		$user_management->run();
 
-		// Check first run and initialize defaults (supports MU plugin installation).
+		// Supports MU plugin installation where activation hooks don't fire.
 		add_action( 'admin_init', array( $this, 'check_first_run' ), 1 );
-
-		// Check verification on admin init.
 		add_action( 'admin_init', array( $this, 'check_verification' ), 1 );
-
-		// Block locked users at login.
 		add_filter( 'wp_authenticate_user', array( $this, 'check_lockout_on_login' ), 10, 1 );
-
-		// Handle 2FA pages on login init.
 		add_action( 'login_init', array( $this, 'handle_login_actions' ) );
-
-		// Enqueue login page styles.
 		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_login_styles' ) );
-
-		// Admin notices.
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
-
-		// Load text domain.
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 	}
 
@@ -97,8 +85,7 @@ class Plugin {
 	 * @since 0.9.3
 	 */
 	public function enqueue_login_styles(): void {
-		// Only enqueue on our 2FA pages.
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Public login page, no nonce needed.
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Public login page, no nonce needed.
 		if ( ! isset( $_GET['q2fa'] ) ) {
 			return;
 		}
@@ -121,21 +108,17 @@ class Plugin {
 	 * @since 0.6.0
 	 */
 	public function check_first_run(): void {
-		// Check if plugin version is set (indicates plugin has been initialized).
 		if ( false === get_option( 'quick2fa_version' ) ) {
-			// First run - set default options.
 			$defaults = get_default_settings();
 
 			foreach ( $defaults as $key => $value ) {
 				if ( false === get_option( $key ) ) {
-					add_option( $key, $value, '', 'yes' ); // Autoload enabled.
+					add_option( $key, $value, '', 'yes' );
 				}
 			}
 
-			// Store plugin version with autoload.
 			add_option( 'quick2fa_version', QUICK_2FA_VERSION, '', 'yes' );
 		} elseif ( get_option( 'quick2fa_version' ) !== QUICK_2FA_VERSION ) {
-			// Version mismatch - update version (for future upgrade logic).
 			update_option( 'quick2fa_version', QUICK_2FA_VERSION );
 		}
 	}
@@ -151,18 +134,16 @@ class Plugin {
 	 */
 	public function check_lockout_on_login( \WP_User|\WP_Error $user ): \WP_User|\WP_Error {
         // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by wp_authenticate_user filter.
-		// If previous filter already failed, pass it through.
 		if ( is_wp_error( $user ) ) {
 			return $user;
 		}
 
-		// Check if user is locked.
 		$security = new Account_Security_Handler( $user->ID );
 		if ( $security->is_locked() ) {
 			$time_remaining = $security->get_lock_time_remaining();
 			$locked_until   = get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
 
-			// Check if this is a permanent lock.
+			// Permanent locks use a timestamp far in the future.
 			if ( $locked_until > time() + 100 * YEAR_IN_SECONDS ) {
 				$error_message = __( 'Your account has been locked. Please contact your site administrator.', 'quick-2fa' );
 			} else {
@@ -185,12 +166,11 @@ class Plugin {
 	 * @since 1.0.0
 	 */
 	public function check_verification(): void {
-		// Bail early if we should skip checks.
 		if ( should_skip_check() ) {
 			return;
 		}
 
-		// Check if user is locked out (applies to ALL users, regardless of 2FA settings).
+		// Lockout applies to ALL users regardless of 2FA settings.
 		$user_id = get_current_user_id();
 		if ( $user_id ) {
 			$security = new Account_Security_Handler( $user_id );
@@ -199,7 +179,6 @@ class Plugin {
 
 				$locked_until = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
 
-				// Check if this is a permanent lock.
 				if ( $locked_until > time() + 100 * YEAR_IN_SECONDS ) {
 					$error_message = __( 'Your account has been locked. Please contact your site administrator.', 'quick-2fa' );
 				} else {
@@ -214,16 +193,14 @@ class Plugin {
 			}
 		}
 
-		// Check if user needs verification first (higher priority).
 		if ( $this->user_needs_verification() ) {
 			$this->redirect_to_verification();
-			return; // Exit after redirect.
+			return;
 		}
 
-		// Only check password reminder if verification passed.
 		if ( $this->user_needs_password_reminder() ) {
 			$this->redirect_to_password_reminder();
-			return; // Exit after redirect.
+			return;
 		}
 	}
 
@@ -249,15 +226,12 @@ class Plugin {
 			return false;
 		}
 
-		// Check if user's role requires 2FA.
 		if ( ! $this->user_role_requires_2fa( $user_id ) ) {
 			return false;
 		}
 
-		// Get last verification timestamp.
 		$last_verified = (int) get_user_meta( $user_id, META_LAST_VERIFIED, true );
 
-		// If never verified, needs verification.
 		if ( empty( $last_verified ) ) {
 			return true;
 		}
@@ -289,12 +263,10 @@ class Plugin {
 	private function user_role_requires_2fa( int $user_id ): bool {
 		$mode = get_option( OPTION_MODE, DEFAULT_MODE );
 
-		// If mode is "all", everyone requires 2FA.
 		if ( MODE_ALL === $mode ) {
 			return true;
 		}
 
-		// If mode is "roles", check if user has a protected role.
 		if ( MODE_ROLES === $mode ) {
 			$protected_roles = get_option( OPTION_PROTECTED_ROLES, array() );
 
@@ -308,7 +280,6 @@ class Plugin {
 				return false;
 			}
 
-			// Check if user has any protected role.
 			$user_roles = (array) $user->roles;
 
 			return ! empty( array_intersect( $user_roles, $protected_roles ) );
@@ -324,7 +295,6 @@ class Plugin {
 	 * @return bool True if password reminder is needed.
 	 */
 	private function user_needs_password_reminder(): bool {
-		// Check if feature is enabled.
 		if ( ! get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED ) ) {
 			return false;
 		}
@@ -336,9 +306,6 @@ class Plugin {
 			return false;
 		}
 
-		// Get last password change time.
-		// Note: user_pass_modified doesn't exist by default, we'll need to track this ourselves.
-		// For now, we'll use a meta key or fall back to user registration date.
 		$last_pass_change = get_user_meta( $user_id, '_password_last_changed', true );
 
 		if ( empty( $last_pass_change ) ) {
@@ -354,17 +321,14 @@ class Plugin {
 			update_user_meta( $user_id, '_password_last_changed', $last_pass_change );
 		}
 
-		// Get reminder period (in days).
 		$period_days    = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
 		$period_seconds = $period_days * DAY_IN_SECONDS;
 
-		// Check if password is old enough.
 		$time_since_change = time() - $last_pass_change;
 		if ( $time_since_change <= $period_seconds ) {
 			return false;
 		}
 
-		// Check when reminder was last shown.
 		$last_reminder = get_user_meta( $user_id, META_LAST_PASSWORD_REMINDER, true );
 
 		if ( ! empty( $last_reminder ) ) {
@@ -388,11 +352,7 @@ class Plugin {
 	 */
 	private function redirect_to_verification(): void {
 		$user_id = get_current_user_id();
-
-		// Store where user was trying to go.
 		store_return_url( $user_id );
-
-		// Redirect to verification page.
 		wp_safe_redirect( get_verify_url() );
 		exit();
 	}
@@ -404,11 +364,7 @@ class Plugin {
 	 */
 	private function redirect_to_password_reminder(): void {
 		$user_id = get_current_user_id();
-
-		// Store where user was trying to go.
 		store_return_url( $user_id );
-
-		// Redirect to password reminder page.
 		wp_safe_redirect( get_password_url() );
 		exit();
 	}
@@ -419,7 +375,6 @@ class Plugin {
 	 * @since 1.0.0
 	 */
 	public function handle_login_actions(): void {
-		// Check for our query parameter.
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public page identifier.
 		if ( ! isset( $_GET[ QUERY_PARAM ] ) ) {
 			return;
@@ -429,13 +384,11 @@ class Plugin {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.ValidHookName.UseUnderscores -- Query Monitor hook.
 		do_action( 'qm/cease' );
 
-		// Security: Ensure user is logged in.
 		if ( ! is_user_logged_in() ) {
 			wp_safe_redirect( wp_login_url() );
 			exit();
 		}
 
-		// Route to appropriate handler.
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public page identifier.
 		$action = sanitize_key( $_GET[ QUERY_PARAM ] );
 
@@ -469,52 +422,43 @@ class Plugin {
 		$is_verify_submit = $is_post && isset( $_POST['q2fa_verify'] );
 		$is_resend_submit = $is_post && isset( $_POST['q2fa_resend'] );
 
-		// Handle verification form submission.
 		if ( $is_verify_submit && ( ! array_key_exists( '_wpnonce', $_POST ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'quick2fa_verify' ) ) ) {
             // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce validation.
 			$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 		} elseif ( $is_verify_submit ) {
-			// Get submitted code.
 			$code = isset( $_POST['q2fa_code'] ) ? sanitize_text_field( wp_unslash( $_POST['q2fa_code'] ) ) : '';
 
 			if ( empty( $code ) ) {
 				$error = new \WP_Error( 'empty_code', __( 'Please enter the verification code.', 'quick-2fa' ) );
 			} else {
-				// Verify code.
 				$code_handler = new Verification_Code_Handler( $user_id );
 				$result       = $code_handler->verify( $code );
 
 				if ( is_wp_error( $result ) ) {
 					$error = $result;
 				} else {
-					// Success! Trust this device (required for the verification to work).
 					if ( ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
 						$security_handler = new Account_Security_Handler( $user_id );
 
-						// Check if user wants to trust this device long-term.
 						$trust_device = isset( $_POST['q2fa_trust_device'] ) && '1' === $_POST['q2fa_trust_device'];
 						if ( $trust_device ) {
-							// Long-term trust based on settings (e.g., 30 days).
 							$security_handler->trust_device();
 						} else {
-							// Short-term trust matching verification period.
+							// Short-term trust matching verification period instead of full device trust duration.
 							$verification_period_days = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
 							$expiry                   = time() + $verification_period_days * DAY_IN_SECONDS;
 
-							// Get existing trusted devices.
 							$trusted_devices = get_user_meta( $user_id, META_TRUSTED_DEVICES, true );
 							if ( ! is_array( $trusted_devices ) ) {
 								$trusted_devices = array();
 							}
 
-							// Add current device with short-term expiration.
 							$fingerprint                     = $security_handler->get_device_fingerprint();
 							$trusted_devices[ $fingerprint ] = $expiry;
 							update_user_meta( $user_id, META_TRUSTED_DEVICES, $trusted_devices );
 						}
 					}
 
-					// Redirect to return URL.
 					$return_url = get_return_url( $user_id );
 					wp_safe_redirect( $return_url );
 					exit();
@@ -524,7 +468,6 @@ class Plugin {
             // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce validation.
 			$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 		} elseif ( $is_resend_submit ) {
-			// Resend code.
 			$code_handler = new Verification_Code_Handler( $user_id );
 			$result       = $code_handler->send_via_email();
 			if ( is_wp_error( $result ) ) {
@@ -533,7 +476,6 @@ class Plugin {
 				$message = __( 'A new verification code has been sent to your email.', 'quick-2fa' );
 			}
 		} elseif ( ! $is_post ) {
-			// Initial page load (GET request) - send code.
 			$code_handler = new Verification_Code_Handler( $user_id );
 			$result       = $code_handler->send_via_email();
 			if ( is_wp_error( $result ) ) {
@@ -541,14 +483,11 @@ class Plugin {
 			}
 		}
 
-		// Check if trusted devices feature is enabled.
 		$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
 		$trusted_device_expiry   = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 
-		// Get user object for template.
 		$user = get_userdata( $user_id );
 
-		// Load verification page template.
 		require QUICK_2FA_PATH . 'views/verification-page.php';
 	}
 
@@ -563,48 +502,34 @@ class Plugin {
 		$error   = null;
 		$message = null;
 
-		// Get password handler.
-		$handler = new Password_Reminder_Handler( $user_id );
-
-		// Calculate days since last password change.
-		$days_since = $handler->get_password_age();
-
-		// Generate a strong password.
+		$handler      = new Password_Reminder_Handler( $user_id );
+		$days_since   = $handler->get_password_age();
 		$new_password = $handler->generate_strong_password();
 
-		// Handle form submission.
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			if ( isset( $_POST['q2fa_update_password'] ) ) {
-				// Verify nonce.
 				if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'quick2fa_password' ) ) {
                     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce validation.
 					$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 				} else {
-					// Get submitted password.
 					$password = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Password needs special chars.
-
-					// Update password using handler.
-					$result = $handler->update_password( $password );
+					$result   = $handler->update_password( $password );
 
 					if ( is_wp_error( $result ) ) {
 						$error = $result;
 					} else {
-						// Success! Redirect to return URL.
 						$return_url = get_return_url( $user_id );
 						wp_safe_redirect( $return_url );
 						exit();
 					}
 				}
 			} elseif ( isset( $_POST['q2fa_remind_later'] ) ) {
-				// Verify nonce.
 				if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'quick2fa_remind_later' ) ) {
                     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce validation.
 					$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 				} else {
-					// Dismiss reminder using handler.
 					$handler->dismiss_reminder();
 
-					// Redirect to return URL.
 					$return_url = get_return_url( $user_id );
 					wp_safe_redirect( $return_url );
 					exit();
@@ -612,7 +537,6 @@ class Plugin {
 			}
 		}
 
-		// Load password reminder page template.
 		require QUICK_2FA_PATH . 'views/password-page.php';
 	}
 
@@ -622,14 +546,12 @@ class Plugin {
 	 * @since 1.0.0
 	 */
 	public function admin_notices(): void {
-		// Only show to users with manage_options capability.
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
 		$mode = get_option( OPTION_MODE, DEFAULT_MODE );
 
-		// Show warning if 2FA is disabled.
 		if ( MODE_DISABLED === $mode ) {
 			$settings_url = admin_url( 'options-general.php?page=quick-2fa' );
 

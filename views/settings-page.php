@@ -48,14 +48,11 @@ printf( '<h1>%s</h1>', esc_html( get_admin_page_title() ) );
 echo '<form method="post" action="options.php">';
 settings_fields( 'quick2fa_settings' );
 
-// Main Settings Table.
 echo '<table class="form-table" role="presentation"><tbody>';
 
-// 2FA Mode Section.
 echo '<tr><th scope="row"><label>' . esc_html__( '2FA Mode', 'quick-2fa' ) . '</label></th><td><fieldset>';
 printf( '<legend class="screen-reader-text"><span>%s</span></legend>', esc_html__( '2FA Mode', 'quick-2fa' ) );
 
-// Disabled option.
 printf(
 	'<label><input type="radio" name="%s" value="%s" %s><strong>%s</strong><p class="description">%s</p></label><br>',
 	esc_attr( $const_option_mode ),
@@ -65,7 +62,6 @@ printf(
 	esc_html__( 'Two-factor authentication is disabled. Not recommended for production sites.', 'quick-2fa' )
 );
 
-// All users option.
 printf(
 	'<label><input type="radio" name="%s" value="%s" %s><strong>%s</strong><p class="description">%s</p></label><br>',
 	esc_attr( $const_option_mode ),
@@ -75,7 +71,6 @@ printf(
 	esc_html__( 'All users, including subscribers, will be required to verify their identity.', 'quick-2fa' )
 );
 
-// Specific roles option.
 printf(
 	'<label><input type="radio" name="%s" value="%s" %s><strong>%s</strong><p class="description">%s</p></label>',
 	esc_attr( $const_option_mode ),
@@ -87,7 +82,6 @@ printf(
 
 echo '</fieldset></td></tr>';
 
-// Protected Roles Section.
 printf(
 	'<tr id="protected-roles-row" style="%s"><th scope="row"><label for="quick2fa_protected_roles">%s</label></th><td>',
 	$const_mode_roles !== $mode ? 'display:none;' : '',
@@ -113,7 +107,6 @@ printf(
 	esc_html__( 'Select which user roles require two-factor authentication.', 'quick-2fa' )
 );
 
-// Verification Period.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_verification_period">%s</label></th><td><input type="number" name="%s" id="quick2fa_verification_period" value="%s" min="1" max="365" class="small-text"> %s<p class="description">%s</p></td></tr>',
 	esc_html__( 'Verification Period', 'quick-2fa' ),
@@ -123,7 +116,6 @@ printf(
 	esc_html__( 'How often users need to re-verify their identity (1-365 days).', 'quick-2fa' )
 );
 
-// Code Length.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_code_length">%s</label></th><td><input type="number" name="%s" id="quick2fa_code_length" value="%s" min="4" max="8" class="small-text"> %s<p class="description">%s</p></td></tr>',
 	esc_html__( 'Code Length', 'quick-2fa' ),
@@ -133,7 +125,6 @@ printf(
 	esc_html__( 'Length of the verification code (4-8 digits).', 'quick-2fa' )
 );
 
-// Code Expiry.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_code_expiry">%s</label></th><td><input type="number" name="%s" id="quick2fa_code_expiry" value="%s" min="5" max="60" class="small-text"> %s<p class="description">%s</p></td></tr>',
 	esc_html__( 'Code Expiry', 'quick-2fa' ),
@@ -143,7 +134,6 @@ printf(
 	esc_html__( 'How long verification codes remain valid (5-60 minutes).', 'quick-2fa' )
 );
 
-// Trusted Device Expiry.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_trusted_device_expiry">%s</label></th><td><input type="number" name="%s" id="quick2fa_trusted_device_expiry" value="%s" min="1" max="365" class="small-text"> %s<p class="description">%s</p></td></tr>',
 	esc_html__( 'Trust Device Duration', 'quick-2fa' ),
@@ -153,7 +143,6 @@ printf(
 	esc_html__( 'How long a trusted device remains trusted before requiring 2FA again (1-365 days).', 'quick-2fa' )
 );
 
-// Account Lockout Duration.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_lockout_duration">%s</label></th><td><input type="number" name="%s" id="quick2fa_lockout_duration" value="%s" min="1" max="1440" class="small-text"> %s<p class="description">%s</p></td></tr>',
 	esc_html__( 'Auto-Lock Duration', 'quick-2fa' ),
@@ -169,7 +158,6 @@ echo '</tbody></table>';
 printf( '<h2>%s</h2>', esc_html__( 'Email Settings', 'quick-2fa' ) );
 echo '<table class="form-table" role="presentation"><tbody>';
 
-// Email From Name.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_email_from_name">%s</label></th><td><input type="text" name="%s" id="quick2fa_email_from_name" value="%s" class="widefat"><p class="description">%s</p></td></tr>',
 	esc_html__( 'From Name', 'quick-2fa' ),
@@ -178,7 +166,6 @@ printf(
 	esc_html__( 'The name that appears in the "From" field of verification emails.', 'quick-2fa' )
 );
 
-// Email From Address.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_email_from_address">%s</label></th><td><input type="email" name="%s" id="quick2fa_email_from_address" value="%s" class="widefat"><p class="description">%s</p></td></tr>',
 	esc_html__( 'From Address', 'quick-2fa' ),
@@ -187,7 +174,6 @@ printf(
 	esc_html__( 'The email address that appears in the "From" field of verification emails.', 'quick-2fa' )
 );
 
-// Email Subject.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_email_subject">%s</label></th><td><input type="text" name="%s" id="quick2fa_email_subject" value="%s" class="widefat"><p class="description">%s</p></td></tr>',
 	esc_html__( 'Email Subject', 'quick-2fa' ),
@@ -202,7 +188,6 @@ echo '</tbody></table>';
 printf( '<h2>%s</h2>', esc_html__( 'Password Reminder Settings', 'quick-2fa' ) );
 echo '<table class="form-table" role="presentation"><tbody>';
 
-// Password Reminders Enabled.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_password_reminders_enabled">%s</label></th><td><label><input type="checkbox" name="%s" id="quick2fa_password_reminders_enabled" value="1" %s> %s</label><p class="description">%s</p></td></tr>',
 	esc_html__( 'Password Reminders', 'quick-2fa' ),
@@ -212,7 +197,6 @@ printf(
 	esc_html__( 'Periodically remind users to update their passwords.', 'quick-2fa' )
 );
 
-// Password Reminder Period.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_password_reminder_period">%s</label></th><td><input type="number" name="%s" id="quick2fa_password_reminder_period" value="%s" min="30" max="365" class="small-text"> %s<p class="description">%s</p></td></tr>',
 	esc_html__( 'Reminder Period', 'quick-2fa' ),
@@ -222,7 +206,6 @@ printf(
 	esc_html__( 'Remind users to change their password after this many days (30-365 days).', 'quick-2fa' )
 );
 
-// Password Reminder Cooldown.
 printf(
 	'<tr><th scope="row"><label for="quick2fa_password_reminder_cooldown">%s</label></th><td><input type="number" name="%s" id="quick2fa_password_reminder_cooldown" value="%s" min="1" max="90" class="small-text"> %s<p class="description">%s</p></td></tr>',
 	esc_html__( 'Reminder Cooldown', 'quick-2fa' ),

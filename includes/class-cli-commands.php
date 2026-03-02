@@ -45,20 +45,15 @@ class CLI_Commands {
 	public function lock( array $args, array $assoc_args ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WP-CLI signature.
 		[$user_identifier] = $args;
 
-		// Get user.
 		$user = $this->get_user( $user_identifier );
 		if ( is_wp_error( $user ) ) {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		// Lock the account.
 		$security = new Account_Security_Handler( $user->ID );
 		$security->lock_account( PHP_INT_MAX );
-
-		// Destroy all active sessions.
 		$this->destroy_all_sessions( $user->ID );
 
-		// Log event.
 		$security->log_event(
 			LOG_ACCOUNT_LOCKED,
 			array(
@@ -91,20 +86,15 @@ class CLI_Commands {
 	public function unlock( array $args, array $assoc_args ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WP-CLI signature.
 		[$user_identifier] = $args;
 
-		// Get user.
 		$user = $this->get_user( $user_identifier );
 		if ( is_wp_error( $user ) ) {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		// Unlock the account.
 		$security = new Account_Security_Handler( $user->ID );
 		$security->unlock_account();
-
-		// Reset attempt counter.
 		update_user_meta( $user->ID, META_CODE_ATTEMPTS, 0 );
 
-		// Log event.
 		$security->log_event(
 			LOG_ACCOUNT_UNLOCKED,
 			array(
@@ -143,9 +133,7 @@ class CLI_Commands {
 	 * @param array $assoc_args Associative arguments.
 	 */
 	public function lock_all( array $args, array $assoc_args ): void {
-		$exclude = isset( $assoc_args['exclude'] ) ? $assoc_args['exclude'] : null;
-
-		// Get excluded user if specified.
+		$exclude          = isset( $assoc_args['exclude'] ) ? $assoc_args['exclude'] : null;
 		$excluded_user_id = null;
 		if ( $exclude ) {
 			$user = $this->get_user( $exclude );
@@ -155,14 +143,12 @@ class CLI_Commands {
 			$excluded_user_id = $user->ID;
 		}
 
-		// Confirm action.
 		if ( $excluded_user_id ) {
 			\WP_CLI::confirm( sprintf( "Are you sure you want to lock ALL users except '%s'?", $user->user_login ), $assoc_args );
 		} else {
 			\WP_CLI::confirm( 'Are you sure you want to lock ALL users?', $assoc_args );
 		}
 
-		// Get all users.
 		$user_query = new \WP_User_Query(
 			array(
 				'fields' => 'ID',
@@ -174,20 +160,15 @@ class CLI_Commands {
 		$excluded_count = 0;
 
 		foreach ( $user_ids as $user_id ) {
-			// Skip excluded user.
 			if ( $excluded_user_id && $user_id === $excluded_user_id ) {
 				++$excluded_count;
 				continue;
 			}
 
-			// Lock the account.
 			$security = new Account_Security_Handler( $user_id );
 			$security->lock_account( PHP_INT_MAX );
-
-			// Destroy all active sessions.
 			$this->destroy_all_sessions( $user_id );
 
-			// Log event.
 			$security->log_event(
 				LOG_ACCOUNT_LOCKED,
 				array(
@@ -224,7 +205,6 @@ class CLI_Commands {
 	 * @param array $assoc_args Associative arguments.
 	 */
 	public function unlock_all( array $args, array $assoc_args ): void {
-		// Get all locked users.
 		$user_query = new \WP_User_Query(
 			array(
 				'fields'     => 'ID',
@@ -250,20 +230,15 @@ class CLI_Commands {
 			return;
 		}
 
-		// Confirm action.
 		\WP_CLI::confirm( sprintf( 'Are you sure you want to unlock %d users?', count( $user_ids ) ), $assoc_args );
 
 		$unlocked_count = 0;
 
 		foreach ( $user_ids as $user_id ) {
-			// Unlock the account.
 			$security = new Account_Security_Handler( $user_id );
 			$security->unlock_account();
-
-			// Reset attempt counter.
 			update_user_meta( $user_id, META_CODE_ATTEMPTS, 0 );
 
-			// Log event.
 			$security->log_event(
 				LOG_ACCOUNT_UNLOCKED,
 				array(
@@ -315,16 +290,13 @@ class CLI_Commands {
 	public function status( array $args, array $assoc_args ): void {
 		[$user_identifier] = $args;
 
-		// Get user.
 		$user = $this->get_user( $user_identifier );
 		if ( is_wp_error( $user ) ) {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
 		$security = new Account_Security_Handler( $user->ID );
-
-		// Get lock status.
-		$locked = $security->is_locked();
+		$locked   = $security->is_locked();
 		if ( $locked ) {
 			$locked_until = get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
 			if ( $locked_until > time() + 100 * YEAR_IN_SECONDS ) {
@@ -336,20 +308,15 @@ class CLI_Commands {
 			$lock_status = 'Unlocked';
 		}
 
-		// Get last verified.
 		$last_verified         = get_user_meta( $user->ID, META_LAST_VERIFIED, true );
 		$last_verified_display = $last_verified ? human_time_diff( $last_verified ) . ' ago' : 'Never';
 
-		// Get trusted devices count.
 		$trusted_devices       = get_user_meta( $user->ID, META_TRUSTED_DEVICES, true );
 		$trusted_devices_count = is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
 
-		// Get failed attempts.
 		$failed_attempts = get_user_meta( $user->ID, META_CODE_ATTEMPTS, true );
 		$failed_attempts = $failed_attempts ? $failed_attempts : 0;
-
-		// Build status array.
-		$status = array(
+		$status          = array(
 			array(
 				'Field' => 'User',
 				'Value' => $user->user_login,
@@ -376,7 +343,6 @@ class CLI_Commands {
 			),
 		);
 
-		// Output.
 		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
 		\WP_CLI\Utils\format_items( $format, $status, array( 'Field', 'Value' ) );
 	}
@@ -412,7 +378,6 @@ class CLI_Commands {
 	 * @param array $assoc_args Associative arguments.
 	 */
 	public function list_locked( array $args, array $assoc_args ): void {
-		// Get all locked users.
 		$user_query = new \WP_User_Query(
 			array(
 				'fields'     => 'all',
@@ -456,7 +421,6 @@ class CLI_Commands {
 			);
 		}
 
-		// Output.
 		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
 		\WP_CLI\Utils\format_items( $format, $locked_users, array( 'User ID', 'Login', 'Email', 'Locked Until' ) );
 	}
@@ -481,17 +445,14 @@ class CLI_Commands {
 	public function clear_devices( array $args, array $assoc_args ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WP-CLI signature.
 		[$user_identifier] = $args;
 
-		// Get user.
 		$user = $this->get_user( $user_identifier );
 		if ( is_wp_error( $user ) ) {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		// Get device count before clearing.
 		$trusted_devices = get_user_meta( $user->ID, META_TRUSTED_DEVICES, true );
 		$device_count    = is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
 
-		// Clear devices.
 		$security = new Account_Security_Handler( $user->ID );
 		$security->clear_trusted_devices();
 
@@ -506,7 +467,6 @@ class CLI_Commands {
 	 * @return \WP_User|\WP_Error User object on success, WP_Error on failure.
 	 */
 	private function get_user( string $user_identifier ): \WP_User|\WP_Error {
-		// Try as ID first.
 		if ( is_numeric( $user_identifier ) ) {
 			$user = get_userdata( (int) $user_identifier );
 			if ( $user ) {
@@ -514,13 +474,11 @@ class CLI_Commands {
 			}
 		}
 
-		// Try as login.
 		$user = get_user_by( 'login', $user_identifier );
 		if ( $user ) {
 			return $user;
 		}
 
-		// Try as email.
 		$user = get_user_by( 'email', $user_identifier );
 		if ( $user ) {
 			return $user;
@@ -565,22 +523,18 @@ class CLI_Commands {
 	 * @param array<string,mixed> $assoc_args Associative arguments.
 	 */
 	public function emergency_disable( array $args, array $assoc_args ): void {
-		// Check if already disabled.
 		$current_mode = get_option( OPTION_MODE, DEFAULT_MODE );
 		if ( MODE_DISABLED === $current_mode ) {
 			\WP_CLI::warning( 'Quick 2FA is already in disabled mode.' );
 			return;
 		}
 
-		// Require confirmation unless --yes flag provided.
 		if ( ! isset( $assoc_args['yes'] ) ) {
 			\WP_CLI::confirm( 'This will disable Quick 2FA for all users. Continue?', $assoc_args );
 		}
 
-		// Set mode to disabled.
 		update_option( OPTION_MODE, MODE_DISABLED );
 
-		// Log the emergency disable event.
 		error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional: emergency action must be logged to server error log.
 			sprintf(
 				'[Quick 2FA] Emergency disable activated via WP-CLI at %s',

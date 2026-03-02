@@ -15,7 +15,6 @@
 // Block direct access.
 defined( 'ABSPATH' ) || die();
 
-// Plain text email - simple, translatable, secure.
 printf(
 	/* translators: %s: User display name */
 	esc_html__( 'Hi %s,', 'quick-2fa' ),

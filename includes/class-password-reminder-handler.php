@@ -50,7 +50,6 @@ class Password_Reminder_Handler {
 	 * @return bool True if password reminder is needed.
 	 */
 	public function needs_reminder(): bool {
-		// Check if feature is enabled.
 		if ( ! get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED ) ) {
 			return false;
 		}
@@ -60,18 +59,13 @@ class Password_Reminder_Handler {
 			return false;
 		}
 
-		// Get password age in days.
 		$password_age_days = $this->get_password_age();
+		$period_days       = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
 
-		// Get reminder period (in days).
-		$period_days = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
-
-		// Check if password is old enough.
 		if ( $password_age_days <= $period_days ) {
 			return false;
 		}
 
-		// Check if in cooldown period.
 		if ( $this->is_in_cooldown() ) {
 			return false;
 		}
@@ -107,7 +101,6 @@ class Password_Reminder_Handler {
 			update_user_meta( $this->user_id, '_password_last_changed', $last_pass_change );
 		}
 
-		// Calculate days since last password change.
 		$time_since_change = time() - $last_pass_change;
 		return floor( $time_since_change / DAY_IN_SECONDS );
 	}
@@ -144,7 +137,6 @@ class Password_Reminder_Handler {
 	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
 	public function update_password( string $new_password ): true|\WP_Error {
-		// Validate password.
 		if ( empty( $new_password ) ) {
 			return new \WP_Error( 'empty_password', __( 'Please enter a password.', 'quick-2fa' ) );
 		}
@@ -153,23 +145,14 @@ class Password_Reminder_Handler {
 			return new \WP_Error( 'weak_password', __( 'Password must be at least 8 characters long.', 'quick-2fa' ) );
 		}
 
-		// Get current session info before password change.
 		$sessions      = \WP_Session_Tokens::get_instance( $this->user_id );
 		$current_token = wp_get_session_token();
-
-		// Clear other sessions first.
 		$sessions->destroy_others( $current_token );
 
-		// Update user password.
 		wp_set_password( $new_password, $this->user_id );
-
-		// Maintain current session.
 		$this->maintain_session( $sessions, $current_token );
-
-		// Update last password changed timestamp.
 		update_user_meta( $this->user_id, '_password_last_changed', time() );
 
-		// Log the event.
 		$security = new Account_Security_Handler( $this->user_id );
 		$security->log_event( LOG_PASSWORD_CHANGED );
 
@@ -197,7 +180,6 @@ class Password_Reminder_Handler {
 	 * @return string Generated password.
 	 */
 	public function generate_strong_password(): string {
-		// Set default parameters.
 		$defaults = array(
 			'length'              => random_int( DEFAULT_PASSWORD_LENGTH_MIN, DEFAULT_PASSWORD_LENGTH_MAX ),
 			'special_chars'       => DEFAULT_PASSWORD_SPECIAL_CHARS,

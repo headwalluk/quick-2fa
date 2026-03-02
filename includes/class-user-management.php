@@ -65,7 +65,6 @@ class User_Management {
 	 * @return array Modified columns.
 	 */
 	public function add_lockout_column( array $columns ): array {
-		// Insert after 'email' column.
 		$new_columns = array();
 		foreach ( $columns as $key => $value ) {
 			$new_columns[ $key ] = $value;
@@ -240,12 +239,10 @@ class User_Management {
 	 * @return array Modified row actions.
 	 */
 	public function add_lockout_actions( array $actions, \WP_User $user ): array {
-		// Check capability.
 		if ( ! current_user_can( 'edit_users' ) ) {
 			return $actions;
 		}
 
-		// Prevent self-lock.
 		if ( get_current_user_id() === $user->ID ) {
 			return $actions;
 		}
@@ -253,7 +250,6 @@ class User_Management {
 		$status = $this->get_user_lockout_status( $user->ID );
 
 		if ( 'locked' === $status ) {
-			// Add unlock action.
 			$url                        = wp_nonce_url(
 				add_query_arg(
 					array(
@@ -266,7 +262,6 @@ class User_Management {
 			);
 			$actions['quick2fa_unlock'] = sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html__( 'Unlock', 'quick-2fa' ) );
 		} else {
-			// Add lock action.
 			$url                      = wp_nonce_url(
 				add_query_arg(
 					array(
@@ -289,36 +284,29 @@ class User_Management {
 	 * @since 0.6.0
 	 */
 	public function handle_lock_user(): void {
-		// Get user ID.
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user'] ) ? absint( $_GET['user'] ) : 0;
 
-		// Verify nonce.
 		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'quick2fa_lock_' . $user_id ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'quick-2fa' ) );
 		}
 
-		// Check capability.
 		if ( ! current_user_can( 'edit_users' ) ) {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'quick-2fa' ) );
 		}
 
-		// Prevent self-lock.
 		if ( get_current_user_id() === $user_id ) {
 			wp_die( esc_html__( 'You cannot lock out your own account.', 'quick-2fa' ) );
 		}
 
-		// Validate user exists.
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
-		// Lock the account permanently.
 		$security = new Account_Security_Handler( $user_id );
 		$security->lock_account( PHP_INT_MAX );
 
-		// Destroy all active sessions.
 		$sessions = \WP_Session_Tokens::get_instance( $user_id );
 		$sessions->destroy_all();
 
@@ -330,7 +318,6 @@ class User_Management {
 			)
 		);
 
-		// Add admin notice.
 		add_settings_error(
 			'quick2fa_user_management',
 			'user_locked',
@@ -343,7 +330,6 @@ class User_Management {
 		);
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 
-		// Redirect back.
 		wp_safe_redirect( $this->get_redirect_url() );
 		exit();
 	}
@@ -354,27 +340,22 @@ class User_Management {
 	 * @since 0.6.0
 	 */
 	public function handle_unlock_user(): void {
-		// Get user ID.
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user'] ) ? absint( $_GET['user'] ) : 0;
 
-		// Verify nonce.
 		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'quick2fa_unlock_' . $user_id ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'quick-2fa' ) );
 		}
 
-		// Check capability.
 		if ( ! current_user_can( 'edit_users' ) ) {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'quick-2fa' ) );
 		}
 
-		// Validate user exists.
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
-		// Unlock the account.
 		$security = new Account_Security_Handler( $user_id );
 		$security->unlock_account();
 		$security->log_event(
@@ -385,10 +366,8 @@ class User_Management {
 			)
 		);
 
-		// Reset attempt counter.
 		update_user_meta( $user_id, META_CODE_ATTEMPTS, 0 );
 
-		// Add admin notice.
 		add_settings_error(
 			'quick2fa_user_management',
 			'user_unlocked',
@@ -401,7 +380,6 @@ class User_Management {
 		);
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 
-		// Redirect back.
 		wp_safe_redirect( $this->get_redirect_url() );
 		exit();
 	}
@@ -416,12 +394,11 @@ class User_Management {
 	private function get_user_lockout_status( int $user_id ): string {
 		$locked_until = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
 
-		// Validate we have a numeric value.
 		if ( empty( $locked_until ) || ! is_numeric( $locked_until ) ) {
 			return 'unlocked';
 		}
 
-		// Safely convert to int, handling PHP_INT_MAX stored as scientific notation string.
+		// Handle PHP_INT_MAX stored as scientific notation string.
 		$locked_until_int = (int) min( (float) $locked_until, PHP_INT_MAX );
 
 		if ( $locked_until_int > time() ) {
@@ -533,12 +510,10 @@ class User_Management {
 	 * @param \WP_User $user User object.
 	 */
 	public function render_profile_section( \WP_User $user ): void {
-		// Check if trusted devices feature is enabled.
 		if ( get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
 			return;
 		}
 
-		// Get trusted devices.
 		$security_handler = new Account_Security_Handler( $user->ID );
 		$trusted_devices  = get_user_meta( $user->ID, META_TRUSTED_DEVICES, true );
 
@@ -546,20 +521,16 @@ class User_Management {
 			$trusted_devices = array();
 		}
 
-		// Clean up expired devices.
 		$security_handler->cleanup_expired_devices();
 
-		// Re-fetch after cleanup.
 		$trusted_devices = get_user_meta( $user->ID, META_TRUSTED_DEVICES, true );
 
 		if ( ! is_array( $trusted_devices ) ) {
 			$trusted_devices = array();
 		}
 
-		// Get current device fingerprint.
 		$current_fingerprint = $security_handler->get_device_fingerprint();
 
-		// Load profile section template.
 		require QUICK_2FA_PATH . 'views/profile-trusted-devices.php';
 	}
 
@@ -569,40 +540,33 @@ class User_Management {
 	 * @since 0.6.1
 	 */
 	public function handle_revoke_device(): void {
-		// Get parameters.
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user_id'] ) ? absint( $_GET['user_id'] ) : 0;
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$fingerprint = isset( $_GET['fingerprint'] ) ? sanitize_text_field( wp_unslash( $_GET['fingerprint'] ) ) : '';
 
-		// Verify nonce.
 		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'quick2fa_revoke_device_' . $user_id . '_' . $fingerprint ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'quick-2fa' ) );
 		}
 
-		// Check capability - user can edit their own profile or admin can edit others.
 		if ( ! current_user_can( 'edit_user', $user_id ) ) {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'quick-2fa' ) );
 		}
 
-		// Validate user exists.
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
-		// Get trusted devices.
 		$trusted_devices = get_user_meta( $user_id, META_TRUSTED_DEVICES, true );
 		if ( ! is_array( $trusted_devices ) ) {
 			$trusted_devices = array();
 		}
 
-		// Remove the specified device.
 		if ( isset( $trusted_devices[ $fingerprint ] ) ) {
 			unset( $trusted_devices[ $fingerprint ] );
 			update_user_meta( $user_id, META_TRUSTED_DEVICES, $trusted_devices );
 
-			// Log event.
 			$security = new Account_Security_Handler( $user_id );
 			$security->log_event(
 				'device_revoked',
@@ -613,7 +577,6 @@ class User_Management {
 			);
 		}
 
-		// Redirect back to profile.
 		$redirect_url = add_query_arg( 'updated', 'true', get_edit_user_link( $user_id ) );
 		wp_safe_redirect( $redirect_url );
 		exit();
@@ -625,35 +588,28 @@ class User_Management {
 	 * @since 0.6.1
 	 */
 	public function handle_revoke_all_devices(): void {
-		// Get user ID.
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user_id'] ) ? absint( $_GET['user_id'] ) : 0;
 
-		// Verify nonce.
 		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'quick2fa_revoke_all_devices_' . $user_id ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'quick-2fa' ) );
 		}
 
-		// Check capability - user can edit their own profile or admin can edit others.
 		if ( ! current_user_can( 'edit_user', $user_id ) ) {
 			wp_die( esc_html__( 'You do not have permission to perform this action.', 'quick-2fa' ) );
 		}
 
-		// Validate user exists.
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
-		// Get device count before clearing.
 		$trusted_devices = get_user_meta( $user_id, META_TRUSTED_DEVICES, true );
 		$device_count    = is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
 
-		// Clear all devices.
 		$security = new Account_Security_Handler( $user_id );
 		$security->clear_trusted_devices();
 
-		// Log event.
 		$security->log_event(
 			'all_devices_revoked',
 			array(
@@ -662,7 +618,6 @@ class User_Management {
 			)
 		);
 
-		// Redirect back to profile.
 		$redirect_url = add_query_arg( 'updated', 'true', get_edit_user_link( $user_id ) );
 		wp_safe_redirect( $redirect_url );
 		exit();
