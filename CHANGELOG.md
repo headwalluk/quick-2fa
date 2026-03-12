@@ -5,6 +5,13 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.2] - 2026-03-12
+
+### Changed
+- **Default 2FA Mode**: Changed default mode from "Enabled for specific roles" to "Enabled for all users" for stronger out-of-the-box security
+- **Comment Cleanup**: Tidied section header comments in constants.php
+- **Version Sync**: Fixed QUICK_2FA_VERSION constant which was stuck on 0.11.0
+
 ## [0.11.1] - 2026-03-02
 
 ### Changed

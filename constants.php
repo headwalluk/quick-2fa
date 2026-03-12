@@ -12,7 +12,7 @@ namespace Quick_2FA;
 defined( 'ABSPATH' ) || die();
 
 /**
- * User meta keys used by the plugin.
+ * User meta keys.
  *
  * @since 1.0.0
  */
@@ -26,7 +26,7 @@ const META_LOGS                   = '_quick2fa_logs';
 const META_TRUSTED_DEVICES        = '_quick2fa_trusted_devices';
 
 /**
- * Option keys used by the plugin.
+ * Options.
  *
  * @since 1.0.0
  */
@@ -50,7 +50,7 @@ const OPTION_LOCKOUT_DURATION           = 'quick2fa_lockout_duration';
 const OPTION_VERSION                    = 'quick2fa_version';
 
 /**
- * 2FA mode values.
+ * 2FA modes.
  *
  * @since 1.0.0
  */
@@ -59,7 +59,7 @@ const MODE_ROLES    = 'roles';
 const MODE_DISABLED = 'disabled';
 
 /**
- * Rate limiting constants.
+ * Rate limiting.
  *
  * @since 1.0.0
  */
@@ -86,7 +86,7 @@ const TRANSIENT_RATE_LIMIT = 'q2fa_rate_limit_';
 const QUERY_PARAM = 'q2fa';
 
 /**
- * Action values for 2FA pages.
+ * Actions.
  *
  * @since 1.0.0
  */
@@ -107,11 +107,11 @@ const LOG_ACCOUNT_UNLOCKED     = 'account_unlocked';
 const LOG_PASSWORD_CHANGED     = 'password_changed';
 
 /**
- * Default settings values.
+ * Defaults.
  *
  * @since 1.0.0
  */
-const DEFAULT_MODE                       = MODE_ROLES;
+const DEFAULT_MODE                       = MODE_ALL;
 const DEFAULT_VERIFICATION_PERIOD        = 3;
 const DEFAULT_CODE_LENGTH                = 6;
 const DEFAULT_CODE_EXPIRY                = 15;

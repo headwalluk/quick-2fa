@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 0.11.1
+Stable tag: 0.11.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -168,6 +168,11 @@ All commands accept user ID, login, or email address as the user identifier.
 
 == Changelog ==
 
+= 0.11.2 =
+* Changed default 2FA mode from "Enabled for specific roles" to "Enabled for all users"
+* Tidied section header comments in constants.php
+* Fixed QUICK_2FA_VERSION constant out of sync with plugin header
+
 = 0.11.1 =
 * Removed ~150 unnecessary comments that restated what code does, keeping only comments that explain why
 * Fixed Plugin::$instance PHPDoc — added missing @since tag and corrected nullable type
@@ -301,6 +306,9 @@ All commands accept user ID, login, or email address as the user identifier.
 * Event logging system
 
 == Upgrade Notice ==
+
+= 0.11.2 =
+Default 2FA mode changed to "Enabled for all users" for stronger out-of-the-box security. Existing installations are not affected.
 
 = 0.11.1 =
 Code cleanup: removed unnecessary comments, fixed PHPDoc gaps, removed historic docs/ directory.
