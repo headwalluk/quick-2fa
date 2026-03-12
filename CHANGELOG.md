@@ -5,6 +5,19 @@ All notable changes to Quick 2FA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-03-12
+
+### Added
+- **Translations**: Initial machine-translated locale files for de_DE, el_GR, en_GB, es_ES, fr_FR, it_IT, nl_NL, and pl_PL (generated via [WP Translate Tool](https://github.com/headwalluk/wp-translate-tool))
+- **POT file**: Generated `quick-2fa.pot` template for translators
+
+### Changed
+- **Default 2FA Mode**: Changed default from "Enabled for specific roles" to "Enabled for all users" for stronger out-of-the-box security (existing installations unaffected)
+- **readme.txt**: Set contributor to `headwall` wordpress.org profile
+
+### Note
+All translations in this release are machine-translated and should be reviewed by native speakers. Community contributions welcome via the WordPress.org translation platform.
+
 ## [0.11.2] - 2026-03-12
 
 ### Changed

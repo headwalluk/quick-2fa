@@ -1,10 +1,10 @@
 === Quick 2FA ===
-Contributors: yourusername
+Contributors: headwall
 Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 0.11.2
+Stable tag: 0.12.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -168,6 +168,11 @@ All commands accept user ID, login, or email address as the user identifier.
 
 == Changelog ==
 
+= 0.12.0 =
+* Added machine-translated locale files for 8 languages (de, el, en_GB, es, fr, it, nl, pl)
+* Changed default 2FA mode to "Enabled for all users" for stronger out-of-the-box security
+* Set wordpress.org contributor profile
+
 = 0.11.2 =
 * Changed default 2FA mode from "Enabled for specific roles" to "Enabled for all users"
 * Tidied section header comments in constants.php
@@ -306,6 +311,9 @@ All commands accept user ID, login, or email address as the user identifier.
 * Event logging system
 
 == Upgrade Notice ==
+
+= 0.12.0 =
+Adds translations for 8 languages (machine-translated). Default 2FA mode changed to "Enabled for all users". Existing installations are not affected.
 
 = 0.11.2 =
 Default 2FA mode changed to "Enabled for all users" for stronger out-of-the-box security. Existing installations are not affected.

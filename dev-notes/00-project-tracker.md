@@ -1,8 +1,8 @@
 # Project Tracker - Quick 2FA
 
-**Current Version:** 0.11.0
-**Last Updated:** 26 February 2026
-**Status:** Production (Ready for soak testing on friendly sites)
+**Current Version:** 0.12.0
+**Last Updated:** 12 March 2026
+**Status:** Pre-submission (WordPress.org preparation)
 
 ---
 
@@ -34,10 +34,8 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
 - **Query Monitor security (v0.10.0)** - Comprehensive suppression on all q2fa pages
 
 ### 🔄 In Progress
-- Soak testing on friendly sites (Week of 2026-01-18)
 - WordPress.org submission preparation
-- Final phpcs compliance review (remaining files)
-- Code standards cleanup
+- Pre-submission preflight checklist (see milestone below)
 
 ---
 
@@ -73,11 +71,11 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
 - [x] PHPDoc coverage complete
 
 #### WordPress.org Requirements
-- [x] Stable tag matches plugin version (0.9.3)
+- [x] Stable tag matches plugin version
 - [x] Tested up to WordPress 6.7
 - [x] GPL v2+ license
 - [x] No external dependencies (except WordPress core)
-- [ ] **Update readme.txt** - Replace `yourusername` with actual contributor name
+- [x] **Update readme.txt** - Contributor set to `headwall` (v0.12.0)
 - [ ] **Screenshots** - Prepare screenshots for wordpress.org listing
 - [ ] **Banner/Icon assets** - Create plugin directory assets
 
@@ -108,15 +106,11 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
 ### High Priority (WordPress.org Submission Blockers)
 
 1. ~~**Fix remaining phpcs violations**~~ ✅ Completed in v0.11.0 (0 errors, 0 warnings)
-
 2. ~~**Complete view template refactoring**~~ ✅ Completed in v0.10.0
+3. ~~**Update readme.txt**~~ ✅ Contributor set to `headwall`, metadata verified (v0.12.0)
+4. ~~**Translations**~~ ✅ Initial machine-translated locales added (v0.12.0)
 
-3. **Update readme.txt**
-   - [ ] Replace placeholder contributor name
-   - [ ] Add actual author username
-   - [x] Verify all metadata is accurate (version, tested up to, etc.)
-
-4. **Create WordPress.org Assets**
+5. **Create WordPress.org Assets**
    - [ ] Screenshots (settings page, verification page, WP-CLI usage)
    - [ ] Plugin banner (772×250px)
    - [ ] Plugin icon (256×256px and 128×128px)
@@ -164,16 +158,17 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
 - Translator comments added
 - Passes phpcs: 0 errors, 0 warnings ✅
 
-**⏳ password-page.php (Pending)**
-- Still has inline CSS (needs extraction to login-pages.css)
-- Needs conversion to WordPress login page structure
-- Should use login_head/login_footer actions
-- Query Monitor suppression added but full refactor pending
+**✅ password-page.php (v0.10.0)**
+- Fully refactored to WordPress login page patterns
+- Code-first approach (printf/echo, no inline HTML)
+- Uses login_head/login_footer actions
+- Passes phpcs: 0 errors, 0 warnings ✅
 
-**⏳ settings-page.php (Pending)**
-- Admin page (uses wp_head, not login page)
-- Needs code-first conversion
-- Foreach variable prefixing needed
+**✅ settings-page.php (v0.10.0)**
+- Fully refactored to code-first approach
+- All foreach variables prefixed with q2fa_
+- JavaScript externalized to assets/admin/settings.js
+- Passes phpcs: 0 errors, 0 warnings ✅
 
 ### phpcs Violations — All Resolved ✅ (v0.11.0)
 
@@ -188,24 +183,71 @@ All phpcs errors resolved by restructuring code (not adding blanket suppressions
 
 ## Milestones
 
-### v0.9.x-0.11.x - WordPress.org Submission (Current)
+### v0.9.x-0.11.x - Code Quality & Standards ✅
 - [x] v0.9.0 - Emergency disable command, PHP 8.0+ support
 - [x] v0.9.1 - Email masking for privacy
 - [x] v0.9.2 - Password manager compatibility
 - [x] v0.9.3 - WordPress login page compliance, Query Monitor suppression, consolidated CSS
 - [x] v0.10.0 - Complete code-first template migration, JS externalization
 - [x] v0.11.0 - Trusted device expiry fix, full phpcs compliance (0 errors, 0 warnings)
-- [ ] v0.12.0 - WordPress.org submission preparation (screenshots, assets, readme.txt)
-- [ ] v0.13.0 - WordPress.org submission
+- [x] v0.11.1 - Comment cleanup, removed historic docs/
+- [x] v0.11.2 - Default mode changed to all users, version constant sync fix
+- [x] v0.12.0 - Translations, readme.txt contributor, wordpress.org preparation
 
-### v1.0.0 - Official Release (Post WordPress.org Approval)
-- Stable release with wordpress.org listing
-- Complete user documentation
-- Video tutorial (optional)
+### v0.13.0 - Pre-Submission Preflight (Current)
 
-### v1.1.0 - Future Enhancements
-- Translations support (i18n)
+Final checks before submitting to wordpress.org. All items must pass before submission.
+
+#### Assets
+- [ ] Create plugin banner image (772×250px) for wordpress.org listing
+- [ ] Create plugin icon (256×256px and 128×128px)
+- [ ] Capture screenshots: settings page, verification page, password reminder page, WP-CLI usage
+- [ ] Add screenshot descriptions to readme.txt `== Screenshots ==` section
+
+#### Plugin Check
+- [ ] Install and run the [Plugin Check](https://wordpress.org/plugins/plugin-check/) plugin (PCP)
+- [ ] Resolve any errors or warnings flagged by Plugin Check
+- [ ] Verify no deprecated WordPress functions in use
+
+#### Security Audit
+- [ ] Audit all nonce usage — verify every form and AJAX action has nonce generation and verification
+- [ ] Audit all `$_GET`, `$_POST`, `$_REQUEST`, `$_SERVER` access — confirm sanitization and validation
+- [ ] Audit all `echo`/`printf` output — confirm escaping (`esc_html`, `esc_attr`, `esc_url`, `wp_kses`)
+- [ ] Audit JavaScript files — confirm no inline event handlers, no `eval()`, no unescaped DOM insertion
+- [ ] Audit all `wp_redirect()` and `wp_safe_redirect()` calls — confirm followed by `exit`
+- [ ] Audit capability checks — confirm all admin actions check `current_user_can()`
+- [ ] Review OWASP top 10 against codebase (XSS, CSRF, injection, broken auth)
+
+#### Documentation Sanity Check
+- [ ] Verify README.md accurately describes current features and version
+- [ ] Verify readme.txt FAQ section is current
+- [ ] Verify SECURITY.md contact details and procedures are accurate
+- [ ] Verify CHANGELOG.md has entries for all releases
+- [ ] Verify `== Upgrade Notice ==` section in readme.txt is current
+- [ ] Remove or archive any stale dev-notes that no longer apply
+
+#### Final Testing
+- [ ] Fresh install on clean WordPress 6.7 — verify activation and default settings
+- [ ] MU plugin deployment — verify first-run initialisation works
+- [ ] Test all 3 modes: disabled, all users, specific roles
+- [ ] Test full verification flow: login → code email → verify → admin access
+- [ ] Test trusted device flow: trust device → re-login without code
+- [ ] Test account lockout: exceed attempts → lockout → auto-unlock after duration
+- [ ] Test password reminder flow
+- [ ] Test WP-CLI commands: lock, unlock, status, emergency_disable
+- [ ] Verify REST API, AJAX, cron, XML-RPC all bypass 2FA correctly
+
+### v1.0.0 - WordPress.org Submission
+- Submit plugin via wordpress.org submission form
+- Address any review feedback
+- Receive SVN repository access
+- Tag stable release in SVN
+- Upload assets to SVN `assets/` directory
+
+### v1.1.0+ - Future Enhancements
+- Community translation improvements (native speaker review)
 - Additional authentication methods (SMS, TOTP)
+- Backup codes system
 - Enhanced reporting and analytics
 
 ---
@@ -220,13 +262,10 @@ All phpcs errors resolved by restructuring code (not adding blanket suppressions
 - [x] dev-notes/workflows/ - Development workflows
 - [x] .github/copilot-instructions.md - Coding standards
 
-### User Documentation 🔄
-- [x] docs/requirements.md - Feature specification
-- [x] docs/security-review.md - Security audit
-- [ ] docs/installation.md - Installation guide (placeholder needed)
-- [ ] docs/configuration.md - Settings guide (placeholder needed)
-- [ ] docs/wp-cli.md - WP-CLI reference (placeholder needed)
-- [ ] docs/troubleshooting.md - Common issues (placeholder needed)
+### User Documentation ✅
+- [x] readme.txt - Installation, FAQ, WP-CLI reference, changelog
+- [x] SECURITY.md - Security policy and emergency recovery
+- ~~docs/ directory removed in v0.11.1 — superseded by readme.txt and SECURITY.md~~
 
 ### Project Files ✅
 - [x] README.md - Project overview
