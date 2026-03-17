@@ -50,13 +50,19 @@ if ( $message ) {
 	printf( '<div class="message">%s</div>', esc_html( $message ) );
 }
 
+if ( (int) $days_since > 365 ) {
+	$q2fa_age_message = __( "It's been over a year since you last changed your password. For your security, we recommend updating it regularly.", 'quick-2fa' );
+} else {
+	$q2fa_age_message = sprintf(
+		/* translators: %d: number of days since last password change */
+		__( "It's been %d days since you last changed your password. For your security, we recommend updating it regularly.", 'quick-2fa' ),
+		(int) $days_since
+	);
+}
+
 printf(
 	'<div class="message" style="border-left-color: #dba617;">%s</div>',
-	sprintf(
-		/* translators: %d: number of days since last password change */
-		esc_html__( "It's been %d days since you last changed your password. For your security, we recommend updating it regularly.", 'quick-2fa' ),
-		(int) $days_since
-	)
+	esc_html( $q2fa_age_message )
 );
 
 echo '<form name="q2fa-password-form" id="loginform" action="" method="post" autocomplete="on">';

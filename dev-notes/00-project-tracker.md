@@ -1,7 +1,7 @@
 # Project Tracker - Quick 2FA
 
-**Current Version:** 0.12.0
-**Last Updated:** 12 March 2026
+**Current Version:** 0.12.1
+**Last Updated:** 17 March 2026
 **Status:** Pre-submission (WordPress.org preparation)
 
 ---
@@ -193,6 +193,7 @@ All phpcs errors resolved by restructuring code (not adding blanket suppressions
 - [x] v0.11.1 - Comment cleanup, removed historic docs/
 - [x] v0.11.2 - Default mode changed to all users, version constant sync fix
 - [x] v0.12.0 - Translations, readme.txt contributor, wordpress.org preparation
+- [x] v0.12.1 - Password reminder message readability improvement
 
 ### v0.13.0 - Pre-Submission Preflight (Current)
 
