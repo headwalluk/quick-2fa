@@ -67,16 +67,6 @@ class Plugin {
 		add_action( 'login_init', array( $this, 'handle_login_actions' ) );
 		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_login_styles' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
-		add_action( 'init', array( $this, 'load_textdomain' ) );
-	}
-
-	/**
-	 * Load plugin text domain for translations.
-	 *
-	 * @since 1.0.0
-	 */
-	public function load_textdomain(): void {
-		load_plugin_textdomain( 'quick-2fa', false, dirname( QUICK_2FA_BASENAME ) . '/languages' );
 	}
 
 	/**

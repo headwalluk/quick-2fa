@@ -1,7 +1,7 @@
 # Project Tracker - Quick 2FA
 
-**Current Version:** 0.12.1
-**Last Updated:** 17 March 2026
+**Current Version:** 0.12.2
+**Last Updated:** 18 March 2026
 **Status:** Pre-submission (WordPress.org preparation)
 
 ---
@@ -72,7 +72,7 @@ Quick 2FA is a lightweight email-based two-factor authentication plugin for Word
 
 #### WordPress.org Requirements
 - [x] Stable tag matches plugin version
-- [x] Tested up to WordPress 6.7
+- [x] Tested up to WordPress 6.9
 - [x] GPL v2+ license
 - [x] No external dependencies (except WordPress core)
 - [x] **Update readme.txt** - Contributor set to `headwall` (v0.12.0)
@@ -194,6 +194,7 @@ All phpcs errors resolved by restructuring code (not adding blanket suppressions
 - [x] v0.11.2 - Default mode changed to all users, version constant sync fix
 - [x] v0.12.0 - Translations, readme.txt contributor, wordpress.org preparation
 - [x] v0.12.1 - Password reminder message readability improvement
+- [x] v0.12.2 - WordPress Plugin Check conformance fixes
 
 ### v0.13.0 - Pre-Submission Preflight (Current)
 
@@ -205,9 +206,17 @@ Final checks before submitting to wordpress.org. All items must pass before subm
 - [ ] Capture screenshots: settings page, verification page, password reminder page, WP-CLI usage
 - [ ] Add screenshot descriptions to readme.txt `== Screenshots ==` section
 
-#### Plugin Check
-- [ ] Install and run the [Plugin Check](https://wordpress.org/plugins/plugin-check/) plugin (PCP)
-- [ ] Resolve any errors or warnings flagged by Plugin Check
+#### Plugin Check (WordPress.org Plugin Repository Conformance)
+- [x] Install and run the [Plugin Check](https://wordpress.org/plugins/plugin-check/) plugin (PCP)
+- [x] Fix `readme.txt` "Tested up to" value — bump from 6.7 to 6.9 (v0.12.2)
+- [x] Remove `load_plugin_textdomain()` — discouraged since WP 4.6, auto-loaded for wordpress.org plugins (v0.12.2)
+- [x] Rename `$q2fa_` template variables to `$quick_2fa_` — Plugin Check derives prefix from slug `quick-2fa` (v0.12.2)
+  - [x] `functions.php` — `$q2fa_default_settings`, `$q2fa_default_protected_roles`
+  - [x] `views/password-page.php` — `$q2fa_age_message`
+  - [x] `views/verification-page.php` — `$q2fa_trust_text`
+  - [x] `views/settings-page.php` — `$q2fa_role_slug`, `$q2fa_role_name`
+  - [x] `views/profile-trusted-devices.php` — all `$q2fa_` loop/template variables
+- [ ] Re-run Plugin Check and verify 0 errors, 0 warnings
 - [ ] Verify no deprecated WordPress functions in use
 
 #### Security Audit

@@ -2,9 +2,9 @@
 Contributors: headwall
 Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 0.12.1
+Stable tag: 0.12.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -168,6 +168,11 @@ All commands accept user ID, login, or email address as the user identifier.
 
 == Changelog ==
 
+= 0.12.2 =
+* WordPress Plugin Check conformance: bumped "Tested up to" to WordPress 6.9
+* Removed manual load_plugin_textdomain() call — translations auto-loaded for wordpress.org hosted plugins since WP 4.6
+* Renamed template variables from $q2fa_ prefix to $quick_2fa_ to match plugin slug prefix expected by Plugin Check
+
 = 0.12.1 =
 * Capped password age display at 365 days — shows "over a year" instead of large day counts for better readability
 
@@ -314,6 +319,9 @@ All commands accept user ID, login, or email address as the user identifier.
 * Event logging system
 
 == Upgrade Notice ==
+
+= 0.12.2 =
+WordPress Plugin Check conformance fixes. No functional changes.
 
 = 0.12.1 =
 Improves password reminder message readability — large day counts replaced with "over a year" message.

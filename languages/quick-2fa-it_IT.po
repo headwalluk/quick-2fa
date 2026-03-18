@@ -1,8 +1,5 @@
-# Copyright (C) 2026 Paul Faulkner
-# This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Language: it_IT\n"
 "Project-Id-Version: Quick 2FA 0.11.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/quick-2fa\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
@@ -12,6 +9,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-03-12T09:04:59+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: it_IT\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: quick-2fa\n"
 
@@ -90,54 +88,54 @@ msgstr "Inserisci una password."
 msgid "Password must be at least 8 characters long."
 msgstr "La password deve contenere almeno 8 caratteri."
 
-#: includes/class-plugin.php:148
-#: includes/class-plugin.php:183
+#: includes/class-plugin.php:138
+#: includes/class-plugin.php:173
 msgid "Your account has been locked. Please contact your site administrator."
 msgstr "Il tuo account è stato bloccato. Contatta l'amministratore del sito."
 
 #. translators: %s: Time remaining until unlock
-#: includes/class-plugin.php:152
-#: includes/class-plugin.php:187
+#: includes/class-plugin.php:142
+#: includes/class-plugin.php:177
 #, php-format
 msgid "Your account has been locked. Please try again in %s."
 msgstr "Il tuo account è stato bloccato. Riprova tra %s."
 
-#: includes/class-plugin.php:192
+#: includes/class-plugin.php:182
 msgid "Account Locked"
 msgstr "Account bloccato"
 
-#: includes/class-plugin.php:405
+#: includes/class-plugin.php:395
 msgid "Invalid action"
 msgstr "Azione non valida"
 
-#: includes/class-plugin.php:405
+#: includes/class-plugin.php:395
 msgid "Error"
 msgstr "Errore"
 
-#: includes/class-plugin.php:427
-#: includes/class-plugin.php:469
-#: includes/class-plugin.php:513
-#: includes/class-plugin.php:529
+#: includes/class-plugin.php:417
+#: includes/class-plugin.php:459
+#: includes/class-plugin.php:503
+#: includes/class-plugin.php:519
 msgid "Security check failed. Please try again."
 msgstr "Controllo di sicurezza non riuscito. Riprova."
 
-#: includes/class-plugin.php:432
+#: includes/class-plugin.php:422
 msgid "Please enter the verification code."
 msgstr "Inserisci il codice di verifica."
 
-#: includes/class-plugin.php:476
+#: includes/class-plugin.php:466
 msgid "A new verification code has been sent to your email."
 msgstr "Un nuovo codice di verifica è stato inviato alla tua email."
 
-#: includes/class-plugin.php:560
+#: includes/class-plugin.php:550
 msgid "Quick 2FA is currently disabled."
 msgstr "Quick 2FA è attualmente disabilitato."
 
-#: includes/class-plugin.php:561
+#: includes/class-plugin.php:551
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "La tua area amministrativa non è protetta dall'autenticazione a due fattori."
 
-#: includes/class-plugin.php:563
+#: includes/class-plugin.php:553
 msgid "Enable 2FA"
 msgstr "Abilita 2FA"
 
@@ -268,38 +266,38 @@ msgid "Update Your Password"
 msgstr "Aggiorna la tua password"
 
 #. translators: %d: number of days since last password change
-#: views/password-page.php:57
+#: views/password-page.php:58
 #, php-format
 msgid "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
 msgstr "Sono passati %d giorni dall'ultima volta che hai cambiato la tua password. Per la tua sicurezza, ti consigliamo di aggiornarla regolarmente."
 
-#: views/password-page.php:70
+#: views/password-page.php:76
 msgid "New Password:"
 msgstr "Nuova password:"
 
-#: views/password-page.php:79
-#: views/password-page.php:113
+#: views/password-page.php:85
+#: views/password-page.php:119
 msgid "Show password"
 msgstr "Mostra password"
 
-#: views/password-page.php:84
+#: views/password-page.php:90
 msgid "A strong password has been generated for you. You can use it as-is or change it to your own."
 msgstr "È stata generata una password sicura per te. Puoi utilizzarla così com'è o modificarla a tuo piacimento."
 
-#: views/password-page.php:89
+#: views/password-page.php:95
 msgid "Update Password"
 msgstr "Aggiorna password"
 
-#: views/password-page.php:98
+#: views/password-page.php:104
 msgid "Remind Me Later"
 msgstr "Ricordamelo più tardi"
 
-#: views/password-page.php:105
+#: views/password-page.php:111
 #: views/verification-page.php:93
 msgid "&larr; Log out"
 msgstr "&larr; Esci"
 
-#: views/password-page.php:113
+#: views/password-page.php:119
 msgid "Hide password"
 msgstr "Nascondi password"
 
@@ -550,3 +548,7 @@ msgstr "Verifica"
 #: views/verification-page.php:86
 msgid "Resend Code"
 msgstr "Invia nuovamente il codice"
+
+#: views/password-page.php:54
+msgid "It's been over a year since you last changed your password. For your security, we recommend updating it regularly."
+msgstr "È passato più di un anno dall'ultima volta che hai cambiato la tua password. Per la tua sicurezza, ti consigliamo di aggiornarla regolarmente."

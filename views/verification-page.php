@@ -70,10 +70,10 @@ if ( ! $error || 'rate_limited' !== $error->get_error_code() ) {
 
 	if ( $trusted_devices_enabled ) {
 		/* translators: %d: number of days */
-		$q2fa_trust_text = _n( 'Trust this device for %d day', 'Trust this device for %d days', $trusted_device_expiry, 'quick-2fa' );
+		$quick_2fa_trust_text = _n( 'Trust this device for %d day', 'Trust this device for %d days', $trusted_device_expiry, 'quick-2fa' );
 		printf(
 			'<p class="forgetmenot"><input type="checkbox" name="q2fa_trust_device" id="q2fa_trust_device" value="1"><label for="q2fa_trust_device">%s</label></p>',
-			sprintf( esc_html( $q2fa_trust_text ), (int) $trusted_device_expiry )
+			sprintf( esc_html( $quick_2fa_trust_text ), (int) $trusted_device_expiry )
 		);
 	}
 

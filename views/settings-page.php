@@ -93,12 +93,12 @@ printf(
 	esc_attr( $const_option_protected_roles )
 );
 
-foreach ( $all_roles as $q2fa_role_slug => $q2fa_role_name ) {
+foreach ( $all_roles as $quick_2fa_role_slug => $quick_2fa_role_name ) {
 	printf(
 		'<option value="%s" %s>%s</option>',
-		esc_attr( $q2fa_role_slug ),
-		in_array( $q2fa_role_slug, $protected_roles, true ) ? 'selected' : '',
-		esc_html( $q2fa_role_name )
+		esc_attr( $quick_2fa_role_slug ),
+		in_array( $quick_2fa_role_slug, $protected_roles, true ) ? 'selected' : '',
+		esc_html( $quick_2fa_role_name )
 	);
 }
 

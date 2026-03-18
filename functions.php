@@ -24,10 +24,10 @@ defined( 'ABSPATH' ) || die();
  * @return array Default settings.
  */
 function get_default_settings(): array {
-	global $q2fa_default_settings;
+	global $quick_2fa_default_settings;
 
-	if ( is_null( $q2fa_default_settings ) ) {
-		$q2fa_default_settings = array(
+	if ( is_null( $quick_2fa_default_settings ) ) {
+		$quick_2fa_default_settings = array(
 			OPTION_MODE                       => DEFAULT_MODE,
 			OPTION_PROTECTED_ROLES            => get_default_protected_roles(),
 			OPTION_VERIFICATION_PERIOD        => DEFAULT_VERIFICATION_PERIOD,
@@ -48,7 +48,7 @@ function get_default_settings(): array {
 		);
 	}
 
-	return $q2fa_default_settings;
+	return $quick_2fa_default_settings;
 }
 
 /**
@@ -60,9 +60,9 @@ function get_default_settings(): array {
  * @return array Array of role slugs.
  */
 function get_default_protected_roles(): array {
-	global $q2fa_default_protected_roles;
+	global $quick_2fa_default_protected_roles;
 
-	if ( is_null( $q2fa_default_protected_roles ) ) {
+	if ( is_null( $quick_2fa_default_protected_roles ) ) {
 		$roles           = wp_roles();
 		$protected_roles = array();
 
@@ -74,10 +74,10 @@ function get_default_protected_roles(): array {
 			}
 		}
 
-		$q2fa_default_protected_roles = $protected_roles;
+		$quick_2fa_default_protected_roles = $protected_roles;
 	}
 
-	return $q2fa_default_protected_roles;
+	return $quick_2fa_default_protected_roles;
 }
 
 /**

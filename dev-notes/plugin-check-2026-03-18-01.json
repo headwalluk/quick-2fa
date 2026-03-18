@@ -1,0 +1,190 @@
+{
+  "generated_at": "2026-03-18 08:03:01",
+  "plugin": "Quick 2FA",
+  "results": {
+    "readme.txt": [
+      {
+        "message": "Tested up to: 6.7 < 6.9. The \"Tested up to\" value in your plugin is not set to the current version of WordPress. This means your plugin will not show up in searches, as we require plugins to be compatible and documented as tested up to the most recent version of WordPress.",
+        "code": "outdated_tested_upto_header",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Freadme.txt",
+        "docs": "https://developer.wordpress.org/plugins/wordpress-org/how-your-readme-txt-works/#readme-header-information",
+        "severity": 7,
+        "type": "ERROR",
+        "line": 0,
+        "column": 0
+      }
+    ],
+    "includes/class-plugin.php": [
+      {
+        "message": "load_plugin_textdomain() has been discouraged since WordPress version 4.6. When your plugin is hosted on WordPress.org, you no longer need to manually include this function call for translations under your plugin slug. WordPress will automatically load the translations for you as needed.",
+        "code": "PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fincludes%2Fclass-plugin.php&line=79",
+        "docs": "https://make.wordpress.org/core/2016/07/06/i18n-improvements-in-4-6/",
+        "severity": 5,
+        "type": "WARNING",
+        "line": 79,
+        "column": 3
+      }
+    ],
+    "functions.php": [
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_default_settings&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Ffunctions.php&line=30",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 30,
+        "column": 9
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_default_protected_roles&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Ffunctions.php&line=77",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 77,
+        "column": 9
+      }
+    ],
+    "views/password-page.php": [
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_age_message&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fpassword-page.php&line=54",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 54,
+        "column": 5
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_age_message&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fpassword-page.php&line=56",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 56,
+        "column": 5
+      }
+    ],
+    "views/verification-page.php": [
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_trust_text&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fverification-page.php&line=73",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 73,
+        "column": 9
+      }
+    ],
+    "views/settings-page.php": [
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_role_slug&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fsettings-page.php&line=96",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 96,
+        "column": 25
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_role_name&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fsettings-page.php&line=96",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 96,
+        "column": 44
+      }
+    ],
+    "views/profile-trusted-devices.php": [
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_device_count_text&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fprofile-trusted-devices.php&line=26",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 26,
+        "column": 5
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_device_num&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fprofile-trusted-devices.php&line=35",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 35,
+        "column": 5
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_fingerprint&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fprofile-trusted-devices.php&line=36",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 36,
+        "column": 35
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_expiry&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fprofile-trusted-devices.php&line=36",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 36,
+        "column": 56
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_expires_in_days&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fprofile-trusted-devices.php&line=37",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 37,
+        "column": 9
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_revoke_url&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fprofile-trusted-devices.php&line=38",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 38,
+        "column": 9
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_expiry_text&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fprofile-trusted-devices.php&line=63",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 63,
+        "column": 13
+      },
+      {
+        "message": "Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$q2fa_revoke_all_url&quot;.",
+        "code": "WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound",
+        "link": "https://devx.headwall.tech/wp-admin/plugin-editor.php?plugin=quick-2fa%2Fquick-2fa.php&file=quick-2fa%2Fviews%2Fprofile-trusted-devices.php&line=82",
+        "docs": "",
+        "severity": 6,
+        "type": "WARNING",
+        "line": 82,
+        "column": 5
+      }
+    ]
+  }
+}
