@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Plugin Check Conformance**: Bumped "Tested up to" from WordPress 6.7 to 6.9
-- **Translations**: Removed manual `load_plugin_textdomain()` call — translations are auto-loaded for wordpress.org hosted plugins since WP 4.6
 - **Variable Prefixes**: Renamed all `$q2fa_` template variables to `$quick_2fa_` to match the plugin slug prefix expected by WordPress Plugin Check
 
 ## [0.12.1] - 2026-03-17

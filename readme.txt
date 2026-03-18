@@ -170,7 +170,6 @@ All commands accept user ID, login, or email address as the user identifier.
 
 = 0.12.2 =
 * WordPress Plugin Check conformance: bumped "Tested up to" to WordPress 6.9
-* Removed manual load_plugin_textdomain() call — translations auto-loaded for wordpress.org hosted plugins since WP 4.6
 * Renamed template variables from $q2fa_ prefix to $quick_2fa_ to match plugin slug prefix expected by Plugin Check
 
 = 0.12.1 =

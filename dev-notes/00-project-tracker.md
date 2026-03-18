@@ -209,7 +209,7 @@ Final checks before submitting to wordpress.org. All items must pass before subm
 #### Plugin Check (WordPress.org Plugin Repository Conformance)
 - [x] Install and run the [Plugin Check](https://wordpress.org/plugins/plugin-check/) plugin (PCP)
 - [x] Fix `readme.txt` "Tested up to" value — bump from 6.7 to 6.9 (v0.12.2)
-- [x] Remove `load_plugin_textdomain()` — discouraged since WP 4.6, auto-loaded for wordpress.org plugins (v0.12.2)
+- [x] ~~Remove `load_plugin_textdomain()`~~ — Kept: still needed for bundled translations in `languages/` (MU installs, pre-approval). Plugin Check warning is a false positive for plugins shipping their own locale files (v0.12.2)
 - [x] Rename `$q2fa_` template variables to `$quick_2fa_` — Plugin Check derives prefix from slug `quick-2fa` (v0.12.2)
   - [x] `functions.php` — `$q2fa_default_settings`, `$q2fa_default_protected_roles`
   - [x] `views/password-page.php` — `$q2fa_age_message`
