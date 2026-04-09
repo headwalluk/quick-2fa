@@ -90,20 +90,18 @@ class User_Management {
 		}
 
 		$status = $this->get_user_lockout_status( $user_id );
+		$markup = '<span style="color: #dcdcde;">—</span>';
 
 		if ( 'locked' === $status ) {
 			$locked_until_raw = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
 			$locked_until     = is_numeric( $locked_until_raw ) ? (int) min( (float) $locked_until_raw, PHP_INT_MAX ) : 0;
 			$tooltip          = $this->format_lockout_expiry( $locked_until );
-
-			return sprintf( '<span class="dashicons dashicons-lock" style="color: #d63638;" title="%s"></span>', esc_attr( $tooltip ) );
+			$markup           = sprintf( '<span class="dashicons dashicons-lock" style="color: #d63638;" title="%s"></span>', esc_attr( $tooltip ) );
+		} elseif ( 'unlocked' === $status ) {
+			$markup = '<span class="dashicons dashicons-yes-alt" style="color: #00a32a;" title="' . esc_attr__( 'Not locked out', 'quick-2fa' ) . '"></span>';
 		}
 
-		if ( 'unlocked' === $status ) {
-			return '<span class="dashicons dashicons-yes-alt" style="color: #00a32a;" title="' . esc_attr__( 'Not locked out', 'quick-2fa' ) . '"></span>';
-		}
-
-		return '<span style="color: #dcdcde;">—</span>';
+		return $markup;
 	}
 
 	/**
@@ -393,19 +391,18 @@ class User_Management {
 	 */
 	private function get_user_lockout_status( int $user_id ): string {
 		$locked_until = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
+		$status       = 'unlocked';
 
-		if ( empty( $locked_until ) || ! is_numeric( $locked_until ) ) {
-			return 'unlocked';
+		if ( ! empty( $locked_until ) && is_numeric( $locked_until ) ) {
+			// Handle PHP_INT_MAX stored as scientific notation string.
+			$locked_until_int = (int) min( (float) $locked_until, PHP_INT_MAX );
+
+			if ( $locked_until_int > time() ) {
+				$status = 'locked';
+			}
 		}
 
-		// Handle PHP_INT_MAX stored as scientific notation string.
-		$locked_until_int = (int) min( (float) $locked_until, PHP_INT_MAX );
-
-		if ( $locked_until_int > time() ) {
-			return 'locked';
-		}
-
-		return 'unlocked';
+		return $status;
 	}
 
 	/**

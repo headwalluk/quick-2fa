@@ -39,9 +39,6 @@ function get_default_settings(): array {
 			OPTION_DISABLE_TRUSTED_DEVICES    => DEFAULT_DISABLE_TRUSTED_DEVICES,
 			OPTION_TRUSTED_DEVICE_EXPIRY      => DEFAULT_TRUSTED_DEVICE_EXPIRY,
 			OPTION_LOCKOUT_DURATION           => DEFAULT_LOCKOUT_DURATION,
-			OPTION_LOGO_URL                   => '',
-			OPTION_VERIFY_INTRO               => get_default_verify_intro(),
-			OPTION_PASSWORD_INTRO             => get_default_password_intro(),
 			OPTION_EMAIL_FROM_NAME            => get_bloginfo( 'name' ),
 			OPTION_EMAIL_FROM_ADDRESS         => get_option( 'admin_email' ),
 			OPTION_EMAIL_SUBJECT              => __( 'Your verification code', 'quick-2fa' ),
@@ -81,23 +78,93 @@ function get_default_protected_roles(): array {
 }
 
 /**
- * Get default verification page intro text.
+ * Allowed HTML tags for filter-supplied intro text.
+ *
+ * The verify and password intros are rendered through `wp_kses()` so site
+ * administrators can include light formatting (bold, italics, line breaks,
+ * a link to a security policy) when filtering the intro. The whitelist is
+ * deliberately tight — these are auth pages, so the surface stays minimal.
+ *
+ * Anything not on this list is silently stripped at render time.
  *
  * @since 1.0.0
- * @return string Default intro text.
+ * @return array<string,array<string,bool>> wp_kses-compatible allowed HTML map.
  */
-function get_default_verify_intro(): string {
-	return __( 'For your security, we need to verify your identity before you can access the admin area.', 'quick-2fa' );
+function get_intro_allowed_html(): array {
+	return array(
+		'a'      => array(
+			'href'   => true,
+			'rel'    => true,
+			'target' => true,
+			'title'  => true,
+		),
+		'b'      => array(),
+		'br'     => array(),
+		'em'     => array(),
+		'i'      => array(),
+		'span'   => array(
+			'class' => true,
+		),
+		'strong' => array(),
+	);
 }
 
 /**
- * Get default password reminder intro text.
+ * Get the intro text for the 2FA verification page.
+ *
+ * Returns a sensible default that sites can override via the
+ * `quick2fa_verify_intro` filter. Called at render time on every
+ * verification page load, so the filter is always applied.
  *
  * @since 1.0.0
- * @return string Default intro text.
+ * @return string Intro text. May contain a tight subset of inline HTML —
+ *                see `get_intro_allowed_html()`. Render with `wp_kses()`.
  */
-function get_default_password_intro(): string {
-	return __( 'Regular password changes help keep your account secure. We recommend updating your password every 60 days.', 'quick-2fa' );
+function get_verify_intro(): string {
+	$intro = __( 'For your security, we need to verify your identity before you can access the admin area.', 'quick-2fa' );
+
+	/**
+	 * Filter the intro text shown on the 2FA verification page.
+	 *
+	 * The returned string is rendered through `wp_kses()` with a tight
+	 * whitelist of inline HTML tags: `<a href|rel|target|title>`, `<b>`,
+	 * `<br>`, `<em>`, `<i>`, `<span class>`, `<strong>`. Anything outside
+	 * that whitelist is stripped silently. Plain text is always safe.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $intro Default intro text.
+	 */
+	return (string) apply_filters( 'quick2fa_verify_intro', $intro );
+}
+
+/**
+ * Get the intro text for the password reminder page.
+ *
+ * Returns a sensible default that sites can override via the
+ * `quick2fa_password_intro` filter. Called at render time on every
+ * password reminder page load, so the filter is always applied.
+ *
+ * @since 1.0.0
+ * @return string Intro text. May contain a tight subset of inline HTML —
+ *                see `get_intro_allowed_html()`. Render with `wp_kses()`.
+ */
+function get_password_intro(): string {
+	$intro = __( 'Regular password changes help keep your account secure. We recommend updating your password every 60 days.', 'quick-2fa' );
+
+	/**
+	 * Filter the intro text shown on the password reminder page.
+	 *
+	 * The returned string is rendered through `wp_kses()` with a tight
+	 * whitelist of inline HTML tags: `<a href|rel|target|title>`, `<b>`,
+	 * `<br>`, `<em>`, `<i>`, `<span class>`, `<strong>`. Anything outside
+	 * that whitelist is stripped silently. Plain text is always safe.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $intro Default intro text.
+	 */
+	return (string) apply_filters( 'quick2fa_password_intro', $intro );
 }
 
 /**

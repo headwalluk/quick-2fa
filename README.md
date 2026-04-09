@@ -1,6 +1,6 @@
 # Quick 2FA
 
-[![Version](https://img.shields.io/badge/version-0.12.2-blue.svg)](https://github.com/create-element/quick-2fa/releases/tag/v0.12.2)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/headwalluk/quick-2fa/releases/latest)
 [![PHP](https://img.shields.io/badge/PHP-8.0+-purple.svg)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0+-21759B.svg)](https://wordpress.org/)
 [![License](https://img.shields.io/badge/license-GPL--2.0+-green.svg)](LICENSE)
@@ -8,105 +8,55 @@
 
 Lightweight email-based two-factor authentication for WordPress admin access.
 
----
+## What it does
 
-## Quick Start
+- Email-based 2FA verification on every admin login (or only for specific roles)
+- Trusted-device tracking so users aren't asked to verify on every login
+- Account locking after too many failed attempts
+- Password reminders to nudge users towards regular password rotation
+- Comprehensive WP-CLI commands for incident response and recovery
+- Non-breaking by design — REST API, WP-CLI, AJAX, cron, XML-RPC, and Application Passwords all bypass 2FA so existing integrations keep working
 
-### Standard WordPress Plugin
+## Install
 
-1. Upload the `quick-2fa` folder to `/wp-content/plugins/`
-2. Activate through the WordPress admin
-3. Configure at Settings > Quick 2FA (optional)
+### Standard plugin
 
-### Must-Use Plugin
+1. Download `quick-2fa.zip` from the [latest release](https://github.com/headwalluk/quick-2fa/releases/latest)
+2. WordPress admin → Plugins → Add New → Upload Plugin → choose the zip → Install Now → Activate
+3. *(Optional)* Settings → Quick 2FA to tune the defaults
 
-1. Upload the `quick-2fa` folder to `/wp-content/mu-plugins/`
-2. Plugin activates automatically
-3. Access settings at Settings > Quick 2FA
+After install, the plugin will receive future updates automatically via the bundled GitHub updater. No additional configuration needed.
 
----
+### Must-Use plugin
+
+1. Extract the `quick-2fa` folder into `wp-content/mu-plugins/`
+2. Copy `quick-2fa/quick-2fa.php` up one level into `wp-content/mu-plugins/quick-2fa-loader.php` (or use a loader of your own)
+3. Defaults are initialised on first admin page load — no activation hook required
+4. Settings → Quick 2FA to configure
+
+### Requirements
+
+- WordPress 6.0 or later
+- PHP 8.0 or later
+- Working `wp_mail()` (any SMTP plugin or transactional email service)
 
 ## Documentation
 
-### For Developers
+Full user and developer documentation lives in [`docs/`](docs/):
 
-See [`dev-notes/`](dev-notes/) for:
-- [Project Tracker](dev-notes/00-project-tracker.md) - Current development status and milestones
-- [Implementation Guide](dev-notes/implementation.md) - Technical architecture and design decisions
-- [Refactoring History](dev-notes/refactoring-summary.md) - Code evolution and improvements
-- Patterns and workflows in [`dev-notes/patterns/`](dev-notes/patterns/) and [`dev-notes/workflows/`](dev-notes/workflows/)
+- [How it works](docs/how-it-works.md)
+- [Configuration](docs/configuration.md)
+- [Trusted devices](docs/trusted-devices.md)
+- [Account locking](docs/account-locking.md)
+- [WP-CLI reference](docs/wp-cli.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Hooks and filters](docs/developers/hooks-and-filters.md) *(for developers)*
+- [Extending Quick 2FA](docs/developers/extending.md) *(for developers)*
 
----
+## Security disclosures
 
-## Features
-
-- ✅ Email-based 2FA verification
-- ✅ Password change reminders
-- ✅ Role-based protection
-- ✅ Non-breaking (REST API, WP-CLI, webhooks work normally)
-- ✅ Lightweight (no JavaScript, minimal dependencies)
-- ✅ Customizable branding
-- ✅ User lock-out management (admin UI + WP-CLI)
-- ✅ Trusted devices (optional)
-
----
-
-## WP-CLI Commands
-
-Quick 2FA provides comprehensive WP-CLI tools for user management:
-
-```bash
-# Lock/unlock users
-wp quick-2fa lock <user>
-wp quick-2fa unlock <user>
-
-# Emergency lockdown (lock all except one user)
-wp quick-2fa lock-all --exclude=admin
-wp quick-2fa unlock-all
-
-# User management
-wp quick-2fa status <user>
-wp quick-2fa list-locked
-wp quick-2fa clear-devices <user>
-
-# Emergency disable 2FA
-wp quick-2fa emergency_disable --yes
-```
-
-All commands accept user ID, login, or email address as `<user>`.
-
----
-
-## Requirements
-
-- WordPress 6.0 or higher
-- PHP 8.0 or higher
-- Working email delivery (wp_mail)
-
----
-
-## Customization
-
-### Password Generator Filter
-
-```php
-add_filter( 'quick2fa_password_parameters', function( $params ) {
-    return array(
-        'length'              => random_int( 12, 20 ),
-        'special_chars'       => true,
-        'extra_special_chars' => false,
-    );
-} );
-```
-
----
+See [SECURITY.md](SECURITY.md) for the responsible-disclosure process.
 
 ## License
 
-GPL v2 or later. See [LICENSE](LICENSE) file.
-
----
-
-## Contributing
-
-Contributions welcome! Please follow [WordPress coding standards](.github/copilot-instructions.md).
+GPL v2 or later. See [LICENSE](LICENSE).

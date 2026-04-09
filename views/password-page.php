@@ -11,6 +11,7 @@
  * @var string|null $message        Success message (if any)
  * @var int         $days_since     Days since last password change
  * @var string      $new_password   Pre-generated strong password
+ * @var string      $password_intro Filtered intro text shown above the password form
  */
 
 // Exit if accessed directly.
@@ -65,6 +66,11 @@ printf(
 	esc_html( $quick_2fa_age_message )
 );
 
+printf(
+	'<p>%s</p>',
+	wp_kses( $password_intro, \Quick_2FA\get_intro_allowed_html() )
+);
+
 echo '<form name="q2fa-password-form" id="loginform" action="" method="post" autocomplete="on">';
 
 wp_nonce_field( 'quick2fa_password' );
@@ -81,8 +87,9 @@ printf(
 echo '</p>';
 
 printf(
-	'<p><button type="button" class="button button-secondary wp-hide-pw hide-if-no-js" data-toggle="0" aria-label="%s"><span class="dashicons dashicons-visibility" aria-hidden="true"></span></button></p>',
-	esc_attr__( 'Show password', 'quick-2fa' )
+	'<p><button type="button" class="button button-secondary wp-hide-pw hide-if-no-js" data-toggle="0" data-label-show="%1$s" data-label-hide="%2$s" aria-label="%1$s"><span class="dashicons dashicons-visibility" aria-hidden="true"></span></button></p>',
+	esc_attr__( 'Show password', 'quick-2fa' ),
+	esc_attr__( 'Hide password', 'quick-2fa' )
 );
 
 printf(
@@ -115,7 +122,5 @@ echo '</div>';
 
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core hook.
 do_action( 'login_footer' );
-
-echo '<script>document.querySelector(".wp-hide-pw").addEventListener("click",function(){var e=document.getElementById("q2fa_new_password"),t=this.getAttribute("data-toggle");e.type="0"===t?"text":"password",this.setAttribute("data-toggle","0"===t?"1":"0"),this.setAttribute("aria-label","0"===t?"' . esc_js( __( 'Hide password', 'quick-2fa' ) ) . '":"' . esc_js( __( 'Show password', 'quick-2fa' ) ) . '")});</script>';
 
 echo '</body></html>';

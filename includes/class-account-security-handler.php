@@ -213,23 +213,21 @@ class Account_Security_Handler {
 		$current_fingerprint = $this->get_device_fingerprint();
 		$trusted_devices     = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
 
-		if ( ! is_array( $trusted_devices ) ) {
-			return false;
-		}
+		$is_trusted = false;
 
-		if ( isset( $trusted_devices[ $current_fingerprint ] ) ) {
+		if ( is_array( $trusted_devices ) && isset( $trusted_devices[ $current_fingerprint ] ) ) {
 			$expiry = $trusted_devices[ $current_fingerprint ];
 
 			if ( $expiry > time() ) {
-				return true;
+				$is_trusted = true;
+			} else {
+				// Device expired, clean it up.
+				unset( $trusted_devices[ $current_fingerprint ] );
+				update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
 			}
-
-			// Device expired, clean it up.
-			unset( $trusted_devices[ $current_fingerprint ] );
-			update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
 		}
 
-		return false;
+		return $is_trusted;
 	}
 
 	/**

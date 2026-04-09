@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: Quick 2FA
- * Plugin URI: https://github.com/create-element/quick-2fa
+ * Plugin URI: https://github.com/headwalluk/quick-2fa
  * Description: Lightweight email-based two-factor authentication for WordPress admin access.
- * Version: 0.12.2
+ * Version: 1.0.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Paul Faulkner
@@ -19,14 +19,14 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || die();
 
-define( 'QUICK_2FA_VERSION', '0.12.2' );
+define( 'QUICK_2FA_VERSION', '1.0.0' );
 define( 'QUICK_2FA_FILE', __FILE__ );
 define( 'QUICK_2FA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'QUICK_2FA_URL', plugin_dir_url( __FILE__ ) );
 define( 'QUICK_2FA_BASENAME', plugin_basename( __FILE__ ) );
 
 require_once QUICK_2FA_PATH . 'constants.php';
-require_once QUICK_2FA_PATH . 'functions.php';
+require_once QUICK_2FA_PATH . 'functions-private.php';
 
 require_once QUICK_2FA_PATH . 'includes/class-account-security-handler.php';
 require_once QUICK_2FA_PATH . 'includes/class-email-handler.php';
@@ -39,6 +39,12 @@ require_once QUICK_2FA_PATH . 'includes/class-settings.php';
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	require_once QUICK_2FA_PATH . 'includes/class-cli-commands.php';
 	WP_CLI::add_command( 'quick-2fa', 'Quick_2FA\CLI_Commands' );
+}
+
+// GitHub auto-updates (admin + cron only — no need to load on front-end requests).
+if ( is_admin() || ( defined( 'DOING_CRON' ) && DOING_CRON ) ) {
+	require_once QUICK_2FA_PATH . 'includes/class-headwall-github-plugin-updater.php';
+	new Headwall_GitHub_Plugin_Updater( __FILE__, 'headwalluk/quick-2fa' );
 }
 
 /**
@@ -58,7 +64,7 @@ function quick_2fa_activate(): void {
 		}
 	}
 
-	add_option( 'quick2fa_version', QUICK_2FA_VERSION, '', 'yes' );
+	add_option( Quick_2FA\OPTION_VERSION, QUICK_2FA_VERSION, '', 'yes' );
 }
 register_activation_hook( __FILE__, 'quick_2fa_activate' );
 

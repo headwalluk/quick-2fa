@@ -51,7 +51,7 @@ No build step, test framework, or package.json. Code quality is enforced via php
 |------|---------|
 | `quick-2fa.php` | Main plugin file, activation/deactivation hooks, class loading |
 | `constants.php` | All constants: meta keys, option keys, modes, rate limits, defaults |
-| `functions.php` | Helper functions: skip-check logic, URL generators, config getters |
+| `functions-private.php` | Internal namespaced helpers: skip-check logic, URL generators, config getters. All functions here are private to the plugin — sites should use the public hooks/filters in `docs/developers/hooks-and-filters.md` instead. |
 | `includes/class-plugin.php` | Main orchestrator: hook registration, verification flow, role checking |
 | `includes/class-verification-code-handler.php` | Code generation (cryptographic), hashing, verification, rate limiting |
 | `includes/class-account-security-handler.php` | Account locking/unlocking, device fingerprinting, trusted devices, event logging |
@@ -88,7 +88,7 @@ No build step, test framework, or package.json. Code quality is enforced via php
 
 - **Namespace:** `Quick_2FA` for all classes
 - **No `declare(strict_types=1)`** — breaks WordPress interop
-- **Single-Entry Single-Exit (SESE):** Functions should have one return at the end, not early returns
+- **Single-Entry Single-Exit (SESE):** Functions should generally have one return at the end. Top-of-function guard clauses (capability checks, disabled-mode short-circuits, missing-input early-exits) are acceptable when they keep the rest of the function flat and readable. What is **not** acceptable: `return` statements scattered mid-function, inside loops, or nested several `if` blocks deep — these make the control flow hard to trace when debugging
 - **Constants for all magic strings/numbers** in `constants.php` — never use raw strings for meta keys, option names, etc.
 - **Type hints and return types** on all functions (PHP 8.0+ features: union types, nullsafe operators, named arguments)
 - **Dates stored as human-readable strings** (`Y-m-d H:i:s T`), not Unix timestamps

@@ -11,6 +11,7 @@
  * @var string|null $message                  Success message (if any)
  * @var bool        $trusted_devices_enabled  Whether trusted devices feature is enabled
  * @var int         $trusted_device_expiry    Number of days to trust a device
+ * @var string      $verify_intro             Filtered intro text shown above the code input
  */
 
 // Exit if accessed directly.
@@ -56,7 +57,7 @@ if ( ! $error || 'rate_limited' !== $error->get_error_code() ) {
 	printf(
 		'<p>%s<br><br>%s<br><strong>%s</strong><br><br>%s</p>',
 		esc_html__( 'Account Verification Required', 'quick-2fa' ),
-		esc_html__( 'For your security, we need to verify your identity before you can access the admin area.', 'quick-2fa' ),
+		wp_kses( $verify_intro, \Quick_2FA\get_intro_allowed_html() ),
 		esc_html( \Quick_2FA\mask_email( $user->user_email ) ),
 		esc_html__( 'Please enter the verification code sent to your email.', 'quick-2fa' )
 	);

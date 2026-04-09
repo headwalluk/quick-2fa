@@ -89,50 +89,41 @@ class Verification_Code_Handler {
 		$cache_key  = TRANSIENT_RATE_LIMIT . 'code_gen_' . $this->user_id;
 		$limit_data = get_transient( $cache_key );
 
-		if ( false === $limit_data ) {
-			// No existing limit, start new window.
+		// Determine if we need to start a fresh window: no prior data, or the previous window has elapsed.
+		$no_existing_window = ( false === $limit_data );
+		$elapsed            = $no_existing_window ? PHP_INT_MAX : ( time() - $limit_data['window_start'] );
+		$is_new_window      = $no_existing_window || ( $elapsed > RATE_LIMIT_CODE_GENERATION_WINDOW );
+
+		$result = true;
+
+		if ( $is_new_window ) {
 			$limit_data = array(
 				'count'        => 1,
 				'window_start' => time(),
 			);
 			set_transient( $cache_key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
-			return true;
-		}
-
-		// Check if we're still in the same window.
-		$elapsed = time() - $limit_data['window_start'];
-
-		if ( $elapsed > RATE_LIMIT_CODE_GENERATION_WINDOW ) {
-			// New window.
-			$limit_data = array(
-				'count'        => 1,
-				'window_start' => time(),
-			);
-			set_transient( $cache_key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
-			return true;
-		}
-
-		if ( $limit_data['count'] >= RATE_LIMIT_CODE_GENERATION_MAX ) {
+		} elseif ( $limit_data['count'] >= RATE_LIMIT_CODE_GENERATION_MAX ) {
 			$wait_time = ceil( ( RATE_LIMIT_CODE_GENERATION_WINDOW - $elapsed ) / 60 );
 
 			if ( $wait_time < 1 ) {
-				return new \WP_Error( 'rate_limited', __( 'Too many verification codes requested. Please wait a few more seconds before requesting another code.', 'quick-2fa' ) );
+				$result = new \WP_Error( 'rate_limited', __( 'Too many verification codes requested. Please wait a few more seconds before requesting another code.', 'quick-2fa' ) );
+			} else {
+				$result = new \WP_Error(
+					'rate_limited',
+					sprintf(
+						/* translators: %d: number of minutes to wait */
+						__( 'Too many verification codes requested. Please wait %d minutes before requesting another code.', 'quick-2fa' ),
+						$wait_time
+					)
+				);
 			}
-
-			return new \WP_Error(
-				'rate_limited',
-				sprintf(
-					/* translators: %d: number of minutes to wait */
-					__( 'Too many verification codes requested. Please wait %d minutes before requesting another code.', 'quick-2fa' ),
-					$wait_time
-				)
-			);
+		} else {
+			// Within the active window and under the limit — record this request.
+			++$limit_data['count'];
+			set_transient( $cache_key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
 		}
 
-		++$limit_data['count'];
-		set_transient( $cache_key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
-
-		return true;
+		return $result;
 	}
 
 	/**
@@ -221,6 +212,7 @@ class Verification_Code_Handler {
 	public function verify( string $code ): true|\WP_Error {
 		$security = new Account_Security_Handler( $this->user_id );
 
+		// Top guards: account locked, no stored code, code expired, attempts exhausted.
 		if ( $security->is_locked() ) {
 			$wait_time = ceil( $security->get_lock_time_remaining() / 60 );
 
@@ -262,6 +254,9 @@ class Verification_Code_Handler {
 			return new \WP_Error( 'too_many_attempts', __( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' ) );
 		}
 
+		// Main check: compare submitted code against the stored hash.
+		$result = true;
+
 		if ( ! wp_check_password( $code, $hash ) ) {
 			update_user_meta( $this->user_id, META_CODE_ATTEMPTS, $attempts + 1 );
 
@@ -277,7 +272,7 @@ class Verification_Code_Handler {
 			$remaining = RATE_LIMIT_VERIFICATION_MAX - ( $attempts + 1 );
 
 			if ( $remaining > 0 ) {
-				return new \WP_Error(
+				$result = new \WP_Error(
 					'invalid_code',
 					sprintf(
 						/* translators: %d: number of attempts remaining */
@@ -287,22 +282,22 @@ class Verification_Code_Handler {
 				);
 			} else {
 				$security->lock_account();
-				return new \WP_Error( 'too_many_attempts', __( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' ) );
+				$result = new \WP_Error( 'too_many_attempts', __( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' ) );
 			}
+		} else {
+			update_user_meta( $this->user_id, META_LAST_VERIFIED, time() );
+			$this->cleanup();
+
+			$security->log_event(
+				LOG_VERIFICATION_SUCCESS,
+				array(
+					'timestamp' => time(),
+					'ip'        => get_ip_address(),
+				)
+			);
 		}
 
-		update_user_meta( $this->user_id, META_LAST_VERIFIED, time() );
-		$this->cleanup();
-
-		$security->log_event(
-			LOG_VERIFICATION_SUCCESS,
-			array(
-				'timestamp' => time(),
-				'ip'        => get_ip_address(),
-			)
-		);
-
-		return true;
+		return $result;
 	}
 
 	/**

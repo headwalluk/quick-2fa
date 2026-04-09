@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-03-18T08:27:47+00:00\n"
+"POT-Creation-Date: 2026-04-09T13:09:24+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: quick-2fa\n"
@@ -22,7 +22,7 @@ msgstr ""
 
 #. Plugin URI of the plugin
 #: quick-2fa.php
-msgid "https://github.com/create-element/quick-2fa"
+msgid "https://github.com/headwalluk/quick-2fa"
 msgstr ""
 
 #. Description of the plugin
@@ -62,18 +62,17 @@ msgstr ""
 msgid "If you did not request this code, please contact your site administrator immediately."
 msgstr ""
 
-#: functions.php:47
+#: functions-private.php:44
 #: includes/class-email-handler.php:38
 #: includes/class-settings.php:352
 msgid "Your verification code"
 msgstr ""
 
-#: functions.php:90
-#: views/verification-page.php:59
+#: functions-private.php:91
 msgid "For your security, we need to verify your identity before you can access the admin area."
 msgstr ""
 
-#: functions.php:100
+#: functions-private.php:115
 msgid "Regular password changes help keep your account secure. We recommend updating your password every 60 days."
 msgstr ""
 
@@ -89,54 +88,54 @@ msgstr ""
 msgid "Password must be at least 8 characters long."
 msgstr ""
 
-#: includes/class-plugin.php:138
-#: includes/class-plugin.php:173
+#: includes/class-plugin.php:165
+#: includes/class-plugin.php:200
 msgid "Your account has been locked. Please contact your site administrator."
 msgstr ""
 
 #. translators: %s: Time remaining until unlock
-#: includes/class-plugin.php:142
-#: includes/class-plugin.php:177
+#: includes/class-plugin.php:169
+#: includes/class-plugin.php:204
 #, php-format
 msgid "Your account has been locked. Please try again in %s."
 msgstr ""
 
-#: includes/class-plugin.php:182
+#: includes/class-plugin.php:209
 msgid "Account Locked"
 msgstr ""
 
-#: includes/class-plugin.php:395
+#: includes/class-plugin.php:423
 msgid "Invalid action"
 msgstr ""
 
-#: includes/class-plugin.php:395
+#: includes/class-plugin.php:423
 msgid "Error"
 msgstr ""
 
-#: includes/class-plugin.php:417
-#: includes/class-plugin.php:459
-#: includes/class-plugin.php:503
-#: includes/class-plugin.php:519
+#: includes/class-plugin.php:445
+#: includes/class-plugin.php:487
+#: includes/class-plugin.php:533
+#: includes/class-plugin.php:549
 msgid "Security check failed. Please try again."
 msgstr ""
 
-#: includes/class-plugin.php:422
+#: includes/class-plugin.php:450
 msgid "Please enter the verification code."
 msgstr ""
 
-#: includes/class-plugin.php:466
+#: includes/class-plugin.php:494
 msgid "A new verification code has been sent to your email."
 msgstr ""
 
-#: includes/class-plugin.php:550
+#: includes/class-plugin.php:580
 msgid "Quick 2FA is currently disabled."
 msgstr ""
 
-#: includes/class-plugin.php:551
+#: includes/class-plugin.php:581
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr ""
 
-#: includes/class-plugin.php:553
+#: includes/class-plugin.php:583
 msgid "Enable 2FA"
 msgstr ""
 
@@ -152,158 +151,157 @@ msgstr ""
 msgid "Lock Status"
 msgstr ""
 
-#: includes/class-user-management.php:103
+#: includes/class-user-management.php:101
 msgid "Not locked out"
 msgstr ""
 
-#: includes/class-user-management.php:161
+#: includes/class-user-management.php:159
 msgid "Locked Out"
 msgstr ""
 
-#: includes/class-user-management.php:173
+#: includes/class-user-management.php:171
 msgid "Not Locked Out"
 msgstr ""
 
-#: includes/class-user-management.php:263
+#: includes/class-user-management.php:261
 msgid "Unlock"
 msgstr ""
 
-#: includes/class-user-management.php:275
+#: includes/class-user-management.php:273
 msgid "Lock Out"
 msgstr ""
 
-#: includes/class-user-management.php:291
-#: includes/class-user-management.php:347
-#: includes/class-user-management.php:549
-#: includes/class-user-management.php:595
+#: includes/class-user-management.php:289
+#: includes/class-user-management.php:345
+#: includes/class-user-management.php:546
+#: includes/class-user-management.php:592
 msgid "Security check failed."
 msgstr ""
 
-#: includes/class-user-management.php:295
-#: includes/class-user-management.php:351
-#: includes/class-user-management.php:553
-#: includes/class-user-management.php:599
+#: includes/class-user-management.php:293
+#: includes/class-user-management.php:349
+#: includes/class-user-management.php:550
+#: includes/class-user-management.php:596
 msgid "You do not have permission to perform this action."
 msgstr ""
 
-#: includes/class-user-management.php:299
+#: includes/class-user-management.php:297
 msgid "You cannot lock out your own account."
 msgstr ""
 
-#: includes/class-user-management.php:304
-#: includes/class-user-management.php:356
-#: includes/class-user-management.php:558
-#: includes/class-user-management.php:604
+#: includes/class-user-management.php:302
+#: includes/class-user-management.php:354
+#: includes/class-user-management.php:555
+#: includes/class-user-management.php:601
 msgid "Invalid user."
 msgstr ""
 
 #. translators: %s: Username
-#: includes/class-user-management.php:326
+#: includes/class-user-management.php:324
 #, php-format
 msgid "User %s has been locked out."
 msgstr ""
 
 #. translators: %s: Username
-#: includes/class-user-management.php:376
+#: includes/class-user-management.php:374
 #, php-format
 msgid "User %s has been unlocked."
 msgstr ""
 
-#: includes/class-user-management.php:421
+#: includes/class-user-management.php:418
 msgid "Locked out (manual)"
 msgstr ""
 
 #. translators: %s: Formatted date and time
-#: includes/class-user-management.php:432
+#: includes/class-user-management.php:429
 #, php-format
 msgid "Locked out until %s"
 msgstr ""
 
-#: includes/class-verification-code-handler.php:119
+#: includes/class-verification-code-handler.php:109
 msgid "Too many verification codes requested. Please wait a few more seconds before requesting another code."
 msgstr ""
 
 #. translators: %d: number of minutes to wait
-#: includes/class-verification-code-handler.php:126
+#: includes/class-verification-code-handler.php:115
 #, php-format
 msgid "Too many verification codes requested. Please wait %d minutes before requesting another code."
 msgstr ""
 
-#: includes/class-verification-code-handler.php:188
+#: includes/class-verification-code-handler.php:179
 msgid "User not found."
 msgstr ""
 
 #. translators: %d: number of minutes until unlock
-#: includes/class-verification-code-handler.php:231
+#: includes/class-verification-code-handler.php:223
 #, php-format
 msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
 msgstr ""
 
-#: includes/class-verification-code-handler.php:240
+#: includes/class-verification-code-handler.php:232
 msgid "No verification code found. Please request a new code."
 msgstr ""
 
 #. translators: %d: number of minutes until expiry
-#: includes/class-verification-code-handler.php:251
+#: includes/class-verification-code-handler.php:243
 #, php-format
 msgid "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
 msgstr ""
 
-#: includes/class-verification-code-handler.php:262
-#: includes/class-verification-code-handler.php:290
+#: includes/class-verification-code-handler.php:254
+#: includes/class-verification-code-handler.php:285
 msgid "Too many failed verification attempts. Your account has been temporarily locked for security."
 msgstr ""
 
 #. translators: %d: number of attempts remaining
-#: includes/class-verification-code-handler.php:284
+#: includes/class-verification-code-handler.php:279
 #, php-format
 msgid "Invalid verification code. You have %d attempt remaining."
 msgid_plural "Invalid verification code. You have %d attempts remaining."
 msgstr[0] ""
 msgstr[1] ""
 
-#: views/password-page.php:30
+#: views/password-page.php:31
 msgid "Update Your Password"
 msgstr ""
 
-#: views/password-page.php:54
+#: views/password-page.php:55
 msgid "It's been over a year since you last changed your password. For your security, we recommend updating it regularly."
 msgstr ""
 
 #. translators: %d: number of days since last password change
-#: views/password-page.php:58
+#: views/password-page.php:59
 #, php-format
 msgid "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
 msgstr ""
 
-#: views/password-page.php:76
+#: views/password-page.php:82
 msgid "New Password:"
 msgstr ""
 
-#: views/password-page.php:85
-#: views/password-page.php:119
+#: views/password-page.php:91
 msgid "Show password"
 msgstr ""
 
-#: views/password-page.php:90
+#: views/password-page.php:92
+msgid "Hide password"
+msgstr ""
+
+#: views/password-page.php:97
 msgid "A strong password has been generated for you. You can use it as-is or change it to your own."
 msgstr ""
 
-#: views/password-page.php:95
+#: views/password-page.php:102
 msgid "Update Password"
 msgstr ""
 
-#: views/password-page.php:104
+#: views/password-page.php:111
 msgid "Remind Me Later"
 msgstr ""
 
-#: views/password-page.php:111
-#: views/verification-page.php:93
+#: views/password-page.php:118
+#: views/verification-page.php:94
 msgid "&larr; Log out"
-msgstr ""
-
-#: views/password-page.php:119
-msgid "Hide password"
 msgstr ""
 
 #: views/profile-trusted-devices.php:17
@@ -525,31 +523,31 @@ msgstr ""
 msgid "Wait this many days before showing the reminder again if dismissed (1-90 days)."
 msgstr ""
 
-#: views/verification-page.php:30
-#: views/verification-page.php:58
+#: views/verification-page.php:31
+#: views/verification-page.php:59
 msgid "Account Verification Required"
 msgstr ""
 
-#: views/verification-page.php:61
+#: views/verification-page.php:62
 msgid "Please enter the verification code sent to your email."
 msgstr ""
 
-#: views/verification-page.php:67
+#: views/verification-page.php:68
 msgid "Verification Code:"
 msgstr ""
 
 #. translators: %d: number of days
-#: views/verification-page.php:73
+#: views/verification-page.php:74
 #, php-format
 msgid "Trust this device for %d day"
 msgid_plural "Trust this device for %d days"
 msgstr[0] ""
 msgstr[1] ""
 
-#: views/verification-page.php:80
+#: views/verification-page.php:81
 msgid "Verify"
 msgstr ""
 
-#: views/verification-page.php:86
+#: views/verification-page.php:87
 msgid "Resend Code"
 msgstr ""

@@ -65,7 +65,7 @@ class Plugin {
 		add_action( 'admin_init', array( $this, 'check_verification' ), 1 );
 		add_filter( 'wp_authenticate_user', array( $this, 'check_lockout_on_login' ), 10, 1 );
 		add_action( 'login_init', array( $this, 'handle_login_actions' ) );
-		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_login_styles' ) );
+		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_login_assets' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 	}
@@ -84,15 +84,17 @@ class Plugin {
 	}
 
 	/**
-	 * Enqueue styles for 2FA login pages.
+	 * Enqueue styles and scripts for 2FA login pages.
 	 *
 	 * @since 0.9.3
 	 */
-	public function enqueue_login_styles(): void {
-			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Public login page, no nonce needed.
-		if ( ! isset( $_GET['q2fa'] ) ) {
+	public function enqueue_login_assets(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Public login page, no nonce needed.
+		if ( ! isset( $_GET[ QUERY_PARAM ] ) ) {
 			return;
 		}
+
+		$action = sanitize_key( $_GET[ QUERY_PARAM ] );
 		// phpcs:enable
 
 		wp_enqueue_style(
@@ -101,6 +103,17 @@ class Plugin {
 			array( 'login' ),
 			QUICK_2FA_VERSION
 		);
+
+		// Password reminder page needs the show/hide-password toggle script.
+		if ( ACTION_PASSWORD === $action ) {
+			wp_enqueue_script(
+				'quick-2fa-password-page',
+				QUICK_2FA_URL . 'assets/js/password-page.js',
+				array(),
+				QUICK_2FA_VERSION,
+				true
+			);
+		}
 	}
 
 	/**
@@ -112,7 +125,7 @@ class Plugin {
 	 * @since 0.6.0
 	 */
 	public function check_first_run(): void {
-		if ( false === get_option( 'quick2fa_version' ) ) {
+		if ( false === get_option( OPTION_VERSION ) ) {
 			$defaults = get_default_settings();
 
 			foreach ( $defaults as $key => $value ) {
@@ -121,9 +134,9 @@ class Plugin {
 				}
 			}
 
-			add_option( 'quick2fa_version', QUICK_2FA_VERSION, '', 'yes' );
-		} elseif ( get_option( 'quick2fa_version' ) !== QUICK_2FA_VERSION ) {
-			update_option( 'quick2fa_version', QUICK_2FA_VERSION );
+			add_option( OPTION_VERSION, QUICK_2FA_VERSION, '', 'yes' );
+		} elseif ( get_option( OPTION_VERSION ) !== QUICK_2FA_VERSION ) {
+			update_option( OPTION_VERSION, QUICK_2FA_VERSION );
 		}
 	}
 
@@ -240,21 +253,25 @@ class Plugin {
 			return true;
 		}
 
-		// If trusted devices feature is enabled, device trust is the primary check.
-		// Each trusted device entry carries its own expiry (e.g., 30 days), so the
-		// time-based verification period is not needed here. Unknown devices will
-		// fail the trust check and require verification regardless.
-		if ( ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
-			$security_handler = new Account_Security_Handler( $user_id );
-			return ! $security_handler->is_device_trusted();
+		$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
+		$needs_verification      = false;
+
+		if ( $trusted_devices_enabled ) {
+			// If trusted devices feature is enabled, device trust is the primary check.
+			// Each trusted device entry carries its own expiry (e.g., 30 days), so the
+			// time-based verification period is not needed here. Unknown devices will
+			// fail the trust check and require verification regardless.
+			$security_handler   = new Account_Security_Handler( $user_id );
+			$needs_verification = ! $security_handler->is_device_trusted();
+		} else {
+			// Trusted devices disabled — fall back to time-based verification period.
+			$period_days         = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
+			$period_seconds      = $period_days * DAY_IN_SECONDS;
+			$time_since_verified = time() - $last_verified;
+			$needs_verification  = $time_since_verified > $period_seconds;
 		}
 
-		// Trusted devices disabled — fall back to time-based verification period.
-		$period_days         = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
-		$period_seconds      = $period_days * DAY_IN_SECONDS;
-		$time_since_verified = time() - $last_verified;
-
-		return $time_since_verified > $period_seconds;
+		return $needs_verification;
 	}
 
 	/**
@@ -271,25 +288,20 @@ class Plugin {
 			return true;
 		}
 
-		if ( MODE_ROLES === $mode ) {
-			$protected_roles = get_option( OPTION_PROTECTED_ROLES, array() );
-
-			if ( empty( $protected_roles ) ) {
-				return false;
-			}
-
-			$user = get_userdata( $user_id );
-
-			if ( ! $user ) {
-				return false;
-			}
-
-			$user_roles = (array) $user->roles;
-
-			return ! empty( array_intersect( $user_roles, $protected_roles ) );
+		if ( MODE_ROLES !== $mode ) {
+			return false;
 		}
 
-		return false;
+		$protected_roles = get_option( OPTION_PROTECTED_ROLES, array() );
+		$user            = get_userdata( $user_id );
+		$requires        = false;
+
+		if ( ! empty( $protected_roles ) && $user ) {
+			$user_roles = (array) $user->roles;
+			$requires   = ! empty( array_intersect( $user_roles, $protected_roles ) );
+		}
+
+		return $requires;
 	}
 
 	/**
@@ -325,28 +337,30 @@ class Plugin {
 			update_user_meta( $user_id, '_password_last_changed', $last_pass_change );
 		}
 
-		$period_days    = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
-		$period_seconds = $period_days * DAY_IN_SECONDS;
-
+		$period_days       = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
+		$period_seconds    = $period_days * DAY_IN_SECONDS;
 		$time_since_change = time() - $last_pass_change;
-		if ( $time_since_change <= $period_seconds ) {
-			return false;
-		}
 
-		$last_reminder = get_user_meta( $user_id, META_LAST_PASSWORD_REMINDER, true );
+		$needs_reminder = false;
 
-		if ( ! empty( $last_reminder ) ) {
-			$cooldown_days    = get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
-			$cooldown_seconds = $cooldown_days * DAY_IN_SECONDS;
+		if ( $time_since_change > $period_seconds ) {
+			$needs_reminder = true;
 
-			$time_since_reminder = time() - $last_reminder;
+			// Respect cooldown — don't nag the user every page load.
+			$last_reminder = get_user_meta( $user_id, META_LAST_PASSWORD_REMINDER, true );
 
-			if ( $time_since_reminder < $cooldown_seconds ) {
-				return false;
+			if ( ! empty( $last_reminder ) ) {
+				$cooldown_days       = get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
+				$cooldown_seconds    = $cooldown_days * DAY_IN_SECONDS;
+				$time_since_reminder = time() - $last_reminder;
+
+				if ( $time_since_reminder < $cooldown_seconds ) {
+					$needs_reminder = false;
+				}
 			}
 		}
 
-		return true;
+		return $needs_reminder;
 	}
 
 	/**
@@ -489,6 +503,7 @@ class Plugin {
 
 		$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
 		$trusted_device_expiry   = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
+		$verify_intro            = get_verify_intro();
 
 		$user = get_userdata( $user_id );
 
@@ -506,9 +521,10 @@ class Plugin {
 		$error   = null;
 		$message = null;
 
-		$handler      = new Password_Reminder_Handler( $user_id );
-		$days_since   = $handler->get_password_age();
-		$new_password = $handler->generate_strong_password();
+		$handler        = new Password_Reminder_Handler( $user_id );
+		$days_since     = $handler->get_password_age();
+		$new_password   = $handler->generate_strong_password();
+		$password_intro = get_password_intro();
 
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			if ( isset( $_POST['q2fa_update_password'] ) ) {
