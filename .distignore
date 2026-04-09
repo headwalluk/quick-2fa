@@ -41,7 +41,10 @@ Thumbs.db
 *.swo
 *~
 
-# Project meta files (kept on GitHub, stripped from release zip)
+# Project meta files (kept on GitHub, stripped from release zip).
+# readme.txt is the in-WP-admin equivalent and IS shipped in the zip.
 README.md
+CHANGELOG.md
+SECURITY.md
 CLAUDE.md
 .claude

@@ -29,16 +29,14 @@ jobs:
           mkdir -p build
           rsync -av --exclude-from=.distignore ./ build/quick-2fa/
 
-      - name: Create versioned zip
+      - name: Build release zips
+        # Build the versioned zip once, then copy it to the generic
+        # filename so both artifacts are guaranteed byte-identical
+        # (same SHA256, just different filenames).
         run: |
           cd build
           zip -r quick-2fa-${{ steps.get_version.outputs.version }}.zip quick-2fa/
-          cd ..
-
-      - name: Create generic zip
-        run: |
-          cd build
-          zip -r quick-2fa.zip quick-2fa/
+          cp quick-2fa-${{ steps.get_version.outputs.version }}.zip quick-2fa.zip
           cd ..
 
       - name: Upload versioned zip as artifact
