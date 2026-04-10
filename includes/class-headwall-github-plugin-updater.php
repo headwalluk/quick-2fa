@@ -21,9 +21,11 @@ defined( 'ABSPATH' ) || die();
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound -- Intentionally portable class shared across plugins.
 
-if ( class_exists( 'Headwall_GitHub_Plugin_Updater' ) ) {
+if ( defined( 'HW_GITHUB_UPDATER_VERSION' ) ) {
 	return;
 }
+
+define( 'HW_GITHUB_UPDATER_VERSION', '1.1.0' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Shared constant across plugins.
 
 /**
  * Checks GitHub Releases for plugin updates and hooks into the
@@ -136,10 +138,22 @@ class Headwall_GitHub_Plugin_Updater {
 	 * @return object
 	 */
 	public function check_for_update( $transient ) {
-		if ( ! empty( $transient->checked ) && $this->is_enabled() ) {
+		$checked = is_object( $transient ) && property_exists( $transient, 'checked' ) ? $transient->checked : false;
+
+		if ( empty( $checked ) ) {
+			// Early transient pass — WordPress hasn't populated checked list yet.
+			$this->log( 'check_for_update: transient has no checked list, skipping.' );
+		} elseif ( ! $this->is_enabled() ) {
+			$this->log( 'check_for_update: updates disabled via filter, skipping.' );
+		} else {
 			$release = $this->get_latest_release();
 
-			if ( is_array( $release ) && version_compare( $this->current_version, $release['version'], '<' ) ) {
+			if ( ! is_array( $release ) ) {
+				$this->log( 'check_for_update: no release data returned from GitHub.' );
+			} elseif ( version_compare( $this->current_version, $release['version'], '>=' ) ) {
+				$this->log( 'check_for_update: current version ' . $this->current_version . ' is up to date (latest: ' . $release['version'] . ').' );
+			} else {
+				$this->log( 'check_for_update: update available ' . $this->current_version . ' → ' . $release['version'] . '.' );
 				$transient->response[ $this->plugin_basename ] = (object) array(
 					'slug'        => $this->plugin_slug,
 					'plugin'      => $this->plugin_basename,
@@ -205,10 +219,11 @@ class Headwall_GitHub_Plugin_Updater {
 	 * @param array        $options  Update details.
 	 */
 	public function clear_cache( $upgrader, $options ): void {
-		if ( 'update' === ( $options['action'] ?? '' )
-			&& 'plugin' === ( $options['type'] ?? '' )
-			&& ! empty( $options['plugins'] )
-			&& in_array( $this->plugin_basename, $options['plugins'], true )
+		if (
+			'update' === ( $options['action'] ?? '' ) &&
+			'plugin' === ( $options['type'] ?? '' ) &&
+			! empty( $options['plugins'] ) &&
+			in_array( $this->plugin_basename, $options['plugins'], true )
 		) {
 			delete_transient( $this->get_cache_key() );
 			delete_site_transient( 'update_plugins' );
@@ -229,6 +244,7 @@ class Headwall_GitHub_Plugin_Updater {
 		$cached    = get_transient( $cache_key );
 
 		if ( is_array( $cached ) ) {
+			$this->log( 'get_latest_release: using cached release data.' );
 			$release = $cached;
 		} else {
 			$url      = sprintf( 'https://api.github.com/repos/%s/releases/latest', $this->github_repo );
@@ -242,13 +258,23 @@ class Headwall_GitHub_Plugin_Updater {
 				)
 			);
 
-			if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+			if ( is_wp_error( $response ) ) {
+				$this->log( 'get_latest_release: HTTP request failed — ' . $response->get_error_message() );
+			} elseif ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+				$this->log( 'get_latest_release: GitHub returned HTTP ' . wp_remote_retrieve_response_code( $response ) . '.' );
+			} else {
 				$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-				if ( is_array( $body ) && ! empty( $body['tag_name'] ) ) {
+				if ( ! is_array( $body ) || empty( $body['tag_name'] ) ) {
+					$this->log( 'get_latest_release: response JSON missing tag_name.' );
+				} else {
 					$zip_url = $this->find_zip_asset( $body );
 
-					if ( ! empty( $zip_url ) ) {
+					if ( empty( $zip_url ) ) {
+						$this->log( 'get_latest_release: no matching .zip asset for tag ' . $body['tag_name'] . '.' );
+					} else {
+						$this->log( 'get_latest_release: found release ' . $body['tag_name'] . '.' );
+
 						$release = array(
 							'version'      => ltrim( $body['tag_name'], 'v' ),
 							'zip_url'      => $zip_url,
@@ -311,5 +337,18 @@ class Headwall_GitHub_Plugin_Updater {
 	 */
 	private function get_cache_key(): string {
 		return 'headwall_ghu_' . md5( $this->github_repo );
+	}
+
+	/**
+	 * Log a message to the PHP error log, prefixed with the plugin slug.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $message The message to log.
+	 */
+	private function log( string $message ): void {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'HW_GitHub_Updater [' . $this->plugin_slug . ']: ' . $message );  // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging.
+		}
 	}
 }

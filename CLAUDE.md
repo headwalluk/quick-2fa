@@ -159,6 +159,8 @@ wp quick-2fa emergency_disable --yes        # Disable 2FA entirely
 4. Run `phpcs` to verify compliance
 5. Tag release in git
 
+**Important:** The `Version` in `quick-2fa.php` must always correspond to a real GitHub Release tag. Setting it to a version that doesn't exist on GitHub will degrade the updater experience. See `dev-notes/workflows/github-release.md` for details.
+
 ## Developer Documentation
 
 Detailed pattern guides live in `dev-notes/patterns/` covering: admin tabs, caching, database, JavaScript, settings API, templates, and WooCommerce integration. The copilot instructions at `.github/copilot-instructions.md` contain comprehensive coding standards.
