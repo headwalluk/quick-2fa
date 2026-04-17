@@ -3,11 +3,11 @@
  * Plugin Name: Quick 2FA
  * Plugin URI: https://github.com/headwalluk/quick-2fa
  * Description: Lightweight email-based two-factor authentication for WordPress admin access.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Paul Faulkner
- * Author URI: https://power-plugins.com
+ * Author URI: https://headwall-hosting.com
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: quick-2fa
@@ -19,7 +19,7 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || die();
 
-define( 'QUICK_2FA_VERSION', '1.0.0' );
+define( 'QUICK_2FA_VERSION', '1.0.1' );
 define( 'QUICK_2FA_FILE', __FILE__ );
 define( 'QUICK_2FA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'QUICK_2FA_URL', plugin_dir_url( __FILE__ ) );

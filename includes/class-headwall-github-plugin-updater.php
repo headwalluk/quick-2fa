@@ -3,15 +3,16 @@
  * GitHub Plugin Updater — drop-in auto-update from GitHub Releases.
  *
  * Portable: copy this file into any WordPress plugin's includes/ directory,
- * require it, and instantiate with one line. The class_exists guard prevents
- * conflicts when multiple plugins bundle the same file.
+ * require it, and instantiate with one line. A version constant guard
+ * (HW_GITHUB_UPDATER_VERSION) prevents conflicts when multiple plugins
+ * bundle the same file — only the first-loaded copy runs.
  *
  * Usage:
  *   require_once __DIR__ . '/includes/class-headwall-github-plugin-updater.php';
  *   new Headwall_GitHub_Plugin_Updater( __FILE__, 'owner/repo-name' );
  *
  * @package Headwall
- * @version 1.1.0
+ * @version 1.1.2
  * @license GPLv2+
  * @author  Paul Faulkner — Headwall Hosting (https://headwall-hosting.com/)
  */
@@ -25,7 +26,7 @@ if ( defined( 'HW_GITHUB_UPDATER_VERSION' ) ) {
 	return;
 }
 
-define( 'HW_GITHUB_UPDATER_VERSION', '1.1.0' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Shared constant across plugins.
+define( 'HW_GITHUB_UPDATER_VERSION', '1.1.2' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Shared constant across plugins.
 
 /**
  * Checks GitHub Releases for plugin updates and hooks into the

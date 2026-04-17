@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,10 +48,16 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.0.1 =
+Fix: restore compatibility with WordPress's theme/plugin file editor — "Update File" no longer reverts changes with a `loopback_request_failed` error. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
 = 1.0.0 =
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Bug fix for the built-in theme/plugin file editor. Recommended for any site that uses **Appearance → Theme File Editor** or **Plugins → Plugin File Editor**.
 
 = 1.0.0 =
 Initial public release.

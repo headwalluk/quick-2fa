@@ -62,6 +62,8 @@ The following requests skip the 2FA check entirely. **This is intentional and im
 | Application Passwords | Already represents an explicit out-of-band credential decision |
 | User Switching plugin | Admin-initiated impersonation, already authenticated as admin |
 | Already on a `?q2fa=` page | Prevents redirect loops |
+| Theme/plugin editor loopback | Core's fatal-error check after a PHP edit loops back with cookie auth but WP's own User-Agent, which would otherwise fail the trusted-device check and cause the edit to be reverted. Validated against core's `scrape_key_*` transient so bare query params don't bypass |
+| Plugin mode set to `disabled` | The master off switch — useful as a temporary recovery state (see [configuration](configuration.md#mode)) |
 
 If you need to *also* protect any of these endpoints, that's a different security control (Application Passwords with strong scope, IP allow-listing at the web server, etc.) — Quick 2FA deliberately stays out of those layers.
 

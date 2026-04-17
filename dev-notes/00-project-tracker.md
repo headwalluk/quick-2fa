@@ -1,8 +1,8 @@
 # Project Tracker — Quick 2FA
 
-**Current Version:** 1.0.0
+**Current Version:** 1.0.1
 **Distribution:** GitHub releases via in-plugin auto-updater (`headwalluk/quick-2fa`)
-**Status:** v1.0.0 released — first public GitHub distribution
+**Status:** v1.0.1 released — theme/plugin editor loopback fix
 
 > **Internal notes only.** Anything user-facing belongs in `docs/` (for site administrators and integrators) or `readme.txt` / `README.md` (for the GitHub landing page). This file is for development planning and historical context.
 
@@ -13,6 +13,38 @@
 Quick 2FA is distributed via GitHub releases, **not** the wordpress.org plugin directory. Sites receive updates automatically through the bundled `Headwall_GitHub_Plugin_Updater` (see `includes/class-headwall-github-plugin-updater.php`), which polls `api.github.com/repos/headwalluk/quick-2fa/releases/latest` and serves the `quick-2fa.zip` asset attached to each release.
 
 A future wordpress.org submission is possible but not currently planned. If we revisit it, the in-plugin updater would need to be removed (wp.org plugins cannot use third-party update servers).
+
+---
+
+## Active TODO — theme/plugin editor loopback fix
+
+When an administrator edits a PHP file via **Appearance → Theme File Editor** (or the plugin editor) and clicks **Update File**, core runs `wp_edit_theme_plugin_file()` in `wp-admin/includes/file.php`. That function saves the file and then issues a loopback `wp_remote_get()` to `admin_url( 'theme-editor.php' )` (or `plugin-editor.php`) with `wp_scrape_key` + `wp_scrape_nonce` query params, carrying the admin's cookies, to verify the edit didn't whitescreen the site.
+
+Because the loopback hits an admin URL, `admin_init` fires and Quick 2FA's `check_verification()` runs. The loopback carries the admin's auth cookie but uses WordPress's own User-Agent, so the `IP + UA` device fingerprint doesn't match the user's trusted-device record → the loopback is redirected to `wp-login.php?q2fa=verify`. Core follows the redirect, fails to find the `###### wp_scraping_result_start:... ######` marker in the body, and reports `loopback_request_failed`, reverting the file change.
+
+Our existing skip list in `should_skip_check()` covers AJAX/REST/cron/CLI/XML-RPC but not this loopback.
+
+**Resolution:** extend `should_skip_check()` to detect the scrape loopback by validating `wp_scrape_key` + `wp_scrape_nonce` against the `scrape_key_*` transient that core itself sets — the same check core uses in `wp_start_scraping_edited_file_errors()`. Skip only when the transient matches, so bare query params alone don't bypass 2FA.
+
+Safety: the transient is only written inside `wp_edit_theme_plugin_file()`, which core gates behind `edit_themes` / `edit_plugins` capability checks; TTL is 60 seconds; the loopback still requires the admin's auth cookie to do anything meaningful.
+
+- [x] Add scrape-loopback clause to `should_skip_check()` in `functions-private.php`
+- [x] Manually reproduce the failure on `devx.headwall.tech` before the fix
+- [x] Verify fix: edit `functions.php` in the theme editor, confirm "File edited successfully." reply
+- [x] Verify fix for plugin editor path too (`plugin-editor.php`) — shared code path: core uses the same `wp_edit_theme_plugin_file()` + scrape-key transient for both editors, and our skip check is URL-agnostic
+- [x] Confirm bare `?wp_scrape_key=…&wp_scrape_nonce=…` (without a matching transient) still triggers 2FA — guaranteed by the `get_transient(...) === $scrape_nonce` validation: `get_transient()` returns `false` when the key isn't set, never matching any supplied nonce
+- [x] `phpcs` clean
+- [x] `docs/how-it-works.md` bypass table updated with the new skip clause
+- [x] CHANGELOG entry + patch version bump (v1.0.1)
+
+---
+
+## Active TODO — housekeeping
+
+A rolling catch-all for code-cleanliness items that are too small to justify their own milestone but shouldn't be forgotten. Pick these off opportunistically — ideally bundled into the next release that's already touching nearby code.
+
+- [ ] **Remove dead lockout constants.** `RATE_LIMIT_ACCOUNT_LOCK_THRESHOLD` (10), `RATE_LIMIT_ACCOUNT_LOCK_WINDOW` (3600), and `RATE_LIMIT_ACCOUNT_LOCK_DURATION` (3600) are defined in `constants.php:66-68` but never referenced. The active lockout threshold is actually `RATE_LIMIT_VERIFICATION_MAX` (5), used in `class-verification-code-handler.php:251,272,284`. The actual lockout *duration* comes from the `OPTION_LOCKOUT_DURATION` setting (60 minutes default), not a constant. Delete the three dead constants — they mislead anyone reading `constants.php` into thinking lockout policy is 10/hour.
+- [ ] **Correct `CLAUDE.md` rate-limit claim.** `CLAUDE.md` currently states *"10 failed attempts in 1 hour triggers 1-hour lockout (all configurable via constants)"* under the Security Implementation section. That matches the dead constants but not the live behaviour — actual behaviour is **5 failed verification attempts per session triggers lockout, duration controlled by the `Lockout duration` setting (60 min default)**. Fix the sentence to match reality, ideally after the dead constants above are removed so there's a single source of truth.
 
 ---
 
@@ -63,7 +95,8 @@ The v1.0.0 milestone is the first GitHub release with the auto-updater wired up.
 | v0.11.2 | Default mode changed to "all users" |
 | v0.12.0 | Translation scaffolding |
 | v0.12.2 | Plugin Check conformance fixes, template variable rename `$q2fa_*` → `$quick_2fa_*` |
-| **v1.0.0** | **GitHub-distribution milestone (in progress)** |
+| v1.0.0 | First public GitHub release with in-plugin auto-updater |
+| **v1.0.1** | **Theme/plugin file editor loopback fix** |
 
 ---
 

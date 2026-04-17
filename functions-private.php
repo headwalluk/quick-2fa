@@ -347,6 +347,23 @@ function should_skip_check(): bool {
 		return true;
 	}
 
+	// Theme/plugin editor loopback: core hits an admin URL with wp_scrape_key +
+	// wp_scrape_nonce to check that a PHP edit didn't whitescreen the site. The
+	// loopback carries the admin's auth cookie but WordPress's own User-Agent,
+	// so it looks like an untrusted device to us — redirecting it would cause
+	// core to revert the edit with "loopback_request_failed". Validate against
+	// the transient core itself sets so bare query params can't bypass 2FA.
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Validated against transient below.
+	if ( isset( $_REQUEST['wp_scrape_key'], $_REQUEST['wp_scrape_nonce'] ) ) {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Validated against transient below.
+		$scrape_key = substr( sanitize_key( wp_unslash( $_REQUEST['wp_scrape_key'] ) ), 0, 32 );
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Compared as string to transient below.
+		$scrape_nonce = (string) wp_unslash( $_REQUEST['wp_scrape_nonce'] );
+		if ( (string) get_transient( 'scrape_key_' . $scrape_key ) === $scrape_nonce ) {
+			return true;
+		}
+	}
+
 	// Plugin is disabled.
 	$mode = get_option( OPTION_MODE, DEFAULT_MODE );
 	if ( MODE_DISABLED === $mode ) {
@@ -376,7 +393,7 @@ function mask_email( string $email ): string {
 		return $email;
 	}
 
-	list( $local, $domain ) = $parts;
+	[$local, $domain] = $parts;
 
 	$local_masked = mb_substr( $local, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $local ) - 1 ) );
 	$domain_parts = explode( '.', $domain );
