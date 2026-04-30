@@ -51,12 +51,7 @@ add_filter( 'quick2fa_password_parameters', function( $params ) {
 Quick 2FA's GitHub updater can be turned off per-site:
 
 ```php
-add_filter( 'headwall_github_updater_enabled', function( $enabled, $plugin_slug ) {
-    if ( 'quick-2fa' !== $plugin_slug ) {
-        return $enabled;
-    }
-
-    // Disable on staging and local environments.
+add_filter( 'quick_2fa_updater_enabled', function( $enabled ) {
     if ( defined( 'WP_ENVIRONMENT_TYPE' ) ) {
         $env = WP_ENVIRONMENT_TYPE;
         if ( 'staging' === $env || 'local' === $env || 'development' === $env ) {
@@ -65,7 +60,7 @@ add_filter( 'headwall_github_updater_enabled', function( $enabled, $plugin_slug 
     }
 
     return $enabled;
-}, 10, 2 );
+} );
 ```
 
 ## Pin Quick 2FA to a specific version on a critical site
@@ -73,12 +68,7 @@ add_filter( 'headwall_github_updater_enabled', function( $enabled, $plugin_slug 
 Same filter — disable updates entirely on the production site, then update manually after testing on staging:
 
 ```php
-add_filter( 'headwall_github_updater_enabled', function( $enabled, $plugin_slug ) {
-    if ( 'quick-2fa' === $plugin_slug ) {
-        return false;
-    }
-    return $enabled;
-}, 10, 2 );
+add_filter( 'quick_2fa_updater_enabled', '__return_false' );
 ```
 
 ## Exempt a specific user role from 2FA

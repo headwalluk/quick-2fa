@@ -4,6 +4,22 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-04-30
+
+### ⚠️ Breaking
+
+- **The `headwall_github_updater_enabled` filter has been renamed to `quick_2fa_updater_enabled`.** Any site using the old filter to disable auto-updates (e.g. on staging environments) will silently stop honouring it after upgrade — auto-updates will re-enable. Update your `add_filter()` call to the new name. The new filter takes a single `bool $enabled` argument; the previous `$plugin_slug` and `$github_repo` arguments are gone (they only made sense when the updater was shared across multiple plugins).
+
+### Changed
+
+- The bundled `Headwall_GitHub_Plugin_Updater` class has been integrated into the plugin namespace as `Quick_2FA\Github_Updater` (file: `includes/class-github-updater.php`). The portable single-file design with the `HW_GITHUB_UPDATER_VERSION` collision guard is gone — it was useful when the same file was copy-pasted into multiple plugins, but Quick 2FA is the only plugin shipping it.
+- Updater configuration (GitHub repo, cache key, cache TTL) lives in `constants.php` alongside the rest of the plugin's control knobs.
+- The release-data transient key has changed from `headwall_ghu_<md5(repo)>` to `quick_2fa_github_release`. Existing cached data will simply expire on its 12-hour TTL after upgrade — no migration needed.
+
+### Documentation
+
+- Hooks reference, troubleshooting guide, and developer extending guide updated for the new filter name.
+
 ## [1.0.1] — 2026-04-17
 
 ### Fixed

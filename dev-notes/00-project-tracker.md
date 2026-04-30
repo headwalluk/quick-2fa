@@ -10,7 +10,7 @@
 
 ## Distribution model
 
-Quick 2FA is distributed via GitHub releases, **not** the wordpress.org plugin directory. Sites receive updates automatically through the bundled `Headwall_GitHub_Plugin_Updater` (see `includes/class-headwall-github-plugin-updater.php`), which polls `api.github.com/repos/headwalluk/quick-2fa/releases/latest` and serves the `quick-2fa.zip` asset attached to each release.
+Quick 2FA is distributed via GitHub releases, **not** the wordpress.org plugin directory. Sites receive updates automatically through the in-plugin `Quick_2FA\Github_Updater` (see `includes/class-github-updater.php`), which polls `api.github.com/repos/headwalluk/quick-2fa/releases/latest` and serves the `quick-2fa.zip` asset attached to each release.
 
 A future wordpress.org submission is possible but not currently planned. If we revisit it, the in-plugin updater would need to be removed (wp.org plugins cannot use third-party update servers).
 

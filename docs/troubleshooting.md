@@ -116,10 +116,10 @@ Lock durations are baked in at the moment of lockout. Existing locked accounts w
 Quick 2FA polls GitHub for new releases on a 12-hour cache TTL. To force an immediate check:
 
 ```bash
-wp transient delete headwall_ghu_$(echo -n 'headwalluk/quick-2fa' | md5sum | cut -d' ' -f1)
+wp transient delete quick_2fa_github_release
 wp transient delete update_plugins --network
 ```
 
 Then visit **Dashboard → Updates** in the WordPress admin to trigger a fresh check.
 
-If you want to disable auto-updates entirely (e.g. on staging or for a specific site), see the [`headwall_github_updater_enabled` filter](developers/hooks-and-filters.md#headwall_github_updater_enabled).
+If you want to disable auto-updates entirely (e.g. on staging or for a specific site), see the [`quick_2fa_updater_enabled` filter](developers/hooks-and-filters.md#quick_2fa_updater_enabled).

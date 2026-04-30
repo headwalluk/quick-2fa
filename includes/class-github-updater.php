@@ -1,32 +1,19 @@
 <?php
 /**
- * GitHub Plugin Updater — drop-in auto-update from GitHub Releases.
+ * GitHub Updater.
  *
- * Portable: copy this file into any WordPress plugin's includes/ directory,
- * require it, and instantiate with one line. A version constant guard
- * (HW_GITHUB_UPDATER_VERSION) prevents conflicts when multiple plugins
- * bundle the same file — only the first-loaded copy runs.
+ * Hooks into the WordPress plugin update system to check the configured
+ * GitHub repository for new releases and serve them as standard plugin
+ * updates.
  *
- * Usage:
- *   require_once __DIR__ . '/includes/class-headwall-github-plugin-updater.php';
- *   new Headwall_GitHub_Plugin_Updater( __FILE__, 'owner/repo-name' );
- *
- * @package Headwall
- * @version 1.1.2
- * @license GPLv2+
- * @author  Paul Faulkner — Headwall Hosting (https://headwall-hosting.com/)
+ * @package Quick_2FA
+ * @since 1.0.0
  */
 
-// Block direct access.
+namespace Quick_2FA;
+
+// Exit if accessed directly.
 defined( 'ABSPATH' ) || die();
-
-// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound -- Intentionally portable class shared across plugins.
-
-if ( defined( 'HW_GITHUB_UPDATER_VERSION' ) ) {
-	return;
-}
-
-define( 'HW_GITHUB_UPDATER_VERSION', '1.1.2' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Shared constant across plugins.
 
 /**
  * Checks GitHub Releases for plugin updates and hooks into the
@@ -34,72 +21,30 @@ define( 'HW_GITHUB_UPDATER_VERSION', '1.1.2' ); // phpcs:ignore WordPress.Naming
  *
  * @since 1.0.0
  */
-class Headwall_GitHub_Plugin_Updater {
+class Github_Updater {
 
 	/**
-	 * Absolute path to the main plugin file.
-	 *
-	 * @var string
-	 */
-	private string $plugin_file;
-
-	/**
-	 * Plugin basename (e.g. "vulnz-agent/vulnz-agent.php").
+	 * Plugin basename (e.g. "quick-2fa/quick-2fa.php").
 	 *
 	 * @var string
 	 */
 	private string $plugin_basename;
 
 	/**
-	 * Plugin slug (directory name, e.g. "vulnz-agent").
+	 * Plugin slug (directory name).
 	 *
 	 * @var string
 	 */
 	private string $plugin_slug;
 
 	/**
-	 * Current installed version from the plugin header.
-	 *
-	 * @var string
-	 */
-	private string $current_version;
-
-	/**
-	 * GitHub repository in "owner/repo" format.
-	 *
-	 * @var string
-	 */
-	private string $github_repo;
-
-	/**
-	 * Transient cache TTL in seconds.
-	 *
-	 * @var int
-	 */
-	private int $cache_ttl;
-
-	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
-	 *
-	 * @param string $plugin_file Absolute path to the main plugin file (__FILE__).
-	 * @param string $github_repo GitHub repo in "owner/repo" format.
-	 * @param int    $cache_ttl   Transient cache TTL in seconds. Default 12 hours.
 	 */
-	public function __construct( string $plugin_file, string $github_repo, int $cache_ttl = 43200 ) {
-		$this->plugin_file     = $plugin_file;
-		$this->plugin_basename = plugin_basename( $plugin_file );
+	public function __construct() {
+		$this->plugin_basename = QUICK_2FA_BASENAME;
 		$this->plugin_slug     = dirname( $this->plugin_basename );
-		$this->github_repo     = $github_repo;
-		$this->cache_ttl       = $cache_ttl;
-
-		// Read current version from plugin header.
-		if ( ! function_exists( 'get_plugin_data' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-		$plugin_data           = get_plugin_data( $plugin_file, false, false );
-		$this->current_version = $plugin_data['Version'] ?? '0.0.0';
 
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
 		add_filter( 'plugins_api', array( $this, 'plugin_info' ), 10, 3 );
@@ -107,27 +52,25 @@ class Headwall_GitHub_Plugin_Updater {
 	}
 
 	/**
-	 * Check whether GitHub auto-updates are enabled for this plugin.
+	 * Check whether GitHub auto-updates are enabled.
 	 *
-	 * @since 1.1.0
+	 * @since 1.0.0
 	 *
 	 * @return bool
 	 */
 	private function is_enabled(): bool {
 		/**
-		 * Filter whether GitHub auto-updates are enabled for a plugin.
+		 * Filter whether GitHub auto-updates are enabled for Quick 2FA.
 		 *
-		 * Return false to disable update checks for the given plugin slug.
-		 * Useful for staging environments, local development, or temporarily
-		 * pinning a plugin to its current version.
+		 * Return false to disable update checks. Useful for staging
+		 * environments, local development, or temporarily pinning the
+		 * plugin to its current version.
 		 *
-		 * @since 1.1.0
+		 * @since 1.0.0
 		 *
-		 * @param bool   $enabled     Whether auto-updates are enabled. Default true.
-		 * @param string $plugin_slug The plugin directory name (e.g. "vulnz-agent").
-		 * @param string $github_repo The GitHub repo in "owner/repo" format.
+		 * @param bool $enabled Whether auto-updates are enabled. Default true.
 		 */
-		return (bool) apply_filters( 'headwall_github_updater_enabled', true, $this->plugin_slug, $this->github_repo ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Shared hook across plugins.
+		return (bool) apply_filters( 'quick_2fa_updater_enabled', true );
 	}
 
 	/**
@@ -151,10 +94,10 @@ class Headwall_GitHub_Plugin_Updater {
 
 			if ( ! is_array( $release ) ) {
 				$this->log( 'check_for_update: no release data returned from GitHub.' );
-			} elseif ( version_compare( $this->current_version, $release['version'], '>=' ) ) {
-				$this->log( 'check_for_update: current version ' . $this->current_version . ' is up to date (latest: ' . $release['version'] . ').' );
+			} elseif ( version_compare( QUICK_2FA_VERSION, $release['version'], '>=' ) ) {
+				$this->log( 'check_for_update: current version ' . QUICK_2FA_VERSION . ' is up to date (latest: ' . $release['version'] . ').' );
 			} else {
-				$this->log( 'check_for_update: update available ' . $this->current_version . ' → ' . $release['version'] . '.' );
+				$this->log( 'check_for_update: update available ' . QUICK_2FA_VERSION . ' → ' . $release['version'] . '.' );
 				$transient->response[ $this->plugin_basename ] = (object) array(
 					'slug'        => $this->plugin_slug,
 					'plugin'      => $this->plugin_basename,
@@ -186,7 +129,10 @@ class Headwall_GitHub_Plugin_Updater {
 		$release = $this->get_latest_release();
 
 		if ( is_array( $release ) ) {
-			$plugin_data = get_plugin_data( $this->plugin_file, false, true );
+			if ( ! function_exists( 'get_plugin_data' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+			$plugin_data = get_plugin_data( QUICK_2FA_FILE, false, true );
 
 			$result                = new \stdClass();
 			$result->name          = $plugin_data['Name'] ?? $this->plugin_slug;
@@ -226,7 +172,7 @@ class Headwall_GitHub_Plugin_Updater {
 			! empty( $options['plugins'] ) &&
 			in_array( $this->plugin_basename, $options['plugins'], true )
 		) {
-			delete_transient( $this->get_cache_key() );
+			delete_transient( UPDATER_CACHE_KEY );
 			delete_site_transient( 'update_plugins' );
 		}
 	}
@@ -241,14 +187,13 @@ class Headwall_GitHub_Plugin_Updater {
 	private function get_latest_release(): ?array {
 		$release = null;
 
-		$cache_key = $this->get_cache_key();
-		$cached    = get_transient( $cache_key );
+		$cached = get_transient( UPDATER_CACHE_KEY );
 
 		if ( is_array( $cached ) ) {
 			$this->log( 'get_latest_release: using cached release data.' );
 			$release = $cached;
 		} else {
-			$url      = sprintf( 'https://api.github.com/repos/%s/releases/latest', $this->github_repo );
+			$url      = sprintf( 'https://api.github.com/repos/%s/releases/latest', UPDATER_GITHUB_REPO );
 			$response = wp_remote_get(
 				$url,
 				array(
@@ -284,7 +229,7 @@ class Headwall_GitHub_Plugin_Updater {
 							'published_at' => $body['published_at'] ?? '',
 						);
 
-						set_transient( $cache_key, $release, $this->cache_ttl );
+						set_transient( UPDATER_CACHE_KEY, $release, UPDATER_CACHE_TTL );
 					}
 				}
 			}
@@ -297,7 +242,7 @@ class Headwall_GitHub_Plugin_Updater {
 	 * Find the plugin ZIP asset from a GitHub release.
 	 *
 	 * Looks for a .zip asset whose name matches the plugin slug
-	 * (e.g. "vulnz-agent.zip" or "vulnz-agent-2.2.1.zip").
+	 * (e.g. "quick-2fa.zip" or "quick-2fa-1.0.0.zip").
 	 * Prefers the stable "{slug}.zip" over a versioned match.
 	 *
 	 * @since 1.0.0
@@ -330,26 +275,15 @@ class Headwall_GitHub_Plugin_Updater {
 	}
 
 	/**
-	 * Get the transient cache key for this plugin's release data.
+	 * Log a message to the PHP error log when WP_DEBUG is on.
 	 *
 	 * @since 1.0.0
-	 *
-	 * @return string
-	 */
-	private function get_cache_key(): string {
-		return 'headwall_ghu_' . md5( $this->github_repo );
-	}
-
-	/**
-	 * Log a message to the PHP error log, prefixed with the plugin slug.
-	 *
-	 * @since 1.1.0
 	 *
 	 * @param string $message The message to log.
 	 */
 	private function log( string $message ): void {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( 'HW_GitHub_Updater [' . $this->plugin_slug . ']: ' . $message );  // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging.
+			error_log( 'Quick_2FA Github_Updater: ' . $message );  // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging.
 		}
 	}
 }

@@ -104,6 +104,15 @@ const LOG_ACCOUNT_UNLOCKED     = 'account_unlocked';
 const LOG_PASSWORD_CHANGED     = 'password_changed';
 
 /**
+ * GitHub updater.
+ *
+ * @since 1.0.0
+ */
+const UPDATER_GITHUB_REPO = 'headwalluk/quick-2fa';
+const UPDATER_CACHE_TTL   = 12 * HOUR_IN_SECONDS;
+const UPDATER_CACHE_KEY   = 'quick_2fa_github_release';
+
+/**
  * Defaults.
  *
  * @since 1.0.0

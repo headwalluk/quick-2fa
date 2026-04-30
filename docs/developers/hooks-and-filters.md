@@ -92,35 +92,26 @@ The generator passes the result to `wp_generate_password()`, so any options that
 
 ---
 
-### `headwall_github_updater_enabled`
+### `quick_2fa_updater_enabled`
 
-Disable the in-plugin GitHub auto-updater for this plugin. Useful for staging environments, local development, or when you want to pin a site to a specific version.
-
-> This filter is shared across multiple Headwall plugins that bundle the same updater class. The plugin slug and repo are passed as additional arguments so you can target a specific plugin.
+Disable the in-plugin GitHub auto-updater. Useful for staging environments, local development, or when you want to pin a site to a specific version.
 
 **Parameters:**
 - `bool $enabled` — `true` by default
-- `string $plugin_slug` — The plugin directory name (e.g. `quick-2fa`)
-- `string $github_repo` — The GitHub `owner/repo` string (e.g. `headwalluk/quick-2fa`)
 
-**Returns:** `bool` — Return `false` to disable update checks for the plugin.
+**Returns:** `bool` — Return `false` to disable update checks.
 
 ```php
-// Disable updates for Quick 2FA only
-add_filter( 'headwall_github_updater_enabled', function( $enabled, $plugin_slug, $github_repo ) {
-    if ( 'quick-2fa' === $plugin_slug ) {
-        return false;
-    }
-    return $enabled;
-}, 10, 3 );
-
 // Disable updates on staging
-add_filter( 'headwall_github_updater_enabled', function( $enabled ) {
+add_filter( 'quick_2fa_updater_enabled', function( $enabled ) {
     if ( defined( 'WP_ENVIRONMENT_TYPE' ) && 'staging' === WP_ENVIRONMENT_TYPE ) {
         return false;
     }
     return $enabled;
 } );
+
+// Pin a production site to its current version
+add_filter( 'quick_2fa_updater_enabled', '__return_false' );
 ```
 
 ## Actions

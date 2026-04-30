@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,9 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.1.0 =
+**Breaking:** the `headwall_github_updater_enabled` filter has been renamed to `quick_2fa_updater_enabled`. Sites using the old filter name will silently stop disabling auto-updates after upgrading — update your `add_filter()` call. The GitHub updater has been integrated into the plugin's namespace as `Quick_2FA\Github_Updater`. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
 = 1.0.1 =
 Fix: restore compatibility with WordPress's theme/plugin file editor — "Update File" no longer reverts changes with a `loopback_request_failed` error. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
@@ -55,6 +58,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+**Breaking filter rename:** `headwall_github_updater_enabled` → `quick_2fa_updater_enabled`. If you use the old filter to disable auto-updates (e.g. on staging), update the filter name before upgrading or auto-updates will silently re-enable.
 
 = 1.0.1 =
 Bug fix for the built-in theme/plugin file editor. Recommended for any site that uses **Appearance → Theme File Editor** or **Plugins → Plugin File Editor**.
@@ -72,4 +78,4 @@ Quick 2FA stores the following data locally on your WordPress site:
 * IP addresses in the event log, for incident investigation
 * Trusted device fingerprints (user meta, hashed)
 
-No data is sent to external services. The in-plugin GitHub updater polls `api.github.com/repos/headwalluk/quick-2fa/releases/latest` on a 12-hour cache to check for updates; disable it via the `headwall_github_updater_enabled` filter if needed.
+No data is sent to external services. The in-plugin GitHub updater polls `api.github.com/repos/headwalluk/quick-2fa/releases/latest` on a 12-hour cache to check for updates; disable it via the `quick_2fa_updater_enabled` filter if needed.

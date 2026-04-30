@@ -20,7 +20,7 @@
 
 ## GitHub Updater: How It Works
 
-The `Headwall_GitHub_Plugin_Updater` class hooks into `pre_set_site_transient_update_plugins`. On each check it:
+The `Quick_2FA\Github_Updater` class hooks into `pre_set_site_transient_update_plugins`. On each check it:
 
 1. Calls the GitHub Releases API (`/repos/{owner}/{repo}/releases/latest`)
 2. Compares the release tag (e.g. `v1.0.0`) against the installed `Version` header
@@ -67,4 +67,4 @@ git push --tags
 
 Then delete the old GitHub Release and create a new one from the new tag.
 
-**Important:** After re-releasing, sites that already updated will have the release cached in a transient (`headwall_ghu_*`) for up to 12 hours. The cached data includes the zip URL, which will be stale if the release was recreated. Sites won't re-fetch until the transient expires.
+**Important:** After re-releasing, sites that already updated will have the release cached in a transient (`quick_2fa_github_release`) for up to 12 hours. The cached data includes the zip URL, which will be stale if the release was recreated. Sites won't re-fetch until the transient expires.
