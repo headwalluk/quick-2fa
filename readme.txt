@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,9 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.1.2 =
+Fix: GitHub updater now logs API failures (HTTP errors, missing release assets, malformed responses) to PHP's `error_log` unconditionally, instead of only when `WP_DEBUG` is on. This silent-failure mode was the reason a private-repo configuration on `headwalluk/quick-2fa` went undiagnosed across earlier versions — the repo has since been made public, so existing installs can now reach `releases/latest`. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
 = 1.1.1 =
 Maintenance release: regenerated translation files (`languages/`) against the current source and validated the in-plugin GitHub updater end-to-end. No code changes.
 
@@ -61,6 +64,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.1.2 =
+Fixes silent failures in the in-plugin GitHub updater. Recommended for all sites — without this fix, a broken updater leaves no trace in `error_log` unless `WP_DEBUG` is enabled.
 
 = 1.1.1 =
 Maintenance release — refreshed translation files. Safe to upgrade.

@@ -4,6 +4,20 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] — 2026-04-30
+
+### Fixed
+
+- **GitHub updater no longer fails silently.** API errors (HTTP failures, non-200 responses, malformed JSON, missing `.zip` assets) now write to PHP's `error_log` unconditionally. Previously these went through the same `WP_DEBUG`-gated logger as routine debug messages, so on production sites — where `WP_DEBUG` is typically off — the updater could be entirely broken with no trace in the logs. The new `log_error()` helper sits alongside the existing debug `log()`; cache hits, "up to date" messages, and other routine flow tracing remain debug-gated. Error log lines now include the request URL so the failure mode is diagnosable from `error_log` alone, without grepping the source.
+
+### Operational
+
+- The `headwalluk/quick-2fa` GitHub repository was made public on 2026-04-30. **This is the actual reason the in-plugin updater was not reaching any sites in v1.0.0–v1.1.1**, despite the documentation describing GitHub Releases as the distribution channel. Unauthenticated calls to a private repo's GitHub API return HTTP 404 (not 403, by design — to avoid leaking the existence of private repos), so the updater's "no release found" code path was being hit on every install. Combined with the silent-logging bug above, this hid the issue completely until v1.1.0 was deployed manually to three sites and v1.1.1 was cut as a no-op test release. No code change is required in v1.1.2 to benefit — the visibility flip alone unblocked existing installs running v1.0.0/v1.0.1/v1.1.0/v1.1.1, which will now jump straight to v1.1.2 on their next update check.
+
+### Translations
+
+- Regenerated `languages/quick-2fa.pot` against v1.1.2. No new translatable strings since v1.1.1; the `.po` files retain their original `Project-Id-Version` per gettext convention.
+
 ## [1.1.1] — 2026-04-30
 
 Maintenance release. No functional code changes.

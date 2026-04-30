@@ -205,19 +205,19 @@ class Github_Updater {
 			);
 
 			if ( is_wp_error( $response ) ) {
-				$this->log( 'get_latest_release: HTTP request failed — ' . $response->get_error_message() );
+				$this->log_error( 'get_latest_release: HTTP request to ' . $url . ' failed — ' . $response->get_error_message() );
 			} elseif ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
-				$this->log( 'get_latest_release: GitHub returned HTTP ' . wp_remote_retrieve_response_code( $response ) . '.' );
+				$this->log_error( 'get_latest_release: GitHub returned HTTP ' . wp_remote_retrieve_response_code( $response ) . ' for ' . $url . '.' );
 			} else {
 				$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 				if ( ! is_array( $body ) || empty( $body['tag_name'] ) ) {
-					$this->log( 'get_latest_release: response JSON missing tag_name.' );
+					$this->log_error( 'get_latest_release: response JSON from ' . $url . ' missing tag_name.' );
 				} else {
 					$zip_url = $this->find_zip_asset( $body );
 
 					if ( empty( $zip_url ) ) {
-						$this->log( 'get_latest_release: no matching .zip asset for tag ' . $body['tag_name'] . '.' );
+						$this->log_error( 'get_latest_release: no matching .zip asset for tag ' . $body['tag_name'] . '.' );
 					} else {
 						$this->log( 'get_latest_release: found release ' . $body['tag_name'] . '.' );
 
@@ -275,7 +275,10 @@ class Github_Updater {
 	}
 
 	/**
-	 * Log a message to the PHP error log when WP_DEBUG is on.
+	 * Log a debug message to the PHP error log when WP_DEBUG is on.
+	 *
+	 * For routine flow tracing — cache hits, version comparisons, "up to date"
+	 * results. Use log_error() for actual failures that warrant investigation.
 	 *
 	 * @since 1.0.0
 	 *
@@ -283,7 +286,22 @@ class Github_Updater {
 	 */
 	private function log( string $message ): void {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( 'Quick_2FA Github_Updater: ' . $message );  // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging.
+			error_log( 'Quick_2FA Github_Updater: ' . $message ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional debug logging.
 		}
+	}
+
+	/**
+	 * Log an error message to the PHP error log unconditionally.
+	 *
+	 * Used for genuine failure conditions (HTTP errors, malformed responses,
+	 * missing release assets) that should always be visible to a sysadmin
+	 * diagnosing why updates aren't flowing — without requiring WP_DEBUG.
+	 *
+	 * @since 1.1.2
+	 *
+	 * @param string $message The message to log.
+	 */
+	private function log_error( string $message ): void {
+		error_log( 'Quick_2FA Github_Updater [error]: ' . $message ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional error logging for updater failures.
 	}
 }
