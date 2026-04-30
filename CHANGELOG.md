@@ -4,6 +4,18 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] — 2026-04-30
+
+Maintenance release. No functional code changes.
+
+### Changed
+
+- Regenerated all translation files in `languages/` against the current source. The POT `Project-Id-Version` is now in sync with the plugin version, the `Author URI` reference matches the v1.0.1 correction (`headwall-hosting.com`), and source line numbers in the `.po` files reflect the current tree. No new translatable strings.
+
+### Internal
+
+- Cut as a real GitHub Release to validate that the in-plugin updater (renamed in v1.1.0 to `Quick_2FA\Github_Updater`) reaches existing installs end-to-end.
+
 ## [1.1.0] — 2026-04-30
 
 ### ⚠️ Breaking

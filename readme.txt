@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,9 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.1.1 =
+Maintenance release: regenerated translation files (`languages/`) against the current source and validated the in-plugin GitHub updater end-to-end. No code changes.
+
 = 1.1.0 =
 **Breaking:** the `headwall_github_updater_enabled` filter has been renamed to `quick_2fa_updater_enabled`. Sites using the old filter name will silently stop disabling auto-updates after upgrading — update your `add_filter()` call. The GitHub updater has been integrated into the plugin's namespace as `Quick_2FA\Github_Updater`. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
@@ -58,6 +61,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Maintenance release — refreshed translation files. Safe to upgrade.
 
 = 1.1.0 =
 **Breaking filter rename:** `headwall_github_updater_enabled` → `quick_2fa_updater_enabled`. If you use the old filter to disable auto-updates (e.g. on staging), update the filter name before upgrading or auto-updates will silently re-enable.

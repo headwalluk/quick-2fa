@@ -1,8 +1,5 @@
-# Copyright (C) 2026 Paul Faulkner
-# This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Language: it_IT\n"
 "Project-Id-Version: Quick 2FA 0.12.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/quick-2fa\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
@@ -12,6 +9,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-04-09T13:09:24+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: it_IT\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: quick-2fa\n"
 
@@ -35,11 +33,6 @@ msgstr "Autenticazione a due fattori leggera basata su e-mail per l'accesso all'
 #: quick-2fa.php
 msgid "Paul Faulkner"
 msgstr "Paul Faulkner"
-
-#. Author URI of the plugin
-#: quick-2fa.php
-msgid "https://power-plugins.com"
-msgstr "https://power-plugins.com"
 
 #. translators: %s: User display name
 #: emails/verification-code.php:20
@@ -69,11 +62,11 @@ msgstr "Se non hai richiesto questo codice, contatta immediatamente l'amministra
 msgid "Your verification code"
 msgstr "Il tuo codice di verifica"
 
-#: functions-private.php:91
+#: functions-private.php:124
 msgid "For your security, we need to verify your identity before you can access the admin area."
 msgstr "Per motivi di sicurezza, dobbiamo verificare la tua identità prima che tu possa accedere all'area amministrativa."
 
-#: functions-private.php:115
+#: functions-private.php:153
 msgid "Regular password changes help keep your account secure. We recommend updating your password every 60 days."
 msgstr "Cambiare regolarmente la password aiuta a garantire la sicurezza del tuo account. Ti consigliamo di aggiornare la password ogni 60 giorni."
 
@@ -552,3 +545,8 @@ msgstr "Verifica"
 #: views/verification-page.php:87
 msgid "Resend Code"
 msgstr "Invia nuovamente il codice"
+
+#. Author URI of the plugin
+#: quick-2fa.php
+msgid "https://headwall-hosting.com"
+msgstr "https://headwall-hosting.com"

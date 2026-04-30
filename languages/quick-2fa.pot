@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Quick 2FA 0.12.2\n"
+"Project-Id-Version: Quick 2FA 1.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/quick-2fa\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-09T13:09:24+00:00\n"
+"POT-Creation-Date: 2026-04-30T18:32:48+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: quick-2fa\n"
@@ -37,7 +37,7 @@ msgstr ""
 
 #. Author URI of the plugin
 #: quick-2fa.php
-msgid "https://power-plugins.com"
+msgid "https://headwall-hosting.com"
 msgstr ""
 
 #. translators: %s: User display name
@@ -68,11 +68,11 @@ msgstr ""
 msgid "Your verification code"
 msgstr ""
 
-#: functions-private.php:91
+#: functions-private.php:124
 msgid "For your security, we need to verify your identity before you can access the admin area."
 msgstr ""
 
-#: functions-private.php:115
+#: functions-private.php:153
 msgid "Regular password changes help keep your account secure. We recommend updating your password every 60 days."
 msgstr ""
 
