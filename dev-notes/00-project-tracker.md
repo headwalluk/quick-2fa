@@ -1,6 +1,6 @@
 # Project Tracker — Quick 2FA
 
-**Current Version:** 1.1.2
+**Current Version:** 1.1.3
 **Distribution:** GitHub releases via in-plugin auto-updater (`headwalluk/quick-2fa`)
 **Status:** Maintenance — feature-complete for the email-only 2FA flow
 
@@ -67,7 +67,8 @@ A full external security audit is planned, scoped outside of Claude Code so the 
 | v1.0.1 | Theme/plugin file editor loopback fix |
 | v1.1.0 | GitHub updater integrated into the plugin namespace as `Quick_2FA\Github_Updater`; public filter renamed `headwall_github_updater_enabled` → `quick_2fa_updater_enabled` (breaking) |
 | v1.1.1 | Maintenance: refreshed translations; cut as a no-op test release for the updater pipeline |
-| **v1.1.2** | **Updater errors now log unconditionally to `error_log`. Diagnosed the root cause of silent v1.0.0–v1.1.1 update failures: the `headwalluk/quick-2fa` repo was private, so unauthenticated API calls returned 404. Repo flipped to public; existing installs now reach updates.** |
+| v1.1.2 | Updater errors now log unconditionally to `error_log`. Diagnosed the root cause of silent v1.0.0–v1.1.1 update failures: the `headwalluk/quick-2fa` repo was private, so unauthenticated API calls returned 404. Repo flipped to public; existing installs now reach updates. |
+| **v1.1.3** | **WordPress 7.0 compatibility. WP 7.0 moved `--wp-admin-theme-color` under body-class scoped selectors in `admin-schemes.min.css`; the 2FA verification and password-reminder templates were missing the `admin-color-modern` body class that core's `wp-login.php` carries, leaving the "Trust this device" checkbox SVG white-on-white. Fix is a one-token addition to each template's body class. `readme.txt` Tested-up-to bumped to 7.0.** |
 
 ---
 

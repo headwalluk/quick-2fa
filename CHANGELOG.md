@@ -4,6 +4,16 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] — 2026-05-21
+
+### Fixed
+
+- **WordPress 7.0 compatibility — "Trust this device" checkbox no longer renders white-on-white.** WP 7.0 reorganises the admin color schemes: the `--wp-admin-theme-color` CSS variable is now defined only inside body-class scoped selectors (`body.admin-color-modern`, `body.admin-color-light`, etc.) in `wp-includes/css/dist/base-styles/admin-schemes.min.css`. Core's `wp-login.php` hardcodes `admin-color-modern` on the login body so the variable resolves; our `views/verification-page.php` and `views/password-page.php` did not, so the variable resolved to nothing and the checkbox SVG fill (which uses it) ended up white on the white form background. Both templates now include `admin-color-modern` in the body class list, matching core. The underlying `wp-base-styles` style handle was already pulled in via the `login` style's dependency chain — no enqueue change was needed.
+
+### Compatibility
+
+- Declared tested up to WordPress 7.0 in `readme.txt`. No new minimum-version bump — the fix is forward-compatible and does not affect WP 6.x sites (the extra body class is inert when the WP 7.0 CSS is not present).
+
 ## [1.1.2] — 2026-04-30
 
 ### Fixed

@@ -2,9 +2,9 @@
 Contributors: headwall
 Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,9 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.1.3 =
+Fix: WordPress 7.0 compatibility — the "Trust this device" checkbox on the 2FA verification page is no longer invisible (white SVG on white background). WP 7.0 scopes the `--wp-admin-theme-color` CSS variable under `body.admin-color-*` selectors; our login-context templates now declare `admin-color-modern` on the body, matching core's `wp-login.php`. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
 = 1.1.2 =
 Fix: GitHub updater now logs API failures (HTTP errors, missing release assets, malformed responses) to PHP's `error_log` unconditionally, instead of only when `WP_DEBUG` is on. This silent-failure mode was the reason a private-repo configuration on `headwalluk/quick-2fa` went undiagnosed across earlier versions — the repo has since been made public, so existing installs can now reach `releases/latest`. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
@@ -64,6 +67,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.1.3 =
+WordPress 7.0 compatibility fix. Recommended for any site running WP 7.0 — without this fix, the "Trust this device" checkbox on the 2FA verification page renders as a white SVG on a white background and appears to be missing.
 
 = 1.1.2 =
 Fixes silent failures in the in-plugin GitHub updater. Recommended for all sites — without this fix, a broken updater leaves no trace in `error_log` unless `WP_DEBUG` is enabled.

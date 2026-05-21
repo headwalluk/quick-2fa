@@ -38,7 +38,7 @@ do_action( 'login_enqueue_scripts' );
 do_action( 'login_head' );
 
 echo '</head>';
-printf( '<body class="login no-js login-action-login wp-core-ui %s">', esc_attr( 'locale-' . sanitize_html_class( strtolower( str_replace( '_', '-', get_locale() ) ) ) ) );
+printf( '<body class="login no-js login-action-login wp-core-ui admin-color-modern %s">', esc_attr( 'locale-' . sanitize_html_class( strtolower( str_replace( '_', '-', get_locale() ) ) ) ) );
 
 echo '<div id="login">';
 printf( '<h1><a href="%s">%s</a></h1>', esc_url( home_url( '/' ) ), esc_html( get_bloginfo( 'name' ) ) );
