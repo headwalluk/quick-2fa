@@ -1,10 +1,10 @@
 === Quick 2FA ===
-Contributors: headwall
+Contributors: headwalluk
 Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,9 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.1.4 =
+Fix: trusted devices no longer trigger an unnecessary second 2FA prompt when an upstream proxy or middlebox cosmetically rewrites the `User-Agent` header (e.g. folding the spaces between UA tokens into commas). The device fingerprint now normalises the user agent — collapsing non-alphanumeric runs to single spaces and lowercasing — before hashing, so trivial formatting changes no longer break the trusted-device match. Note: this is a one-time upgrade cost — because the fingerprint formula changes, all existing trusted devices stop matching and every user re-verifies once after updating. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
 = 1.1.3 =
 Fix: WordPress 7.0 compatibility — the "Trust this device" checkbox on the 2FA verification page is no longer invisible (white SVG on white background). WP 7.0 scopes the `--wp-admin-theme-color` CSS variable under `body.admin-color-*` selectors; our login-context templates now declare `admin-color-modern` on the body, matching core's `wp-login.php`. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
@@ -67,6 +70,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.1.4 =
+Fixes spurious repeat 2FA prompts caused by proxies that rewrite the User-Agent header. Recommended for all sites. One-time effect: every trusted device must re-verify once after this update, as the device-fingerprint format has changed.
 
 = 1.1.3 =
 WordPress 7.0 compatibility fix. Recommended for any site running WP 7.0 — without this fix, the "Trust this device" checkbox on the 2FA verification page renders as a white SVG on a white background and appears to be missing.

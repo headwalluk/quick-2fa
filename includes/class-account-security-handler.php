@@ -197,7 +197,7 @@ class Account_Security_Handler {
 	 */
 	public function get_device_fingerprint(): string {
 		$ip         = self::get_client_ip();
-		$user_agent = self::get_client_user_agent();
+		$user_agent = normalize_user_agent( self::get_client_user_agent() );
 
 		$fingerprint = $ip . '|' . $user_agent;
 		return hash( 'sha256', $fingerprint );

@@ -4,6 +4,16 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] — 2026-06-09
+
+### Fixed
+
+- **Trusted devices no longer cause a spurious second 2FA prompt when an upstream proxy rewrites the `User-Agent` header.** The device fingerprint is `sha256( ip | user_agent )` (`Account_Security_Handler::get_device_fingerprint()`), so any byte-level change to the UA produces a different fingerprint, the stored trusted-device key stops matching, and the user is re-prompted. A client hit this when ~1% of their requests arrived with a cosmetically mangled UA — the whitespace between top-level UA tokens (outside parentheses) folded into commas (`Mozilla/5.0,(Macintosh...` instead of `Mozilla/5.0 (Macintosh...`), the signature of a middlebox/proxy re-serializing the header. The fix adds `normalize_user_agent()` (`functions-private.php`), which collapses every run of non-alphanumeric characters to a single space and lowercases the result before hashing; the comma-folded and original strings now normalise identically. The raw user agent is still used unchanged for event logging and the trusted-device list, so the original header remains diagnosable.
+
+### Migration
+
+- **All existing trusted devices stop matching after this update.** Because the fingerprint formula changed, every previously-trusted device produces a new hash on its next request and every user re-verifies once. There is no migration path (the stored sha256 keys cannot be reversed to re-key them), and trusted devices expire on their normal TTL regardless, so this is self-healing — but expect a single round of re-verification across the user base immediately after upgrading.
+
 ## [1.1.3] — 2026-05-21
 
 ### Fixed
