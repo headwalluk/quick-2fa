@@ -245,25 +245,6 @@ function get_user_agent(): string {
 }
 
 /**
- * Normalize a user agent string for device fingerprinting.
- *
- * Collapses every run of non-alphanumeric characters to a single space and
- * lowercases the result, so cosmetic differences introduced upstream (proxies
- * and middleboxes that re-serialize the header — e.g. folding the whitespace
- * between UA tokens into commas) do not change the fingerprint and force an
- * unnecessary re-verification. The raw user agent is still used for logging
- * and the trusted-device list so the original value remains diagnosable.
- *
- * @since 1.1.4
- * @param string $user_agent Raw user agent string.
- * @return string Normalized user agent.
- */
-function normalize_user_agent( string $user_agent ): string {
-	$normalised = preg_replace( '/[^A-Za-z0-9]+/', ' ', $user_agent );
-	return strtolower( trim( (string) $normalised ) );
-}
-
-/**
  * Get current admin URL.
  *
  * @since 1.0.0

@@ -187,43 +187,76 @@ class Account_Security_Handler {
 	}
 
 	/**
-	 * Get device fingerprint for current request.
+	 * Get the installation-scoped name of the device-trust cookie.
 	 *
-	 * Creates a unique identifier for the current device based on
-	 * IP address and user agent. This is used for trusted device tracking.
+	 * COOKIEHASH ties the cookie to this specific install, mirroring how core
+	 * names its auth cookies.
 	 *
-	 * @since 0.6.0
-	 * @return string Device fingerprint hash.
+	 * @since 1.2.0
+	 * @return string Cookie name.
 	 */
-	public function get_device_fingerprint(): string {
-		$ip         = self::get_client_ip();
-		$user_agent = normalize_user_agent( self::get_client_user_agent() );
+	private function get_device_cookie_name(): string {
+		$suffix = defined( 'COOKIEHASH' ) ? COOKIEHASH : '';
+		return COOKIE_DEVICE_TOKEN . '_' . $suffix;
+	}
 
-		$fingerprint = $ip . '|' . $user_agent;
-		return hash( 'sha256', $fingerprint );
+	/**
+	 * Get the storage key identifying the current device, derived from its cookie.
+	 *
+	 * The browser holds a high-entropy random token in the device cookie; we
+	 * never store that raw token, only its SHA-256 hash, which is the key used
+	 * in META_TRUSTED_DEVICES. Returns an empty string when no usable cookie is
+	 * present (cleared, disabled, or a device we have never trusted).
+	 *
+	 * @since 1.2.0
+	 * @return string SHA-256 of the cookie token, or '' if no token is present.
+	 */
+	public function get_current_device_key(): string {
+		$name = $this->get_device_cookie_name();
+		$key  = '';
+
+		if ( ! empty( $_COOKIE[ $name ] ) ) {
+			// Tokens are bin2hex( random_bytes() ), so a hex-only value is expected;
+			// stripping to [a-f0-9] is the sanitization (phpcs doesn't recognise it).
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized by the hex-only preg_replace below.
+			$token = preg_replace( '/[^a-f0-9]/', '', strtolower( (string) wp_unslash( $_COOKIE[ $name ] ) ) );
+
+			if ( '' !== $token ) {
+				$key = hash( 'sha256', $token );
+			}
+		}
+
+		return $key;
 	}
 
 	/**
 	 * Check if current device is trusted for this user.
 	 *
+	 * Trust is determined entirely by the device-trust cookie token (since
+	 * 1.2.0): identity no longer depends on the client IP or User-Agent, both of
+	 * which churn on modern connections (multi-WAN egress, CGNAT, mobile, IPv6
+	 * privacy addressing) and caused spurious re-verification.
+	 *
 	 * @since 0.6.0
 	 * @return bool True if device is trusted and not expired.
 	 */
 	public function is_device_trusted(): bool {
-		$current_fingerprint = $this->get_device_fingerprint();
-		$trusted_devices     = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
-
+		$key        = $this->get_current_device_key();
 		$is_trusted = false;
 
-		if ( is_array( $trusted_devices ) && isset( $trusted_devices[ $current_fingerprint ] ) ) {
-			$expiry = $trusted_devices[ $current_fingerprint ];
+		if ( '' !== $key ) {
+			$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
 
-			if ( $expiry > time() ) {
-				$is_trusted = true;
-			} else {
-				// Device expired, clean it up.
-				unset( $trusted_devices[ $current_fingerprint ] );
-				update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
+			if ( is_array( $trusted_devices ) && isset( $trusted_devices[ $key ] ) ) {
+				$expiry = $trusted_devices[ $key ];
+
+				if ( $expiry > time() ) {
+					$is_trusted = true;
+				} else {
+					// Trust expired, clean it up.
+					unset( $trusted_devices[ $key ] );
+					update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
+				}
 			}
 		}
 
@@ -231,16 +264,18 @@ class Account_Security_Handler {
 	}
 
 	/**
-	 * Trust current device for this user.
+	 * Trust the current device for this user.
 	 *
-	 * Adds current device fingerprint to user's trusted devices list
-	 * with an expiration timestamp.
+	 * Mints a fresh random token, sends it to the browser as a secure cookie,
+	 * and records the token's hash (never the raw token) against an expiry in the
+	 * user's trusted-device list. Must be called before any output is sent, as it
+	 * sets a cookie header.
 	 *
 	 * @since 0.6.0
+	 * @param int $expiry_seconds How long the trust should last, in seconds.
 	 * @return bool True on success.
 	 */
-	public function trust_device(): bool {
-		$fingerprint     = $this->get_device_fingerprint();
+	public function trust_device( int $expiry_seconds ): bool {
 		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
 
 		if ( ! is_array( $trusted_devices ) ) {
@@ -248,12 +283,55 @@ class Account_Security_Handler {
 		}
 
 		$this->cleanup_expired_devices();
+		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
 
-		$expiry_days                     = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
-		$expiry                          = time() + $expiry_days * DAY_IN_SECONDS;
-		$trusted_devices[ $fingerprint ] = $expiry;
+		if ( ! is_array( $trusted_devices ) ) {
+			$trusted_devices = array();
+		}
 
-		return update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices ) !== false;
+		$token  = bin2hex( random_bytes( DEVICE_TOKEN_BYTES ) );
+		$key    = hash( 'sha256', $token );
+		$expiry = time() + $expiry_seconds;
+
+		$trusted_devices[ $key ] = $expiry;
+		$stored                  = update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices ) !== false;
+
+		if ( $stored ) {
+			$this->set_device_cookie( $token, $expiry );
+		}
+
+		return $stored;
+	}
+
+	/**
+	 * Send the device-trust cookie to the browser.
+	 *
+	 * Scoped to SITECOOKIEPATH (which covers both wp-login.php and wp-admin,
+	 * where the trust check runs) and marked HttpOnly + SameSite=Lax, and Secure
+	 * whenever the request is over HTTPS.
+	 *
+	 * @since 1.2.0
+	 * @param string $token  Raw token to store in the cookie.
+	 * @param int    $expiry Absolute expiry timestamp.
+	 */
+	private function set_device_cookie( string $token, int $expiry ): void {
+		$path = defined( 'SITECOOKIEPATH' ) ? SITECOOKIEPATH : '/';
+
+		setcookie(
+			$this->get_device_cookie_name(),
+			$token,
+			array(
+				'expires'  => $expiry,
+				'path'     => $path,
+				'domain'   => defined( 'COOKIE_DOMAIN' ) && COOKIE_DOMAIN ? COOKIE_DOMAIN : '',
+				'secure'   => is_ssl(),
+				'httponly' => true,
+				'samesite' => 'Lax',
+			)
+		);
+
+		// Keep the current request consistent with what the browser will send back.
+		$_COOKIE[ $this->get_device_cookie_name() ] = $token;
 	}
 
 	/**

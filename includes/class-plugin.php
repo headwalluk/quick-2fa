@@ -458,23 +458,19 @@ class Plugin {
 					if ( ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
 						$security_handler = new Account_Security_Handler( $user_id );
 
+						// Ticking the box trusts the device for the full configured
+						// expiry; leaving it unticked grants short-term trust matching
+						// the verification period, so the user isn't re-prompted on
+						// every login within that window. Either way the trust is
+						// carried by a secure cookie token set inside trust_device().
 						$trust_device = isset( $_POST['q2fa_trust_device'] ) && '1' === $_POST['q2fa_trust_device'];
 						if ( $trust_device ) {
-							$security_handler->trust_device();
+							$expiry_days = (int) get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 						} else {
-							// Short-term trust matching verification period instead of full device trust duration.
-							$verification_period_days = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
-							$expiry                   = time() + $verification_period_days * DAY_IN_SECONDS;
-
-							$trusted_devices = get_user_meta( $user_id, META_TRUSTED_DEVICES, true );
-							if ( ! is_array( $trusted_devices ) ) {
-								$trusted_devices = array();
-							}
-
-							$fingerprint                     = $security_handler->get_device_fingerprint();
-							$trusted_devices[ $fingerprint ] = $expiry;
-							update_user_meta( $user_id, META_TRUSTED_DEVICES, $trusted_devices );
+							$expiry_days = (int) get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
 						}
+
+						$security_handler->trust_device( $expiry_days * DAY_IN_SECONDS );
 					}
 
 					$return_url = get_return_url( $user_id );
@@ -494,10 +490,17 @@ class Plugin {
 				$message = __( 'A new verification code has been sent to your email.', 'quick-2fa' );
 			}
 		} elseif ( ! $is_post ) {
+			// Plain page load. Only email a new code when there isn't already a
+			// valid one outstanding, so reloads, duplicate tabs, and back-
+			// navigation reuse the existing code rather than sending another.
+			// The Resend button (handled above) remains the explicit way to
+			// force a fresh code.
 			$code_handler = new Verification_Code_Handler( $user_id );
-			$result       = $code_handler->send_via_email();
-			if ( is_wp_error( $result ) ) {
-				$error = $result;
+			if ( ! $code_handler->has_valid_code() ) {
+				$result = $code_handler->send_via_email();
+				if ( is_wp_error( $result ) ) {
+					$error = $result;
+				}
 			}
 		}
 

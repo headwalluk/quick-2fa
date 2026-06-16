@@ -73,7 +73,7 @@ No build step, test framework, or package.json. Code quality is enforced via php
 - **Code storage:** hashed with `wp_hash_password()`, verified with `wp_check_password()` — never store plaintext
 - **Rate limiting:** max 3 code generation requests per 15 min, max 5 verification attempts per session
 - **Account locking:** 10 failed attempts in 1 hour triggers 1-hour lockout (all configurable via constants)
-- **Device fingerprinting:** IP + user agent, hashed for storage, expires after configurable TTL
+- **Device trust:** a random token set as a secure cookie (`HttpOnly`, `SameSite=Lax`, `Secure` on HTTPS); only the token's SHA-256 is stored in user meta, expiring after a configurable TTL. Identity is the cookie, **not** IP/User-Agent (those churn on real connections and are log-only). See `dev-notes/00-project-tracker.md` (v1.2.0) and `docs/trusted-devices.md`
 - **Session management:** on password change, destroy other sessions via `WP_Session_Tokens::destroy_others()` while keeping current session alive
 
 ### 2FA Modes

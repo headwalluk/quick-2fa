@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.1.4
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,9 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.2.0 =
+Device trust is now carried by a secure browser cookie instead of a hash of your IP address and browser. Users on connections where the public IP changes during the day (multi-WAN/failover routers, mobile tethering, CGNAT, IPv6 privacy addressing) were being re-prompted for 2FA repeatedly and, with browser reloads or multiple tabs, receiving several code emails for one login. Trust now follows the device regardless of IP, and a page reload no longer sends a duplicate code. One-time effect: every existing trusted device must re-verify once after this update. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
 = 1.1.4 =
 Fix: trusted devices no longer trigger an unnecessary second 2FA prompt when an upstream proxy or middlebox cosmetically rewrites the `User-Agent` header (e.g. folding the spaces between UA tokens into commas). The device fingerprint now normalises the user agent — collapsing non-alphanumeric runs to single spaces and lowercasing — before hashing, so trivial formatting changes no longer break the trusted-device match. Note: this is a one-time upgrade cost — because the fingerprint formula changes, all existing trusted devices stop matching and every user re-verifies once after updating. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
@@ -70,6 +73,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Trusted devices now use a secure cookie instead of your IP + browser, fixing repeated 2FA prompts and duplicate code emails for staff whose IP changes through the day (multi-WAN, mobile, CGNAT, IPv6). Recommended for all sites. One-time effect: every trusted device must re-verify once after this update.
 
 = 1.1.4 =
 Fixes spurious repeat 2FA prompts caused by proxies that rewrite the User-Agent header. Recommended for all sites. One-time effect: every trusted device must re-verify once after this update, as the device-fingerprint format has changed.
@@ -100,6 +106,6 @@ Quick 2FA stores the following data locally on your WordPress site:
 * Verification and password-change timestamps (user meta)
 * Security event log, capped at 50 entries per user (user meta)
 * IP addresses in the event log, for incident investigation
-* Trusted device fingerprints (user meta, hashed)
+* Trusted device tokens (user meta, stored hashed; the raw token lives only in a secure cookie in the user's browser)
 
 No data is sent to external services. The in-plugin GitHub updater polls `api.github.com/repos/headwalluk/quick-2fa/releases/latest` on a 12-hour cache to check for updates; disable it via the `quick_2fa_updater_enabled` filter if needed.

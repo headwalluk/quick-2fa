@@ -68,6 +68,20 @@ const RATE_LIMIT_ACCOUNT_LOCK_WINDOW    = 3600; // 1 hour in seconds.
 const RATE_LIMIT_ACCOUNT_LOCK_DURATION  = 3600; // 1 hour in seconds.
 
 /**
+ * Trusted-device cookie.
+ *
+ * Device trust is carried by a persistent secure cookie token (since 1.2.0),
+ * not a hash of network attributes (IP/User-Agent). The raw token exists only
+ * in the browser cookie; its SHA-256 hash is what we persist server-side, keyed
+ * into META_TRUSTED_DEVICES. COOKIEHASH is appended to the cookie name at use
+ * time so it is scoped to the installation, mirroring core's auth cookies.
+ *
+ * @since 1.2.0
+ */
+const COOKIE_DEVICE_TOKEN = 'quick2fa_device';
+const DEVICE_TOKEN_BYTES  = 32;
+
+/**
  * Transient key prefixes.
  *
  * @since 1.0.0

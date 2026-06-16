@@ -526,7 +526,9 @@ class User_Management {
 			$trusted_devices = array();
 		}
 
-		$current_fingerprint = $security_handler->get_device_fingerprint();
+		// Key identifying the browser viewing this page, so the list can flag
+		// the current device. Empty when this browser holds no trust cookie.
+		$current_fingerprint = $security_handler->get_current_device_key();
 
 		require QUICK_2FA_PATH . 'views/profile-trusted-devices.php';
 	}

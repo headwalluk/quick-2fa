@@ -4,6 +4,21 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-06-16
+
+### Changed
+
+- **Device trust is now carried by a secure cookie token instead of a hash of network attributes.** Previously a trusted device was identified by `sha256( client_ip | user_agent )`. On modern connections the client IP is simply not stable — multi-WAN/failover routers egress different sessions via different uplinks, mobile tethering and CGNAT rotate the public IP, IPv6 privacy addressing rotates it on a timer — so the fingerprint changed under users who had not changed anything, and they were re-prompted for 2FA repeatedly (in one diagnosed case, a single user presented 8 distinct public IPs across 6 unrelated ranges, switching IP up to three times in a working day). Trust identity is now a cryptographically random 32-byte token (`bin2hex( random_bytes() )`) set as a cookie on the user's browser when they verify; only the token's SHA-256 is stored server-side (in the `_quick2fa_trusted_devices` user meta, keyed as before). The cookie is `HttpOnly`, `SameSite=Lax`, `Secure` over HTTPS, scoped to `SITECOOKIEPATH` and named with `COOKIEHASH`, mirroring core's auth cookies. The client IP and User-Agent no longer participate in trust decisions at all — they are still recorded in the event log for diagnostics. This also retires the spoofable-header concern around `get_ip_address()` for access control (now log-only) and resolves the long-standing shared-NAT/reverse-proxy fingerprint-collision caveat. New API: `Account_Security_Handler::get_current_device_key()`; `trust_device()` now takes an explicit expiry in seconds. Removed: `get_device_fingerprint()` and the v1.1.4 `normalize_user_agent()` helper (its only consumer).
+
+### Fixed
+
+- **A single login no longer sends multiple verification-code emails.** The verification page emailed a brand-new code on every plain GET, so a browser reload, a speculative "preload" request, or two open admin tabs each spawned another code and another email — capped only by the rate limiter at three per fifteen minutes, which is exactly the burst clients reported. Page loads are now idempotent: a new code is sent only when there is no valid, unexpired one already outstanding (new `Verification_Code_Handler::has_valid_code()`), otherwise the existing code is reused. The **Resend Code** button remains the explicit way to force a fresh code.
+- Hardened a latent edge in the old `trust_device()` that added to a pre-cleanup snapshot of the trusted-device list, which could resurrect an entry that had just been pruned for expiry.
+
+### Migration
+
+- **All existing trusted devices stop matching after this update** and every user re-verifies once on their next admin login — the same one-time cost as v1.1.4, for the same underlying reason (the stored keys are no longer derived from anything the request still presents). Stale `IP|User-Agent` entries cannot match a cookie token, are inert security-wise, and are pruned on their normal expiry. No re-keying is possible.
+
 ## [1.1.4] — 2026-06-09
 
 ### Fixed

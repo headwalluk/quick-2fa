@@ -15,24 +15,25 @@
 
 ## I'm being asked to verify on every page load
 
-This usually means trusted devices are disabled and your verification period is set very low. Check **Settings → Quick 2FA**:
+First, check **Settings → Quick 2FA**:
 
-- Verification period (days): if this is `0`, every page load will trigger verification
+- Verification period (days): if this is `0` and trusted devices are disabled, every page load will trigger verification
 - Disable trusted devices: if `true`, every login requires verification (this is by design — see [trusted devices](trusted-devices.md))
+
+If trusted devices are *enabled* and you're still being challenged constantly, the cause is almost always that the **device-trust cookie isn't being kept or sent back**:
+
+- The browser is in a private/incognito window, or is set to clear cookies on close
+- A privacy extension or aggressive cookie policy is stripping the `quick2fa_device_…` cookie
+- You verified on HTTP but are now browsing on HTTPS (or vice versa) — the cookie is marked `Secure` on HTTPS and won't travel to an HTTP request
+- You're switching between different browsers or machines — each is, correctly, a separate device
+
+To confirm: after verifying with "Trust this device" ticked, check your browser's cookies for the current site and look for a `quick2fa_device_…` entry. If it isn't there after a successful verification, something on the client side is discarding it.
+
+> **Note for upgrades from before v1.2.0:** trust used to be keyed on your IP + browser. If your office connection changed public IP through the day (common with multi-WAN/failover routers, mobile tethering, CGNAT, or IPv6), you'd be re-challenged repeatedly. v1.2.0 moves trust onto the cookie above, which is independent of the IP — this is the fix for that exact symptom.
 
 ## My office is behind a reverse proxy or shared NAT
 
-Quick 2FA fingerprints devices as `SHA-256(client_ip + '|' + user_agent)`. Behind a reverse proxy (Cloudflare, AWS ALB, an office firewall), every user appears to come from the proxy's IP.
-
-**Implications:**
-
-- Two users on the same network with the same browser version will produce the *same* fingerprint
-- One user trusting their device may inadvertently extend trust to others on the same network — but **only for the same user account**, since trusted-device lists are stored per-user
-- Across different user accounts, there's no cross-contamination
-
-**The takeaway:** Quick 2FA's device trust is *per-user-per-fingerprint*, not *globally-per-fingerprint*. The collision risk on shared infrastructure is account-internal, not cross-account. That said, on highly shared infrastructure you may want to set "Disable trusted devices" to `true` and rely on per-login verification instead.
-
-A future release may add `X-Forwarded-For` parsing or per-device labels — see the project tracker for the open review item.
+Not a problem since v1.2.0. Device trust is keyed on a per-browser [secure cookie token](trusted-devices.md#what-identifies-a-device), not on the client IP, so it makes no difference whether everyone shares one external IP. (Before v1.2.0, trust was `SHA-256(client_ip + '|' + user_agent)`, which could collide on shared infrastructure and broke whenever the shared IP changed — both issues are now gone.)
 
 ## I am locked out of my own site
 
@@ -95,9 +96,9 @@ If you see suspicious lock activity, treat it as a possible credential compromis
 
 ## "Too many verification codes requested" — but I only requested one
 
-This is the per-user code generation rate limit (3 codes per 15 minutes). If you're seeing this without having requested multiple codes, possible causes:
+This is the per-user code generation rate limit (3 codes per 15 minutes). Since v1.2.0 a plain reload of the verification page reuses the existing valid code instead of sending a new one, so ordinary reloads and multiple tabs no longer eat into the quota. If you're still seeing this without having deliberately requested several codes, possible causes:
 
-- Multiple browser tabs open on the verification page, each triggering a code request on render
+- Repeatedly clicking **Resend Code**, which always forces a fresh code by design
 - A previous session left a partially-completed verification, then you started a fresh login
 - Someone else attempting to log in as you, eating into your quota
 

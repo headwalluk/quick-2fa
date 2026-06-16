@@ -20,3 +20,6 @@ composer.lock
 
 # WordPress
 wp-config.php
+
+# Local diagnostics — may contain unredacted client data (IPs, logs). Never push.
+dev-notes/diagnostics/

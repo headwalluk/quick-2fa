@@ -7,8 +7,8 @@
  *
  * Variables available in this template:
  * @var WP_User $user                User object
- * @var array   $trusted_devices     Array of trusted devices (fingerprint => expiry timestamp)
- * @var string  $current_fingerprint Current device fingerprint
+ * @var array   $trusted_devices     Array of trusted devices (device key => expiry timestamp)
+ * @var string  $current_fingerprint Device key for the current browser, or '' if none
  */
 
 // Exit if accessed directly.

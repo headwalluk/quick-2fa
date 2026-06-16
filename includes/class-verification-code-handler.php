@@ -146,6 +146,27 @@ class Verification_Code_Handler {
 	}
 
 	/**
+	 * Check whether a live (stored and unexpired) code already exists.
+	 *
+	 * Used to keep page-load code delivery idempotent: a plain GET of the
+	 * verification page should only email a new code when there isn't already
+	 * a valid one outstanding. Reloads, duplicate tabs, and back-navigation
+	 * then reuse the existing code instead of generating and emailing another.
+	 *
+	 * @since 1.2.0
+	 * @return bool True if a stored code exists and has not expired.
+	 */
+	public function has_valid_code(): bool {
+		$hash = get_user_meta( $this->user_id, META_CODE_HASH, true );
+
+		if ( empty( $hash ) ) {
+			return false;
+		}
+
+		return ! $this->is_expired();
+	}
+
+	/**
 	 * Get number of remaining verification attempts.
 	 *
 	 * @since 0.4.0
