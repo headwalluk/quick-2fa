@@ -1,13 +1,13 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Quick 2FA 0.12.2\n"
+"Project-Id-Version: Quick 2FA 1.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/quick-2fa\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-09T13:09:24+00:00\n"
+"POT-Creation-Date: 2026-06-18T20:31:42+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Language: en_GB\n"
 "X-Generator: WP-CLI 2.12.0\n"
@@ -34,11 +34,16 @@ msgstr "Lightweight email-based two-factor authentication for WordPress admin ac
 msgid "Paul Faulkner"
 msgstr "Paul Faulkner"
 
+#. Author URI of the plugin
+#: quick-2fa.php
+msgid "https://headwall-hosting.com"
+msgstr "https://headwall-hosting.com"
+
 #. translators: %s: User display name
 #: emails/verification-code.php:20
 #, php-format
 msgid "Hi %s,"
-msgstr "Hello %s,"
+msgstr "Hi %s,"
 
 #. translators: %s: Verification code
 #: emails/verification-code.php:27
@@ -103,13 +108,14 @@ msgid "Invalid action"
 msgstr "Invalid action"
 
 #: includes/class-plugin.php:423
+msgctxt "error page title"
 msgid "Error"
 msgstr "Error"
 
 #: includes/class-plugin.php:445
-#: includes/class-plugin.php:487
-#: includes/class-plugin.php:533
-#: includes/class-plugin.php:549
+#: includes/class-plugin.php:483
+#: includes/class-plugin.php:536
+#: includes/class-plugin.php:552
 msgid "Security check failed. Please try again."
 msgstr "Security check failed. Please try again."
 
@@ -117,19 +123,19 @@ msgstr "Security check failed. Please try again."
 msgid "Please enter the verification code."
 msgstr "Please enter the verification code."
 
-#: includes/class-plugin.php:494
+#: includes/class-plugin.php:490
 msgid "A new verification code has been sent to your email."
 msgstr "A new verification code has been sent to your email."
 
-#: includes/class-plugin.php:580
+#: includes/class-plugin.php:583
 msgid "Quick 2FA is currently disabled."
 msgstr "Quick 2FA is currently disabled."
 
-#: includes/class-plugin.php:581
+#: includes/class-plugin.php:584
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "Your admin area is not protected by two-factor authentication."
 
-#: includes/class-plugin.php:583
+#: includes/class-plugin.php:586
 msgid "Enable 2FA"
 msgstr "Enable 2FA"
 
@@ -158,24 +164,26 @@ msgid "Not Locked Out"
 msgstr "Not Locked Out"
 
 #: includes/class-user-management.php:261
+msgctxt "verb; user row action"
 msgid "Unlock"
 msgstr "Unlock"
 
 #: includes/class-user-management.php:273
+msgctxt "verb; user row action"
 msgid "Lock Out"
 msgstr "Lock Out"
 
 #: includes/class-user-management.php:289
 #: includes/class-user-management.php:345
-#: includes/class-user-management.php:546
-#: includes/class-user-management.php:592
+#: includes/class-user-management.php:548
+#: includes/class-user-management.php:594
 msgid "Security check failed."
 msgstr "Security check failed."
 
 #: includes/class-user-management.php:293
 #: includes/class-user-management.php:349
-#: includes/class-user-management.php:550
-#: includes/class-user-management.php:596
+#: includes/class-user-management.php:552
+#: includes/class-user-management.php:598
 msgid "You do not have permission to perform this action."
 msgstr "You do not have permission to perform this action."
 
@@ -185,8 +193,8 @@ msgstr "You cannot lock out your own account."
 
 #: includes/class-user-management.php:302
 #: includes/class-user-management.php:354
-#: includes/class-user-management.php:555
-#: includes/class-user-management.php:601
+#: includes/class-user-management.php:557
+#: includes/class-user-management.php:603
 msgid "Invalid user."
 msgstr "Invalid user."
 
@@ -222,33 +230,33 @@ msgstr "Too many verification codes requested. Please wait a few more seconds be
 msgid "Too many verification codes requested. Please wait %d minutes before requesting another code."
 msgstr "Too many verification codes requested. Please wait %d minutes before requesting another code."
 
-#: includes/class-verification-code-handler.php:179
+#: includes/class-verification-code-handler.php:200
 msgid "User not found."
 msgstr "User not found."
 
 #. translators: %d: number of minutes until unlock
-#: includes/class-verification-code-handler.php:223
+#: includes/class-verification-code-handler.php:244
 #, php-format
 msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
 msgstr "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
 
-#: includes/class-verification-code-handler.php:232
+#: includes/class-verification-code-handler.php:253
 msgid "No verification code found. Please request a new code."
 msgstr "No verification code found. Please request a new code."
 
 #. translators: %d: number of minutes until expiry
-#: includes/class-verification-code-handler.php:243
+#: includes/class-verification-code-handler.php:264
 #, php-format
 msgid "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
 msgstr "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
 
-#: includes/class-verification-code-handler.php:254
-#: includes/class-verification-code-handler.php:285
+#: includes/class-verification-code-handler.php:275
+#: includes/class-verification-code-handler.php:306
 msgid "Too many failed verification attempts. Your account has been temporarily locked for security."
 msgstr "Too many failed verification attempts. Your account has been temporarily locked for security."
 
 #. translators: %d: number of attempts remaining
-#: includes/class-verification-code-handler.php:279
+#: includes/class-verification-code-handler.php:300
 #, php-format
 msgid "Invalid verification code. You have %d attempt remaining."
 msgid_plural "Invalid verification code. You have %d attempts remaining."
@@ -319,16 +327,19 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: views/profile-trusted-devices.php:30
+msgctxt "table column header"
 msgid "Device"
 msgstr "Device"
 
 #: views/profile-trusted-devices.php:31
+msgctxt "table column header; when device trust expires"
 msgid "Expires"
 msgstr "Expires"
 
 #: views/profile-trusted-devices.php:32
+msgctxt "table column header"
 msgid "Actions"
-msgstr "Shares"
+msgstr "Actions"
 
 #. translators: %d: device number
 #: views/profile-trusted-devices.php:53
@@ -349,10 +360,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: views/profile-trusted-devices.php:66
+msgctxt "device trust expires today"
 msgid "Today"
 msgstr "Today"
 
 #: views/profile-trusted-devices.php:74
+msgctxt "verb; button to revoke a trusted device"
 msgid "Revoke"
 msgstr "Revoke"
 
@@ -370,6 +383,7 @@ msgid "2FA Mode"
 msgstr "2FA Mode"
 
 #: views/settings-page.php:61
+msgctxt "2FA mode option label"
 msgid "Disabled"
 msgstr "Disabled"
 
@@ -409,6 +423,7 @@ msgstr "Verification Period"
 #: views/settings-page.php:142
 #: views/settings-page.php:205
 #: views/settings-page.php:214
+msgctxt "unit suffix after a number input"
 msgid "days"
 msgstr "days"
 
@@ -421,6 +436,7 @@ msgid "Code Length"
 msgstr "Code Length"
 
 #: views/settings-page.php:124
+msgctxt "unit suffix after a number input"
 msgid "digits"
 msgstr "digits"
 
@@ -434,6 +450,7 @@ msgstr "Code Expiry"
 
 #: views/settings-page.php:133
 #: views/settings-page.php:151
+msgctxt "unit suffix after a number input"
 msgid "minutes"
 msgstr "minutes"
 
@@ -467,7 +484,7 @@ msgstr "From Name"
 
 #: views/settings-page.php:166
 msgid "The name that appears in the \"From\" field of verification emails."
-msgstr "The name that appears in the \\\"From\\\" field of verification emails."
+msgstr "The name that appears in the \"From\" field of verification emails."
 
 #: views/settings-page.php:171
 msgid "From Address"
@@ -475,7 +492,7 @@ msgstr "From Address"
 
 #: views/settings-page.php:174
 msgid "The email address that appears in the \"From\" field of verification emails."
-msgstr "The email address that appears in the \\\"From\\\" field of verification emails."
+msgstr "The email address that appears in the \"From\" field of verification emails."
 
 #: views/settings-page.php:179
 msgid "Email Subject"
@@ -539,14 +556,10 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: views/verification-page.php:81
+msgctxt "verb; submit button label"
 msgid "Verify"
 msgstr "Verify"
 
 #: views/verification-page.php:87
 msgid "Resend Code"
 msgstr "Resend Code"
-
-#. Author URI of the plugin
-#: quick-2fa.php
-msgid "https://headwall-hosting.com"
-msgstr "https://headwall-hosting.com"

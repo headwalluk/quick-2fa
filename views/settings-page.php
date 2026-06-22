@@ -58,7 +58,7 @@ printf(
 	esc_attr( $const_option_mode ),
 	esc_attr( $const_mode_disabled ),
 	checked( $mode, $const_mode_disabled, false ),
-	esc_html__( 'Disabled', 'quick-2fa' ),
+	esc_html_x( 'Disabled', '2FA mode option label', 'quick-2fa' ),
 	esc_html__( 'Two-factor authentication is disabled. Not recommended for production sites.', 'quick-2fa' )
 );
 
@@ -112,7 +112,7 @@ printf(
 	esc_html__( 'Verification Period', 'quick-2fa' ),
 	esc_attr( $const_option_verification_period ),
 	esc_attr( $verification_period ),
-	esc_html__( 'days', 'quick-2fa' ),
+	esc_html_x( 'days', 'unit suffix after a number input', 'quick-2fa' ),
 	esc_html__( 'How often users need to re-verify their identity (1-365 days).', 'quick-2fa' )
 );
 
@@ -121,7 +121,7 @@ printf(
 	esc_html__( 'Code Length', 'quick-2fa' ),
 	esc_attr( $const_option_code_length ),
 	esc_attr( $code_length ),
-	esc_html__( 'digits', 'quick-2fa' ),
+	esc_html_x( 'digits', 'unit suffix after a number input', 'quick-2fa' ),
 	esc_html__( 'Length of the verification code (4-8 digits).', 'quick-2fa' )
 );
 
@@ -130,7 +130,7 @@ printf(
 	esc_html__( 'Code Expiry', 'quick-2fa' ),
 	esc_attr( $const_option_code_expiry ),
 	esc_attr( $code_expiry ),
-	esc_html__( 'minutes', 'quick-2fa' ),
+	esc_html_x( 'minutes', 'unit suffix after a number input', 'quick-2fa' ),
 	esc_html__( 'How long verification codes remain valid (5-60 minutes).', 'quick-2fa' )
 );
 
@@ -139,7 +139,7 @@ printf(
 	esc_html__( 'Trust Device Duration', 'quick-2fa' ),
 	esc_attr( $const_option_trusted_device_expiry ),
 	esc_attr( $trusted_device_expiry ),
-	esc_html__( 'days', 'quick-2fa' ),
+	esc_html_x( 'days', 'unit suffix after a number input', 'quick-2fa' ),
 	esc_html__( 'How long a trusted device remains trusted before requiring 2FA again (1-365 days).', 'quick-2fa' )
 );
 
@@ -148,7 +148,7 @@ printf(
 	esc_html__( 'Auto-Lock Duration', 'quick-2fa' ),
 	esc_attr( $const_option_lockout_duration ),
 	esc_attr( $lockout_duration ),
-	esc_html__( 'minutes', 'quick-2fa' ),
+	esc_html_x( 'minutes', 'unit suffix after a number input', 'quick-2fa' ),
 	esc_html__( 'Duration to lock accounts after too many failed verification attempts (1-1440 minutes = 1 minute to 24 hours).', 'quick-2fa' )
 );
 
@@ -202,7 +202,7 @@ printf(
 	esc_html__( 'Reminder Period', 'quick-2fa' ),
 	esc_attr( $const_option_password_reminder_period ),
 	esc_attr( $password_reminder_period ),
-	esc_html__( 'days', 'quick-2fa' ),
+	esc_html_x( 'days', 'unit suffix after a number input', 'quick-2fa' ),
 	esc_html__( 'Remind users to change their password after this many days (30-365 days).', 'quick-2fa' )
 );
 
@@ -211,7 +211,7 @@ printf(
 	esc_html__( 'Reminder Cooldown', 'quick-2fa' ),
 	esc_attr( $const_option_password_reminder_cooldown ),
 	esc_attr( $password_reminder_cooldown ),
-	esc_html__( 'days', 'quick-2fa' ),
+	esc_html_x( 'days', 'unit suffix after a number input', 'quick-2fa' ),
 	esc_html__( 'Wait this many days before showing the reminder again if dismissed (1-90 days).', 'quick-2fa' )
 );
 

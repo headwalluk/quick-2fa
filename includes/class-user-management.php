@@ -258,7 +258,7 @@ class User_Management {
 				),
 				'quick2fa_unlock_' . $user->ID
 			);
-			$actions['quick2fa_unlock'] = sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html__( 'Unlock', 'quick-2fa' ) );
+			$actions['quick2fa_unlock'] = sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html_x( 'Unlock', 'verb; user row action', 'quick-2fa' ) );
 		} else {
 			$url                      = wp_nonce_url(
 				add_query_arg(
@@ -270,7 +270,7 @@ class User_Management {
 				),
 				'quick2fa_lock_' . $user->ID
 			);
-			$actions['quick2fa_lock'] = sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html__( 'Lock Out', 'quick-2fa' ) );
+			$actions['quick2fa_lock'] = sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html_x( 'Lock Out', 'verb; user row action', 'quick-2fa' ) );
 		}
 
 		return $actions;

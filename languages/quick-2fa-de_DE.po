@@ -1,13 +1,13 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Quick 2FA 0.12.2\n"
+"Project-Id-Version: Quick 2FA 1.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/quick-2fa\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-09T13:09:24+00:00\n"
+"POT-Creation-Date: 2026-06-18T20:31:42+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Language: de_DE\n"
 "X-Generator: WP-CLI 2.12.0\n"
@@ -34,6 +34,11 @@ msgstr "Einfache, E-Mail-basierte Zwei-Faktor-Authentifizierung für den WordPre
 msgid "Paul Faulkner"
 msgstr "Paul Faulkner"
 
+#. Author URI of the plugin
+#: quick-2fa.php
+msgid "https://headwall-hosting.com"
+msgstr "https://headwall-hosting.com"
+
 #. translators: %s: User display name
 #: emails/verification-code.php:20
 #, php-format
@@ -44,7 +49,7 @@ msgstr "Hallo %s,"
 #: emails/verification-code.php:27
 #, php-format
 msgid "Your verification code is: %s"
-msgstr "Dein Bestätigungscode lautet: %s"
+msgstr "Ihr Bestätigungscode lautet: %s"
 
 #. translators: %d: Number of minutes
 #: emails/verification-code.php:34
@@ -54,7 +59,7 @@ msgstr "Dieser Code läuft in %d Minuten ab."
 
 #: emails/verification-code.php:39
 msgid "If you did not request this code, please contact your site administrator immediately."
-msgstr "Falls Sie diesen Code nicht angefordert haben, wenden Sie sich bitte umgehend an Ihren Webadministrator."
+msgstr "Falls Sie diesen Code nicht angefordert haben, wenden Sie sich bitte umgehend an Ihren Website-Administrator."
 
 #: functions-private.php:44
 #: includes/class-email-handler.php:38
@@ -103,33 +108,34 @@ msgid "Invalid action"
 msgstr "Ungültige Aktion"
 
 #: includes/class-plugin.php:423
+msgctxt "error page title"
 msgid "Error"
 msgstr "Fehler"
 
 #: includes/class-plugin.php:445
-#: includes/class-plugin.php:487
-#: includes/class-plugin.php:533
-#: includes/class-plugin.php:549
+#: includes/class-plugin.php:483
+#: includes/class-plugin.php:536
+#: includes/class-plugin.php:552
 msgid "Security check failed. Please try again."
-msgstr "Die Sicherheitsüberprüfung ist fehlgeschlagen. Bitte versuchen Sie es erneut."
+msgstr "Die Sicherheitsprüfung ist fehlgeschlagen. Bitte versuchen Sie es erneut."
 
 #: includes/class-plugin.php:450
 msgid "Please enter the verification code."
 msgstr "Bitte geben Sie den Bestätigungscode ein."
 
-#: includes/class-plugin.php:494
+#: includes/class-plugin.php:490
 msgid "A new verification code has been sent to your email."
 msgstr "Ein neuer Bestätigungscode wurde an Ihre E-Mail-Adresse gesendet."
 
-#: includes/class-plugin.php:580
+#: includes/class-plugin.php:583
 msgid "Quick 2FA is currently disabled."
-msgstr "Die Schnell-2FA ist derzeit deaktiviert."
+msgstr "„Quick 2FA“ ist derzeit deaktiviert."
 
-#: includes/class-plugin.php:581
+#: includes/class-plugin.php:584
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "Ihr Admin-Bereich ist nicht durch eine Zwei-Faktor-Authentifizierung geschützt."
 
-#: includes/class-plugin.php:583
+#: includes/class-plugin.php:586
 msgid "Enable 2FA"
 msgstr "2FA aktivieren"
 
@@ -158,24 +164,26 @@ msgid "Not Locked Out"
 msgstr "Nicht ausgesperrt"
 
 #: includes/class-user-management.php:261
+msgctxt "verb; user row action"
 msgid "Unlock"
 msgstr "Entsperren"
 
 #: includes/class-user-management.php:273
+msgctxt "verb; user row action"
 msgid "Lock Out"
-msgstr "Aussperrung"
+msgstr "Sperren"
 
 #: includes/class-user-management.php:289
 #: includes/class-user-management.php:345
-#: includes/class-user-management.php:546
-#: includes/class-user-management.php:592
+#: includes/class-user-management.php:548
+#: includes/class-user-management.php:594
 msgid "Security check failed."
 msgstr "Die Sicherheitsprüfung ist fehlgeschlagen."
 
 #: includes/class-user-management.php:293
 #: includes/class-user-management.php:349
-#: includes/class-user-management.php:550
-#: includes/class-user-management.php:596
+#: includes/class-user-management.php:552
+#: includes/class-user-management.php:598
 msgid "You do not have permission to perform this action."
 msgstr "Sie haben keine Berechtigung, diese Aktion auszuführen."
 
@@ -185,8 +193,8 @@ msgstr "Sie können Ihr eigenes Konto nicht sperren."
 
 #: includes/class-user-management.php:302
 #: includes/class-user-management.php:354
-#: includes/class-user-management.php:555
-#: includes/class-user-management.php:601
+#: includes/class-user-management.php:557
+#: includes/class-user-management.php:603
 msgid "Invalid user."
 msgstr "Ungültiger Benutzer."
 
@@ -200,7 +208,7 @@ msgstr "Der Benutzer %s wurde gesperrt."
 #: includes/class-user-management.php:374
 #, php-format
 msgid "User %s has been unlocked."
-msgstr "Der Benutzer %s wurde freigeschaltet."
+msgstr "Der Benutzer %s wurde entsperrt."
 
 #: includes/class-user-management.php:418
 msgid "Locked out (manual)"
@@ -222,33 +230,33 @@ msgstr "Es wurden zu viele Bestätigungscodes angefordert. Bitte warten Sie noch
 msgid "Too many verification codes requested. Please wait %d minutes before requesting another code."
 msgstr "Es wurden zu viele Bestätigungscodes angefordert. Bitte warten Sie %d Minuten, bevor Sie einen weiteren Code anfordern."
 
-#: includes/class-verification-code-handler.php:179
+#: includes/class-verification-code-handler.php:200
 msgid "User not found."
 msgstr "Benutzer nicht gefunden."
 
 #. translators: %d: number of minutes until unlock
-#: includes/class-verification-code-handler.php:223
+#: includes/class-verification-code-handler.php:244
 #, php-format
 msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
 msgstr "Ihr Konto wurde aufgrund zu vieler fehlgeschlagener Anmeldeversuche vorübergehend gesperrt. Bitte versuchen Sie es in %d Minuten erneut."
 
-#: includes/class-verification-code-handler.php:232
+#: includes/class-verification-code-handler.php:253
 msgid "No verification code found. Please request a new code."
 msgstr "Es wurde kein Bestätigungscode gefunden. Bitte fordern Sie einen neuen Code an."
 
 #. translators: %d: number of minutes until expiry
-#: includes/class-verification-code-handler.php:243
+#: includes/class-verification-code-handler.php:264
 #, php-format
 msgid "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
-msgstr "Ihr Bestätigungscode ist abgelaufen. Die Codes sind %d Minuten lang gültig. Bitte fordern Sie einen neuen Code an."
+msgstr "Ihr Bestätigungscode ist abgelaufen. Codes sind %d Minuten lang gültig. Bitte fordern Sie einen neuen Code an."
 
-#: includes/class-verification-code-handler.php:254
-#: includes/class-verification-code-handler.php:285
+#: includes/class-verification-code-handler.php:275
+#: includes/class-verification-code-handler.php:306
 msgid "Too many failed verification attempts. Your account has been temporarily locked for security."
 msgstr "Zu viele fehlgeschlagene Verifizierungsversuche. Ihr Konto wurde aus Sicherheitsgründen vorübergehend gesperrt."
 
 #. translators: %d: number of attempts remaining
-#: includes/class-verification-code-handler.php:279
+#: includes/class-verification-code-handler.php:300
 #, php-format
 msgid "Invalid verification code. You have %d attempt remaining."
 msgid_plural "Invalid verification code. You have %d attempts remaining."
@@ -261,13 +269,13 @@ msgstr "Passwort aktualisieren"
 
 #: views/password-page.php:55
 msgid "It's been over a year since you last changed your password. For your security, we recommend updating it regularly."
-msgstr "Es ist schon über ein Jahr her, seit Sie Ihr Passwort zuletzt geändert haben. Zu Ihrer Sicherheit empfehlen wir Ihnen, es regelmäßig zu aktualisieren."
+msgstr "Es ist bereits über ein Jahr her, seit Sie Ihr Passwort zuletzt geändert haben. Zu Ihrer Sicherheit empfehlen wir Ihnen, es regelmäßig zu aktualisieren."
 
 #. translators: %d: number of days since last password change
 #: views/password-page.php:59
 #, php-format
 msgid "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
-msgstr "Es ist nun schon %d Tage her, seit Sie Ihr Passwort zuletzt geändert haben. Zu Ihrer Sicherheit empfehlen wir Ihnen, es regelmäßig zu aktualisieren."
+msgstr "Es sind bereits %d Tage vergangen, seit Sie Ihr Passwort zuletzt geändert haben. Zu Ihrer Sicherheit empfehlen wir Ihnen, es regelmäßig zu aktualisieren."
 
 #: views/password-page.php:82
 msgid "New Password:"
@@ -283,7 +291,7 @@ msgstr "Passwort ausblenden"
 
 #: views/password-page.php:97
 msgid "A strong password has been generated for you. You can use it as-is or change it to your own."
-msgstr "Es wurde ein sicheres Passwort für Sie generiert. Sie können es unverändert verwenden oder es nach Belieben ändern."
+msgstr "Es wurde ein sicheres Passwort für Sie generiert. Sie können es so verwenden, wie es ist, oder es nach Belieben ändern."
 
 #: views/password-page.php:102
 msgid "Update Password"
@@ -319,14 +327,17 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: views/profile-trusted-devices.php:30
+msgctxt "table column header"
 msgid "Device"
 msgstr "Gerät"
 
 #: views/profile-trusted-devices.php:31
+msgctxt "table column header; when device trust expires"
 msgid "Expires"
-msgstr "Gültig bis"
+msgstr "Ablaufdatum"
 
 #: views/profile-trusted-devices.php:32
+msgctxt "table column header"
 msgid "Actions"
 msgstr "Aktionen"
 
@@ -349,10 +360,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: views/profile-trusted-devices.php:66
+msgctxt "device trust expires today"
 msgid "Today"
 msgstr "Heute"
 
 #: views/profile-trusted-devices.php:74
+msgctxt "verb; button to revoke a trusted device"
 msgid "Revoke"
 msgstr "Widerrufen"
 
@@ -362,7 +375,7 @@ msgstr "Alle Geräte widerrufen"
 
 #: views/profile-trusted-devices.php:103
 msgid "Revoking devices will require re-verification from those devices on the next login."
-msgstr "Das Widerrufen von Geräten erfordert bei der nächsten Anmeldung eine erneute Verifizierung auf diesen Geräten."
+msgstr "Bei der Sperrung von Geräten ist bei der nächsten Anmeldung eine erneute Verifizierung über diese Geräte erforderlich."
 
 #: views/settings-page.php:53
 #: views/settings-page.php:54
@@ -370,6 +383,7 @@ msgid "2FA Mode"
 msgstr "2FA-Modus"
 
 #: views/settings-page.php:61
+msgctxt "2FA mode option label"
 msgid "Disabled"
 msgstr "Deaktiviert"
 
@@ -409,6 +423,7 @@ msgstr "Prüfungszeitraum"
 #: views/settings-page.php:142
 #: views/settings-page.php:205
 #: views/settings-page.php:214
+msgctxt "unit suffix after a number input"
 msgid "days"
 msgstr "Tage"
 
@@ -418,9 +433,10 @@ msgstr "Wie oft Nutzer ihre Identität erneut bestätigen müssen (1–365 Tage)
 
 #: views/settings-page.php:121
 msgid "Code Length"
-msgstr "Code-Länge"
+msgstr "Codelänge"
 
 #: views/settings-page.php:124
+msgctxt "unit suffix after a number input"
 msgid "digits"
 msgstr "Ziffern"
 
@@ -430,10 +446,11 @@ msgstr "Länge des Bestätigungscodes (4–8 Ziffern)."
 
 #: views/settings-page.php:130
 msgid "Code Expiry"
-msgstr "Ablaufdatum des Codes"
+msgstr "Ablauf des Codes"
 
 #: views/settings-page.php:133
 #: views/settings-page.php:151
+msgctxt "unit suffix after a number input"
 msgid "minutes"
 msgstr "Minuten"
 
@@ -443,7 +460,7 @@ msgstr "Wie lange sind Bestätigungscodes gültig (5–60 Minuten)?"
 
 #: views/settings-page.php:139
 msgid "Trust Device Duration"
-msgstr "Gültigkeitsdauer des vertrauenswürdigen Geräts"
+msgstr "Vertrauensdauer des Geräts"
 
 #: views/settings-page.php:143
 msgid "How long a trusted device remains trusted before requiring 2FA again (1-365 days)."
@@ -455,7 +472,7 @@ msgstr "Dauer der automatischen Sperre"
 
 #: views/settings-page.php:152
 msgid "Duration to lock accounts after too many failed verification attempts (1-1440 minutes = 1 minute to 24 hours)."
-msgstr "Dauer der Kontosperrung nach zu vielen fehlgeschlagenen Verifizierungsversuchen (1–1440 Minuten = 1 Minute bis 24 Stunden)."
+msgstr "Dauer, nach der Konten nach zu vielen fehlgeschlagenen Verifizierungsversuchen gesperrt werden (1–1440 Minuten = 1 Minute bis 24 Stunden)."
 
 #: views/settings-page.php:158
 msgid "Email Settings"
@@ -463,7 +480,7 @@ msgstr "E-Mail-Einstellungen"
 
 #: views/settings-page.php:163
 msgid "From Name"
-msgstr "Von Name"
+msgstr "Von: Name"
 
 #: views/settings-page.php:166
 msgid "The name that appears in the \"From\" field of verification emails."
@@ -479,7 +496,7 @@ msgstr "Die E-Mail-Adresse, die im Feld „Von“ der Bestätigungs-E-Mails ange
 
 #: views/settings-page.php:179
 msgid "Email Subject"
-msgstr "Betreff der E-Mail"
+msgstr "E-Mail-Betreff"
 
 #: views/settings-page.php:182
 msgid "Subject line for verification emails."
@@ -503,11 +520,11 @@ msgstr "Erinnern Sie die Benutzer regelmäßig daran, ihre Passwörter zu aktual
 
 #: views/settings-page.php:202
 msgid "Reminder Period"
-msgstr "Erinnerungszeitraum"
+msgstr "Mahnfrist"
 
 #: views/settings-page.php:206
 msgid "Remind users to change their password after this many days (30-365 days)."
-msgstr "Erinnere die Benutzer daran, ihr Passwort nach einer bestimmten Anzahl von Tagen (30–365 Tage) zu ändern."
+msgstr "Erinnern Sie die Benutzer daran, ihr Passwort nach dieser Anzahl von Tagen (30–365 Tage) zu ändern."
 
 #: views/settings-page.php:211
 msgid "Reminder Cooldown"
@@ -539,14 +556,10 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: views/verification-page.php:81
+msgctxt "verb; submit button label"
 msgid "Verify"
 msgstr "Überprüfen"
 
 #: views/verification-page.php:87
 msgid "Resend Code"
 msgstr "Code erneut senden"
-
-#. Author URI of the plugin
-#: quick-2fa.php
-msgid "https://headwall-hosting.com"
-msgstr "https://headwall-hosting.com"

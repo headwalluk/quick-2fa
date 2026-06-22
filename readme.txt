@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,9 @@ On GitHub: [headwalluk/quick-2fa](https://github.com/headwalluk/quick-2fa). The 
 See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY.md) in the repository for the responsible-disclosure process.
 
 == Changelog ==
+
+= 1.2.1 =
+Default generated-password length range raised to 12–20 characters (was 10–16) for new installs. Existing sites keep their saved settings. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 = 1.2.0 =
 Device trust is now carried by a secure browser cookie instead of a hash of your IP address and browser. Users on connections where the public IP changes during the day (multi-WAN/failover routers, mobile tethering, CGNAT, IPv6 privacy addressing) were being re-prompted for 2FA repeatedly and, with browser reloads or multiple tabs, receiving several code emails for one login. Trust now follows the device regardless of IP, and a page reload no longer sends a duplicate code. One-time effect: every existing trusted device must re-verify once after this update. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.

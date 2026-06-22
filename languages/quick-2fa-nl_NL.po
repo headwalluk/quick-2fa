@@ -1,15 +1,17 @@
+# Copyright (C) 2026 Paul Faulkner
+# This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Quick 2FA 0.12.2\n"
+"Language: nl_NL\n"
+"Project-Id-Version: Quick 2FA 1.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/quick-2fa\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-09T13:09:24+00:00\n"
+"POT-Creation-Date: 2026-06-21T14:16:24+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Language: nl_NL\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: quick-2fa\n"
 
@@ -17,7 +19,7 @@ msgstr ""
 #: quick-2fa.php
 #: includes/class-settings.php:38
 msgid "Quick 2FA"
-msgstr "Snelle tweefactorauthenticatie"
+msgstr "Snelle 2FA"
 
 #. Plugin URI of the plugin
 #: quick-2fa.php
@@ -27,12 +29,17 @@ msgstr "https://github.com/headwalluk/quick-2fa"
 #. Description of the plugin
 #: quick-2fa.php
 msgid "Lightweight email-based two-factor authentication for WordPress admin access."
-msgstr "Eenvoudige tweefactorauthenticatie via e-mail voor toegang tot het WordPress-beheerdersgedeelte."
+msgstr "Lichtgewicht, op e-mail gebaseerde tweefactorauthenticatie voor toegang tot het WordPress-beheerdersgedeelte."
 
 #. Author of the plugin
 #: quick-2fa.php
 msgid "Paul Faulkner"
 msgstr "Paul Faulkner"
+
+#. Author URI of the plugin
+#: quick-2fa.php
+msgid "https://headwall-hosting.com"
+msgstr "https://headwall-hosting.com"
 
 #. translators: %s: User display name
 #: emails/verification-code.php:20
@@ -44,7 +51,7 @@ msgstr "Hallo %s,"
 #: emails/verification-code.php:27
 #, php-format
 msgid "Your verification code is: %s"
-msgstr "Je verificatiecode is: %s"
+msgstr "Uw verificatiecode is: %s"
 
 #. translators: %d: Number of minutes
 #: emails/verification-code.php:34
@@ -54,13 +61,13 @@ msgstr "Deze code verloopt over %d minuten."
 
 #: emails/verification-code.php:39
 msgid "If you did not request this code, please contact your site administrator immediately."
-msgstr "Als u deze code niet hebt aangevraagd, neem dan onmiddellijk contact op met uw sitebeheerder."
+msgstr "Als u deze code niet hebt aangevraagd, neem dan onmiddellijk contact op met de beheerder van uw website."
 
 #: functions-private.php:44
 #: includes/class-email-handler.php:38
 #: includes/class-settings.php:352
 msgid "Your verification code"
-msgstr "Uw verificatiecode"
+msgstr "Je verificatiecode"
 
 #: functions-private.php:124
 msgid "For your security, we need to verify your identity before you can access the admin area."
@@ -68,7 +75,7 @@ msgstr "Omwille van uw veiligheid moeten we uw identiteit verifiëren voordat u 
 
 #: functions-private.php:153
 msgid "Regular password changes help keep your account secure. We recommend updating your password every 60 days."
-msgstr "Door uw wachtwoord regelmatig te wijzigen, blijft uw account veilig. We raden u aan uw wachtwoord elke 60 dagen te wijzigen."
+msgstr "Door je wachtwoord regelmatig te wijzigen, blijft je account veilig. We raden je aan je wachtwoord elke 60 dagen te wijzigen."
 
 #: includes/class-email-handler.php:45
 msgid "Failed to send verification email. Please contact your site administrator."
@@ -92,7 +99,7 @@ msgstr "Uw account is geblokkeerd. Neem contact op met de beheerder van de site.
 #: includes/class-plugin.php:204
 #, php-format
 msgid "Your account has been locked. Please try again in %s."
-msgstr "Uw account is geblokkeerd. Probeer het over %s nog eens."
+msgstr "Je account is geblokkeerd. Probeer het over %s nog eens."
 
 #: includes/class-plugin.php:209
 msgid "Account Locked"
@@ -103,13 +110,14 @@ msgid "Invalid action"
 msgstr "Ongeldige actie"
 
 #: includes/class-plugin.php:423
+msgctxt "error page title"
 msgid "Error"
 msgstr "Fout"
 
 #: includes/class-plugin.php:445
-#: includes/class-plugin.php:487
-#: includes/class-plugin.php:533
-#: includes/class-plugin.php:549
+#: includes/class-plugin.php:483
+#: includes/class-plugin.php:536
+#: includes/class-plugin.php:552
 msgid "Security check failed. Please try again."
 msgstr "De veiligheidscontrole is mislukt. Probeer het nog eens."
 
@@ -117,21 +125,21 @@ msgstr "De veiligheidscontrole is mislukt. Probeer het nog eens."
 msgid "Please enter the verification code."
 msgstr "Voer de verificatiecode in."
 
-#: includes/class-plugin.php:494
+#: includes/class-plugin.php:490
 msgid "A new verification code has been sent to your email."
-msgstr "Er is een nieuwe verificatiecode naar je e-mailadres gestuurd."
+msgstr "Er is een nieuwe verificatiecode naar je e-mailadres verzonden."
 
-#: includes/class-plugin.php:580
+#: includes/class-plugin.php:583
 msgid "Quick 2FA is currently disabled."
-msgstr "Snelle 2FA is momenteel uitgeschakeld."
+msgstr "Quick 2FA is momenteel uitgeschakeld."
 
-#: includes/class-plugin.php:581
+#: includes/class-plugin.php:584
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "Uw beheerdersgedeelte is niet beveiligd met tweefactorauthenticatie."
 
-#: includes/class-plugin.php:583
+#: includes/class-plugin.php:586
 msgid "Enable 2FA"
-msgstr "Tweefactorauthenticatie inschakelen"
+msgstr "2FA inschakelen"
 
 #: includes/class-settings.php:38
 msgid "Quick 2FA Settings"
@@ -158,26 +166,28 @@ msgid "Not Locked Out"
 msgstr "Niet buitengesloten"
 
 #: includes/class-user-management.php:261
+msgctxt "verb; user row action"
 msgid "Unlock"
 msgstr "Ontgrendelen"
 
 #: includes/class-user-management.php:273
+msgctxt "verb; user row action"
 msgid "Lock Out"
-msgstr "Buiten sluiten"
+msgstr "Vergrendelen"
 
 #: includes/class-user-management.php:289
 #: includes/class-user-management.php:345
-#: includes/class-user-management.php:546
-#: includes/class-user-management.php:592
+#: includes/class-user-management.php:548
+#: includes/class-user-management.php:594
 msgid "Security check failed."
 msgstr "De veiligheidscontrole is mislukt."
 
 #: includes/class-user-management.php:293
 #: includes/class-user-management.php:349
-#: includes/class-user-management.php:550
-#: includes/class-user-management.php:596
+#: includes/class-user-management.php:552
+#: includes/class-user-management.php:598
 msgid "You do not have permission to perform this action."
-msgstr "U hebt geen toestemming om deze handeling uit te voeren."
+msgstr "Je hebt geen toestemming om deze handeling uit te voeren."
 
 #: includes/class-user-management.php:297
 msgid "You cannot lock out your own account."
@@ -185,8 +195,8 @@ msgstr "Je kunt je eigen account niet blokkeren."
 
 #: includes/class-user-management.php:302
 #: includes/class-user-management.php:354
-#: includes/class-user-management.php:555
-#: includes/class-user-management.php:601
+#: includes/class-user-management.php:557
+#: includes/class-user-management.php:603
 msgid "Invalid user."
 msgstr "Ongeldige gebruiker."
 
@@ -204,51 +214,51 @@ msgstr "Gebruiker %s is ontgrendeld."
 
 #: includes/class-user-management.php:418
 msgid "Locked out (manual)"
-msgstr "Buiten gesloten (handmatig)"
+msgstr "Vergrendeld (handmatig)"
 
 #. translators: %s: Formatted date and time
 #: includes/class-user-management.php:429
 #, php-format
 msgid "Locked out until %s"
-msgstr "Geblokkeerd tot %s"
+msgstr "Vergrendeld tot %s"
 
 #: includes/class-verification-code-handler.php:109
 msgid "Too many verification codes requested. Please wait a few more seconds before requesting another code."
-msgstr "Er zijn te veel verificatiecodes aangevraagd. Wacht nog even voordat je een nieuwe code aanvraagt."
+msgstr "Er zijn te veel verificatiecodes aangevraagd. Wacht nog een paar seconden voordat je een nieuwe code aanvraagt."
 
 #. translators: %d: number of minutes to wait
 #: includes/class-verification-code-handler.php:115
 #, php-format
 msgid "Too many verification codes requested. Please wait %d minutes before requesting another code."
-msgstr "Er zijn te veel verificatiecodes aangevraagd. Wacht %d minuten voordat je een nieuwe code aanvraagt."
+msgstr "Er zijn te veel verificatiecodes aangevraagd. Wacht %d minuten voordat u een nieuwe code aanvraagt."
 
-#: includes/class-verification-code-handler.php:179
+#: includes/class-verification-code-handler.php:200
 msgid "User not found."
 msgstr "Gebruiker niet gevonden."
 
 #. translators: %d: number of minutes until unlock
-#: includes/class-verification-code-handler.php:223
+#: includes/class-verification-code-handler.php:244
 #, php-format
 msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
-msgstr "Je account is tijdelijk geblokkeerd vanwege te veel mislukte inlogpogingen. Probeer het over %d minuten opnieuw."
+msgstr "Uw account is tijdelijk geblokkeerd vanwege te veel mislukte pogingen. Probeer het over %d minuten opnieuw."
 
-#: includes/class-verification-code-handler.php:232
+#: includes/class-verification-code-handler.php:253
 msgid "No verification code found. Please request a new code."
 msgstr "Er is geen verificatiecode gevonden. Vraag een nieuwe code aan."
 
 #. translators: %d: number of minutes until expiry
-#: includes/class-verification-code-handler.php:243
+#: includes/class-verification-code-handler.php:264
 #, php-format
 msgid "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
-msgstr "Uw verificatiecode is verlopen. Codes zijn %d minuten geldig. Vraag een nieuwe code aan."
+msgstr "Uw verificatiecode is verlopen. Codes zijn %d minuten geldig. Vraag alstublieft een nieuwe code aan."
 
-#: includes/class-verification-code-handler.php:254
-#: includes/class-verification-code-handler.php:285
+#: includes/class-verification-code-handler.php:275
+#: includes/class-verification-code-handler.php:306
 msgid "Too many failed verification attempts. Your account has been temporarily locked for security."
 msgstr "Er zijn te veel mislukte verificatiepogingen gedaan. Je account is om veiligheidsredenen tijdelijk geblokkeerd."
 
 #. translators: %d: number of attempts remaining
-#: includes/class-verification-code-handler.php:279
+#: includes/class-verification-code-handler.php:300
 #, php-format
 msgid "Invalid verification code. You have %d attempt remaining."
 msgid_plural "Invalid verification code. You have %d attempts remaining."
@@ -257,17 +267,17 @@ msgstr[1] ""
 
 #: views/password-page.php:31
 msgid "Update Your Password"
-msgstr "Uw wachtwoord wijzigen"
+msgstr "Uw wachtwoord bijwerken"
 
 #: views/password-page.php:55
 msgid "It's been over a year since you last changed your password. For your security, we recommend updating it regularly."
-msgstr "Het is al meer dan een jaar geleden dat u uw wachtwoord voor het laatst hebt gewijzigd. Voor uw veiligheid raden wij u aan dit regelmatig te doen."
+msgstr "Het is al meer dan een jaar geleden dat u uw wachtwoord voor het laatst hebt gewijzigd. Voor uw veiligheid raden wij u aan dit regelmatig te wijzigen."
 
 #. translators: %d: number of days since last password change
 #: views/password-page.php:59
 #, php-format
 msgid "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
-msgstr "Het is al %d dagen geleden dat je je wachtwoord voor het laatst hebt gewijzigd. Voor je eigen veiligheid raden we je aan om het regelmatig te wijzigen."
+msgstr "Het is %d dagen geleden dat u uw wachtwoord voor het laatst hebt gewijzigd. Voor uw veiligheid raden wij u aan dit regelmatig te doen."
 
 #: views/password-page.php:82
 msgid "New Password:"
@@ -283,7 +293,7 @@ msgstr "Wachtwoord verbergen"
 
 #: views/password-page.php:97
 msgid "A strong password has been generated for you. You can use it as-is or change it to your own."
-msgstr "Er is een sterk wachtwoord voor u gegenereerd. U kunt het zo gebruiken of het aanpassen naar uw eigen voorkeur."
+msgstr "Er is een sterk wachtwoord voor je aangemaakt. Je kunt het zo gebruiken of het aanpassen naar je eigen voorkeur."
 
 #: views/password-page.php:102
 msgid "Update Password"
@@ -319,14 +329,17 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: views/profile-trusted-devices.php:30
+msgctxt "table column header"
 msgid "Device"
 msgstr "Apparaat"
 
 #: views/profile-trusted-devices.php:31
+msgctxt "table column header; when device trust expires"
 msgid "Expires"
 msgstr "Vervalt"
 
 #: views/profile-trusted-devices.php:32
+msgctxt "table column header"
 msgid "Actions"
 msgstr "Acties"
 
@@ -349,10 +362,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: views/profile-trusted-devices.php:66
+msgctxt "device trust expires today"
 msgid "Today"
 msgstr "Vandaag"
 
 #: views/profile-trusted-devices.php:74
+msgctxt "verb; button to revoke a trusted device"
 msgid "Revoke"
 msgstr "Intrekken"
 
@@ -370,12 +385,13 @@ msgid "2FA Mode"
 msgstr "2FA-modus"
 
 #: views/settings-page.php:61
+msgctxt "2FA mode option label"
 msgid "Disabled"
-msgstr "Gehandicapt"
+msgstr "Uitgeschakeld"
 
 #: views/settings-page.php:62
 msgid "Two-factor authentication is disabled. Not recommended for production sites."
-msgstr "Tweefactorauthenticatie is uitgeschakeld. Niet aanbevolen voor productiesites."
+msgstr "Tweefactorauthenticatie is uitgeschakeld. Dit wordt niet aanbevolen voor productiesites."
 
 #: views/settings-page.php:70
 msgid "Enabled for all users"
@@ -395,7 +411,7 @@ msgstr "Alleen gebruikers met bepaalde rollen moeten hun identiteit verifiëren.
 
 #: views/settings-page.php:88
 msgid "Protected Roles"
-msgstr "Beveiligde rollen"
+msgstr "Beschermde rollen"
 
 #: views/settings-page.php:107
 msgid "Select which user roles require two-factor authentication."
@@ -409,6 +425,7 @@ msgstr "Controleperiode"
 #: views/settings-page.php:142
 #: views/settings-page.php:205
 #: views/settings-page.php:214
+msgctxt "unit suffix after a number input"
 msgid "days"
 msgstr "dagen"
 
@@ -418,9 +435,10 @@ msgstr "Hoe vaak gebruikers hun identiteit opnieuw moeten verifiëren (1–365 d
 
 #: views/settings-page.php:121
 msgid "Code Length"
-msgstr "Lengte van de code"
+msgstr "Codelengte"
 
 #: views/settings-page.php:124
+msgctxt "unit suffix after a number input"
 msgid "digits"
 msgstr "cijfers"
 
@@ -434,8 +452,9 @@ msgstr "Vervaldatum van de code"
 
 #: views/settings-page.php:133
 #: views/settings-page.php:151
+msgctxt "unit suffix after a number input"
 msgid "minutes"
-msgstr "notulen"
+msgstr "minuten"
 
 #: views/settings-page.php:134
 msgid "How long verification codes remain valid (5-60 minutes)."
@@ -447,15 +466,15 @@ msgstr "Vertrouwensduur van het apparaat"
 
 #: views/settings-page.php:143
 msgid "How long a trusted device remains trusted before requiring 2FA again (1-365 days)."
-msgstr "Hoe lang een vertrouwd apparaat als vertrouwd blijft voordat er opnieuw tweefactorauthenticatie (2FA) vereist is (1–365 dagen)."
+msgstr "Hoe lang een vertrouwd apparaat als vertrouwd blijft voordat er opnieuw 2FA vereist is (1–365 dagen)."
 
 #: views/settings-page.php:148
 msgid "Auto-Lock Duration"
-msgstr "Duur van automatische vergrendeling"
+msgstr "Duur van de automatische vergrendeling"
 
 #: views/settings-page.php:152
 msgid "Duration to lock accounts after too many failed verification attempts (1-1440 minutes = 1 minute to 24 hours)."
-msgstr "De duur van de blokkering van accounts na te veel mislukte verificatiepogingen (1–1440 minuten = 1 minuut tot 24 uur)."
+msgstr "De tijdsduur waarna accounts worden geblokkeerd na te veel mislukte verificatiepogingen (1-1440 minuten = 1 minuut tot 24 uur)."
 
 #: views/settings-page.php:158
 msgid "Email Settings"
@@ -467,15 +486,15 @@ msgstr "Van Naam"
 
 #: views/settings-page.php:166
 msgid "The name that appears in the \"From\" field of verification emails."
-msgstr "De naam die wordt weergegeven in het veld „Van“ van verificatiemails."
+msgstr "De naam die wordt weergegeven in het veld ‘Van’ van verificatiemails."
 
 #: views/settings-page.php:171
 msgid "From Address"
-msgstr "Van:"
+msgstr "Van: Adres"
 
 #: views/settings-page.php:174
 msgid "The email address that appears in the \"From\" field of verification emails."
-msgstr "Het e-mailadres dat wordt weergegeven in het veld „Van“ van verificatiemails."
+msgstr "Het e-mailadres dat wordt weergegeven in het veld „Van” van verificatiemails."
 
 #: views/settings-page.php:179
 msgid "Email Subject"
@@ -495,7 +514,7 @@ msgstr "Wachtwoordherinneringen"
 
 #: views/settings-page.php:196
 msgid "Enable password change reminders"
-msgstr "Herinneringen voor het wijzigen van wachtwoorden inschakelen"
+msgstr "Herinneringen voor het wijzigen van het wachtwoord inschakelen"
 
 #: views/settings-page.php:197
 msgid "Periodically remind users to update their passwords."
@@ -507,11 +526,11 @@ msgstr "Herinneringsperiode"
 
 #: views/settings-page.php:206
 msgid "Remind users to change their password after this many days (30-365 days)."
-msgstr "Herinner gebruikers eraan hun wachtwoord te wijzigen na een bepaald aantal dagen (30-365 dagen)."
+msgstr "Herinner gebruikers eraan hun wachtwoord na dit aantal dagen (30-365 dagen) te wijzigen."
 
 #: views/settings-page.php:211
 msgid "Reminder Cooldown"
-msgstr "Wachttijd voor herinneringen"
+msgstr "Herinneringswachttijd"
 
 #: views/settings-page.php:215
 msgid "Wait this many days before showing the reminder again if dismissed (1-90 days)."
@@ -524,7 +543,7 @@ msgstr "Accountverificatie vereist"
 
 #: views/verification-page.php:62
 msgid "Please enter the verification code sent to your email."
-msgstr "Voer de verificatiecode in die naar uw e-mailadres is verzonden."
+msgstr "Voer de verificatiecode in die naar je e-mailadres is verzonden."
 
 #: views/verification-page.php:68
 msgid "Verification Code:"
@@ -539,14 +558,10 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: views/verification-page.php:81
+msgctxt "verb; submit button label"
 msgid "Verify"
-msgstr "Controleer"
+msgstr "Controleren"
 
 #: views/verification-page.php:87
 msgid "Resend Code"
 msgstr "Code opnieuw verzenden"
-
-#. Author URI of the plugin
-#: quick-2fa.php
-msgid "https://headwall-hosting.com"
-msgstr "https://headwall-hosting.com"

@@ -78,7 +78,7 @@ if ( ! $error || 'rate_limited' !== $error->get_error_code() ) {
 		);
 	}
 
-	printf( '<p class="submit"><input type="submit" name="q2fa_verify" id="wp-submit" class="button button-primary button-large" value="%s"></p>', esc_html__( 'Verify', 'quick-2fa' ) );
+	printf( '<p class="submit"><input type="submit" name="q2fa_verify" id="wp-submit" class="button button-primary button-large" value="%s"></p>', esc_html_x( 'Verify', 'verb; submit button label', 'quick-2fa' ) );
 
 	echo '</form>';
 

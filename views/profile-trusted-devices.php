@@ -27,9 +27,9 @@ if ( empty( $trusted_devices ) ) {
 	printf( '<p>%s</p>', sprintf( esc_html( $quick_2fa_device_count_text ), count( $trusted_devices ) ) );
 
 	echo '<table class="widefat" style="max-width: 600px; margin-top: 10px;"><thead><tr>';
-	printf( '<th>%s</th>', esc_html__( 'Device', 'quick-2fa' ) );
-	printf( '<th>%s</th>', esc_html__( 'Expires', 'quick-2fa' ) );
-	printf( '<th>%s</th>', esc_html__( 'Actions', 'quick-2fa' ) );
+	printf( '<th>%s</th>', esc_html_x( 'Device', 'table column header', 'quick-2fa' ) );
+	printf( '<th>%s</th>', esc_html_x( 'Expires', 'table column header; when device trust expires', 'quick-2fa' ) );
+	printf( '<th>%s</th>', esc_html_x( 'Actions', 'table column header', 'quick-2fa' ) );
 	echo '</tr></thead><tbody>';
 
 	$quick_2fa_device_num = 1;
@@ -63,7 +63,7 @@ if ( empty( $trusted_devices ) ) {
 			$quick_2fa_expiry_text = _n( 'In %d day', 'In %d days', $quick_2fa_expires_in_days, 'quick-2fa' );
 			printf( esc_html( $quick_2fa_expiry_text ), (int) $quick_2fa_expires_in_days );
 		} else {
-			echo esc_html__( 'Today', 'quick-2fa' );
+			echo esc_html_x( 'Today', 'device trust expires today', 'quick-2fa' );
 		}
 
 		echo '</td><td>';
@@ -71,7 +71,7 @@ if ( empty( $trusted_devices ) ) {
 		printf(
 			'<a href="%s" class="button button-secondary button-small">%s</a>',
 			esc_url( $quick_2fa_revoke_url ),
-			esc_html__( 'Revoke', 'quick-2fa' )
+			esc_html_x( 'Revoke', 'verb; button to revoke a trusted device', 'quick-2fa' )
 		);
 
 		echo '</td></tr>';

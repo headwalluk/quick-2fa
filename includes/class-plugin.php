@@ -420,7 +420,7 @@ class Plugin {
 				break;
 
 			default:
-				wp_die( esc_html__( 'Invalid action', 'quick-2fa' ), esc_html__( 'Error', 'quick-2fa' ), array( 'response' => 400 ) );
+				wp_die( esc_html__( 'Invalid action', 'quick-2fa' ), esc_html_x( 'Error', 'error page title', 'quick-2fa' ), array( 'response' => 400 ) );
 		}
 
 		exit();
