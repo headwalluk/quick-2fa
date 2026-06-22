@@ -4,6 +4,12 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] — 2026-06-22
+
+### Fixed
+
+- **Recompiled the Spanish, Italian and Greek translation binaries to match their source.** v1.2.1 shipped corrected `.po` sources for the "Lock Out" user-row action (a verb) but stale `.mo` binaries compiled from the previous machine translation, which had rendered it as a noun — `Bloqueo` (es_ES), `Blocco` (it_IT) and `Αποκλεισμός` (el_GR, "exclusion/ban"). Since WordPress loads the `.mo` at runtime, those three locales displayed the wrong label. The `.mo` files now carry the intended verb forms `Bloquear`, `Blocca` and `Κλείδωμα`. No source-string or behaviour changes.
+
 ## [1.2.1] — 2026-06-22
 
 ### Changed
