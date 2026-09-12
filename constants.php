@@ -62,6 +62,36 @@ const MODE_ROLES    = 'roles';
 const MODE_DISABLED = 'disabled';
 
 /**
+ * Settings bounds.
+ *
+ * Each registered setting is clamped to its range on save by
+ * Settings::sanitize_range(); a value outside the range falls back to the
+ * matching DEFAULT_*. Kept here so the validator and the help text on the
+ * settings page can cite one source rather than repeating the numbers.
+ *
+ * @since 1.3.0
+ */
+const VERIFICATION_PERIOD_MIN        = 1;
+const VERIFICATION_PERIOD_MAX        = 365;
+const CODE_EXPIRY_MIN                = 5;
+const CODE_EXPIRY_MAX                = 60;
+const PASSWORD_REMINDER_PERIOD_MIN   = 1;
+const PASSWORD_REMINDER_PERIOD_MAX   = 365;
+const PASSWORD_REMINDER_COOLDOWN_MIN = 1;
+const PASSWORD_REMINDER_COOLDOWN_MAX = 90;
+const TRUSTED_DEVICE_EXPIRY_MIN      = 1;
+const TRUSTED_DEVICE_EXPIRY_MAX      = 365;
+const LOCKOUT_DURATION_MIN           = 1;
+const LOCKOUT_DURATION_MAX           = 1440; // 24 hours in minutes.
+
+/**
+ * Bundled Select2 asset version.
+ *
+ * @since 1.3.0
+ */
+const ASSET_SELECT2_VERSION = '4.0.13';
+
+/**
  * Verification code length bounds.
  *
  * Enforced by the settings validator on save, and again in

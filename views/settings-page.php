@@ -17,7 +17,6 @@
  * @var bool   $password_reminders_enabled          Whether password reminders are enabled
  * @var int    $password_reminder_period            Password reminder period in days
  * @var int    $password_reminder_cooldown          Cooldown between reminders in days
- * @var bool   $trusted_devices_enabled             Whether trusted devices feature is enabled
  * @var int    $trusted_device_expiry               Trusted device expiry in days
  * @var int    $lockout_duration                    Account lockout duration in minutes
  * @var array  $all_roles                           All WordPress roles

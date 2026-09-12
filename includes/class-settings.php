@@ -201,6 +201,27 @@ class Settings {
 	}
 
 	/**
+	 * Clamp an integer setting to its allowed range.
+	 *
+	 * Every numeric setting validated the same way, as its own two-line copy
+	 * with the bounds written inline. A value outside the range falls back to
+	 * the setting's default rather than being silently clamped to an edge — an
+	 * out-of-range submission is a mistake, not a preference.
+	 *
+	 * @since 1.3.0
+	 * @param mixed $value    Submitted value.
+	 * @param int   $minimum  Lowest accepted value.
+	 * @param int   $maximum  Highest accepted value.
+	 * @param int   $fallback Value to use when out of range.
+	 * @return int
+	 */
+	private function sanitize_range( mixed $value, int $minimum, int $maximum, int $fallback ): int {
+		$number = (int) $value;
+
+		return ( $number >= $minimum && $number <= $maximum ) ? $number : $fallback;
+	}
+
+	/**
 	 * Sanitize protected roles setting.
 	 *
 	 * @since 1.0.0
@@ -208,12 +229,17 @@ class Settings {
 	 * @return array Sanitized roles array.
 	 */
 	public function sanitize_protected_roles( mixed $value ): array {
-		if ( ! is_array( $value ) ) {
-			return array();
+		$roles = array();
+
+		if ( is_array( $value ) ) {
+			$valid_roles = array_keys( wp_roles()->get_names() );
+
+			// array_values(): array_intersect() preserves the original keys, which
+			// would store a sparse array whenever a submitted role was dropped.
+			$roles = array_values( array_intersect( $value, $valid_roles ) );
 		}
 
-		$valid_roles = array_keys( wp_roles()->get_names() );
-		return array_intersect( $value, $valid_roles );
+		return $roles;
 	}
 
 	/**
@@ -224,8 +250,7 @@ class Settings {
 	 * @return int Sanitized period value (1-365 days).
 	 */
 	public function sanitize_verification_period( mixed $value ): int {
-		$val = (int) $value;
-		return $val >= 1 && $val <= 365 ? $val : DEFAULT_VERIFICATION_PERIOD;
+		return $this->sanitize_range( $value, VERIFICATION_PERIOD_MIN, VERIFICATION_PERIOD_MAX, DEFAULT_VERIFICATION_PERIOD );
 	}
 
 	/**
@@ -236,8 +261,7 @@ class Settings {
 	 * @return int Sanitized code length (4-10 digits).
 	 */
 	public function sanitize_code_length( mixed $value ): int {
-		$val = (int) $value;
-		return $val >= CODE_LENGTH_MIN && $val <= CODE_LENGTH_MAX ? $val : DEFAULT_CODE_LENGTH;
+		return $this->sanitize_range( $value, CODE_LENGTH_MIN, CODE_LENGTH_MAX, DEFAULT_CODE_LENGTH );
 	}
 
 	/**
@@ -248,8 +272,7 @@ class Settings {
 	 * @return int Sanitized expiry value (5-60 minutes).
 	 */
 	public function sanitize_code_expiry( mixed $value ): int {
-		$val = (int) $value;
-		return $val >= 5 && $val <= 60 ? $val : DEFAULT_CODE_EXPIRY;
+		return $this->sanitize_range( $value, CODE_EXPIRY_MIN, CODE_EXPIRY_MAX, DEFAULT_CODE_EXPIRY );
 	}
 
 	/**
@@ -260,8 +283,7 @@ class Settings {
 	 * @return int Sanitized period value (1-365 days).
 	 */
 	public function sanitize_reminder_period( mixed $value ): int {
-		$val = (int) $value;
-		return $val >= 1 && $val <= 365 ? $val : DEFAULT_PASSWORD_REMINDER_PERIOD;
+		return $this->sanitize_range( $value, PASSWORD_REMINDER_PERIOD_MIN, PASSWORD_REMINDER_PERIOD_MAX, DEFAULT_PASSWORD_REMINDER_PERIOD );
 	}
 
 	/**
@@ -272,8 +294,7 @@ class Settings {
 	 * @return int Sanitized cooldown value (1-90 days).
 	 */
 	public function sanitize_reminder_cooldown( mixed $value ): int {
-		$val = (int) $value;
-		return $val >= 1 && $val <= 90 ? $val : DEFAULT_PASSWORD_REMINDER_COOLDOWN;
+		return $this->sanitize_range( $value, PASSWORD_REMINDER_COOLDOWN_MIN, PASSWORD_REMINDER_COOLDOWN_MAX, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
 	}
 
 	/**
@@ -284,8 +305,7 @@ class Settings {
 	 * @return int Sanitized expiry value (1-365 days).
 	 */
 	public function sanitize_trusted_device_expiry( mixed $value ): int {
-		$val = (int) $value;
-		return $val >= 1 && $val <= 365 ? $val : DEFAULT_TRUSTED_DEVICE_EXPIRY;
+		return $this->sanitize_range( $value, TRUSTED_DEVICE_EXPIRY_MIN, TRUSTED_DEVICE_EXPIRY_MAX, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 	}
 
 	/**
@@ -296,8 +316,7 @@ class Settings {
 	 * @return int Sanitized duration value (1-1440 minutes = 1 min to 24 hours).
 	 */
 	public function sanitize_lockout_duration( mixed $value ): int {
-		$val = (int) $value;
-		return $val >= 1 && $val <= 1440 ? $val : DEFAULT_LOCKOUT_DURATION;
+		return $this->sanitize_range( $value, LOCKOUT_DURATION_MIN, LOCKOUT_DURATION_MAX, DEFAULT_LOCKOUT_DURATION );
 	}
 
 	/**
@@ -311,8 +330,8 @@ class Settings {
 			return;
 		}
 
-		wp_enqueue_style( 'q2fa-select2', QUICK_2FA_URL . 'assets/select2/select2.min.css', array(), '4.0.13' );
-		wp_enqueue_script( 'q2fa-select2', QUICK_2FA_URL . 'assets/select2/select2.min.js', array( 'jquery' ), '4.0.13', true );
+		wp_enqueue_style( 'q2fa-select2', QUICK_2FA_URL . 'assets/select2/select2.min.css', array(), ASSET_SELECT2_VERSION );
+		wp_enqueue_script( 'q2fa-select2', QUICK_2FA_URL . 'assets/select2/select2.min.js', array( 'jquery' ), ASSET_SELECT2_VERSION, true );
 		wp_enqueue_script(
 			'quick-2fa-settings',
 			QUICK_2FA_URL . 'assets/admin/settings.js',
