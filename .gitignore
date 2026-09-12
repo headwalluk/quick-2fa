@@ -21,5 +21,7 @@ composer.lock
 # WordPress
 wp-config.php
 
-# Local diagnostics — may contain unredacted client data (IPs, logs). Never push.
-dev-notes/diagnostics/
+# Private development notes. Never published: may contain fleet measurements,
+# client site names and unredacted diagnostics. Backed up with the dev site,
+# and blocked from remote access by dev-notes/.htaccess.
+dev-notes/
