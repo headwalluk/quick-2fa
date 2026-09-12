@@ -24,6 +24,18 @@
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
 	</rule>
 	
+	<!-- Nonce verification is wrapped in verify_page_nonce() (functions-private.php),
+	     so the sniff cannot see the wp_verify_nonce() call inline. Declaring the
+	     wrapper keeps the sniff working, rather than sprinkling phpcs:ignore at
+	     every $_POST read and suppressing genuine findings along with it. -->
+	<rule ref="WordPress.Security.NonceVerification">
+		<properties>
+			<property name="customNonceVerificationFunctions" type="array">
+				<element value="verify_page_nonce"/>
+			</property>
+		</properties>
+	</rule>
+
 	<!-- Prefixes -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>

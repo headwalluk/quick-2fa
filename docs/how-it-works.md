@@ -67,11 +67,30 @@ The following requests skip the 2FA check entirely. **This is intentional and im
 
 If you need to *also* protect any of these endpoints, that's a different security control (Application Passwords with strong scope, IP allow-listing at the web server, etc.) — Quick 2FA deliberately stays out of those layers.
 
+## Last-login recording
+
+Since v1.3.0 Quick 2FA records **when each user last logged in**, for every user, on every
+successful login — not just the logins it challenges. WordPress core keeps no such record.
+
+This is the one thing the plugin does outside the 2FA flow. It is passive: a `wp_login`
+listener and a single user-meta write. It does not change who is challenged, does not read or
+write any 2FA state, and has no setting. Nothing in Quick 2FA consumes the data — it is
+recorded for site owners and integrations that need to answer "who has gone dormant?".
+
+The same bypasses listed above apply, for the same underlying reason: Application Password and
+REST authentication do not fire `wp_login`, so they leave no timestamp. A missing timestamp
+therefore means *unknown*, not *never logged in*. Developers consuming this data should read
+[reading last-login data](developers/extending.md#reading-last-login-data) first, and site
+owners who don't want it recorded can disable it with the `quick2fa_record_last_login`
+[filter](developers/hooks-and-filters.md#quick2fa_record_last_login).
+
 ## Where data lives
 
 | Data | Storage |
 |------|---------|
 | Per-user state (code hash, lock status, trusted devices, event log) | `wp_usermeta` |
+| Last-login timestamp (`_quick2fa_last_login`) | `wp_usermeta` |
+| Date this site started recording logins (`quick2fa_last_login_since`) | `wp_options` (autoloaded) |
 | Plugin settings | `wp_options` (autoloaded) |
 | Return URLs after verification | Transients (`q2fa_return_{user_id}`, 5-minute TTL) |
 | Rate limit counters | Transients (`q2fa_rate_limit_*`) |

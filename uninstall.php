@@ -8,15 +8,20 @@
  * the plugin while testing something else).
  *
  * Current policy:
- *   - WIPE: trusted device fingerprints (per-user, low value to retain)
+ *   - WIPE: trusted device tokens (per-user, low value to retain)
  *   - KEEP: plugin settings, lock status, security event log,
- *           password-reminder timestamps
+ *           password-reminder timestamps, last-login timestamps
+ *
+ * Last-login timestamps are kept deliberately. They cannot be backfilled —
+ * their value comes entirely from having accrued over time — and delete-and-
+ * reinstall is a routine troubleshooting step, so wiping them would discard
+ * an irreplaceable record to save one non-sensitive integer per user. See
+ * docs/developers/extending.md for how integrators consume the key.
  *
  * The kept data is preserved so that uninstalling and reinstalling does
  * not silently unlock previously-locked accounts or wipe a site's tuned
  * configuration. A future release may revisit this and offer a "delete
- * all data" option — see dev-notes/00-project-tracker.md for the
- * outstanding review item.
+ * all data" option.
  *
  * @package Quick_2FA
  * @since   1.0.0

@@ -55,7 +55,7 @@ class Password_Reminder_Handler {
 		}
 
 		$user = get_userdata( $this->user_id );
-		if ( ! $user ) {
+		if ( ! $user instanceof \WP_User ) {
 			return false;
 		}
 
@@ -85,7 +85,7 @@ class Password_Reminder_Handler {
 		if ( empty( $last_pass_change ) ) {
 			// Fall back to user registration date as baseline.
 			$user = get_userdata( $this->user_id );
-			if ( ! $user ) {
+			if ( ! $user instanceof \WP_User ) {
 				return 0;
 			}
 

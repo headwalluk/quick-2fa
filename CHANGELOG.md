@@ -4,6 +4,22 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-09-12
+
+### Added
+
+- **Quick 2FA now records a last-login timestamp for every user.** WordPress core keeps no record of when a user last logged in, and `_quick2fa_last_verified` is not a substitute — it is only written on the login paths 2FA actually guards, so a WooCommerce customer signing in at `/my-account/` never gets one. A new `wp_login` listener writes `_quick2fa_last_login` (Unix timestamp, user meta) on every successful authentication, independent of the verification flow, the configured mode and the protected-roles list. There is no setting and no admin UI; the new `quick2fa_record_last_login` filter turns it off per-user or site-wide.
+- **A recording epoch, so absence of a timestamp is interpretable.** The first login recorded on a site also stamps `quick2fa_last_login_since` (site option, Unix timestamp). Without it, "never logged in" and "last logged in before this site started recording" are indistinguishable, which makes the data unsafe for anything destructive until it has a year or more behind it. With it, an account registered after the epoch and carrying no timestamp provably never logged in — useful from the first day rather than the first year. Consumers must still treat absence as *unknown* rather than *inactive*: `wp_login` does not fire for Application Password / REST authentication, nor for SSO plugins that call `wp_set_auth_cookie()` directly. Documented in [`docs/developers/extending.md`](docs/developers/extending.md).
+- Last-login data is retained on uninstall. It cannot be backfilled, delete-and-reinstall is a routine troubleshooting step, and a timestamp is less sensitive than the event log that `uninstall.php` already keeps.
+
+### Fixed
+
+- **The updater no longer reports an update that is already installed.** v1.2.2 bumped the `Version:` header in `quick-2fa.php` but left `QUICK_2FA_VERSION` at `1.2.1`. The updater compared that constant against the latest GitHub release tag, so every site running v1.2.2 saw a permanent "1.2.2 available" notice — and installing it could never clear the notice, because the reinstalled files carried the same stale constant. The constant now matches the header again, and the updater compares against the version WordPress itself records for the plugin (read from the file header into the `update_plugins` transient) rather than the constant, so a future drift cannot resurface the phantom update. If the two ever disagree, the updater now logs an error naming both values.
+
+### Changed
+
+- The release workflow verifies that the git tag, the `Version:` header, `QUICK_2FA_VERSION` and the `readme.txt` stable tag all agree before building, and fails the build if they do not.
+
 ## [1.2.2] — 2026-06-22
 
 ### Fixed

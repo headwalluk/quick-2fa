@@ -407,3 +407,23 @@ function mask_email( string $email ): string {
 
 	return $local_masked . '@' . $domain_masked;
 }
+
+/**
+ * Check the nonce on a 2FA page submission.
+ *
+ * Deliberately a namespaced function rather than a Plugin method: the
+ * WordPress.Security.NonceVerification sniff only recognises a nonce check when
+ * wp_verify_nonce() is reached through a global function call, and skips any
+ * call made through an object operator. As a method this helper would blind the
+ * sniff to every $_POST read in the page handlers.
+ *
+ * @since 1.3.0
+ * @param string $action Nonce action name.
+ * @return bool True when a valid nonce for $action was submitted.
+ */
+function verify_page_nonce( string $action ): bool {
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitised on the same line.
+	$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+
+	return '' !== $nonce && false !== wp_verify_nonce( $nonce, $action );
+}

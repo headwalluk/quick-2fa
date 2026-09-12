@@ -114,6 +114,33 @@ add_filter( 'quick_2fa_updater_enabled', function( $enabled ) {
 add_filter( 'quick_2fa_updater_enabled', '__return_false' );
 ```
 
+### `quick2fa_record_last_login`
+
+Control whether Quick 2FA records a last-login timestamp for a given user. Applied on every successful login, before anything is written.
+
+**Parameters:**
+- `bool $record` — `true` by default
+- `WP_User $user` — the user who just logged in
+
+**Returns:** `bool` — Return `false` to skip recording for this user.
+
+```php
+// Don't record logins for a service account
+add_filter( 'quick2fa_record_last_login', function( $record, $user ) {
+    if ( 'api-service' === $user->user_login ) {
+        return false;
+    }
+    return $record;
+}, 10, 2 );
+
+// Opt the whole site out of last-login recording
+add_filter( 'quick2fa_record_last_login', '__return_false' );
+```
+
+See [Reading last-login data](extending.md#reading-last-login-data) for the data this writes and how to consume it.
+
+---
+
 ## Actions
 
 Quick 2FA does not currently define any plugin-specific action hooks. The only `do_action()` calls in the codebase are to WordPress core hooks (`login_head`, `login_footer`, `login_enqueue_scripts`) and to the Query Monitor hook (`qm/cease`) for security on auth pages.
@@ -125,3 +152,5 @@ If you need an action hook to integrate with — e.g. a `quick2fa_after_verifica
 Constants and namespaced functions in `Quick_2FA\*` are **private**. Don't reference them from your own code — they may be renamed, removed, or restructured at any release without warning.
 
 If you find yourself wanting to call into the plugin, that's a sign we need a public hook for your use case. Open an issue with details and we'll consider exposing one.
+
+**One exception:** the last-login data described in [Reading last-login data](extending.md#reading-last-login-data) is a deliberate public data contract. The *key strings* `_quick2fa_last_login` and `quick2fa_last_login_since` are stable and safe to read directly with `get_user_meta()` / `get_option()`. The PHP constants that hold them (`Quick_2FA\META_LAST_LOGIN`, `Quick_2FA\OPTION_LAST_LOGIN_SINCE`) remain private — use the literal strings, not the constants.

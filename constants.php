@@ -16,9 +16,14 @@ defined( 'ABSPATH' ) || die();
  *
  * @since 1.0.0
  */
-const META_CODE_HASH              = '_quick2fa_code_hash';
-const META_CODE_TIMESTAMP         = '_quick2fa_code_timestamp';
-const META_CODE_ATTEMPTS          = '_quick2fa_code_attempts';
+const META_CODE_HASH      = '_quick2fa_code_hash';
+const META_CODE_TIMESTAMP = '_quick2fa_code_timestamp';
+const META_CODE_ATTEMPTS  = '_quick2fa_code_attempts';
+const META_LAST_LOGIN     = '_quick2fa_last_login';
+// Deliberately NOT prefixed — this key predates the plugin's own namespace
+// and is already populated on live sites. Changing the string would orphan
+// every stored value, so it stays as-is.
+const META_PASSWORD_LAST_CHANGED  = '_password_last_changed';
 const META_LAST_VERIFIED          = '_quick2fa_last_verified';
 const META_LAST_PASSWORD_REMINDER = '_quick2fa_last_password_reminder';
 const META_LOCKED_UNTIL           = '_quick2fa_locked_until';
@@ -44,6 +49,7 @@ const OPTION_EMAIL_SUBJECT              = 'quick2fa_email_subject';
 const OPTION_DISABLE_TRUSTED_DEVICES    = 'quick2fa_disable_trusted_devices';
 const OPTION_TRUSTED_DEVICE_EXPIRY      = 'quick2fa_trusted_device_expiry';
 const OPTION_LOCKOUT_DURATION           = 'quick2fa_lockout_duration';
+const OPTION_LAST_LOGIN_SINCE           = 'quick2fa_last_login_since';
 const OPTION_VERSION                    = 'quick2fa_version';
 
 /**
@@ -66,6 +72,16 @@ const RATE_LIMIT_VERIFICATION_MAX       = 5;
 const RATE_LIMIT_ACCOUNT_LOCK_THRESHOLD = 10;
 const RATE_LIMIT_ACCOUNT_LOCK_WINDOW    = 3600; // 1 hour in seconds.
 const RATE_LIMIT_ACCOUNT_LOCK_DURATION  = 3600; // 1 hour in seconds.
+
+/**
+ * Permanent locks are stored as a lock-until timestamp far enough in the
+ * future that it will never be reached. Anything beyond this offset from now
+ * is treated as permanent, and reported as "contact your administrator"
+ * rather than as a countdown.
+ *
+ * @since 1.3.0
+ */
+const PERMANENT_LOCK_THRESHOLD = 100 * YEAR_IN_SECONDS;
 
 /**
  * Trusted-device cookie.

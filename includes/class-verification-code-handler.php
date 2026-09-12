@@ -196,7 +196,7 @@ class Verification_Code_Handler {
 		$this->store( $code );
 
 		$user = get_userdata( $this->user_id );
-		if ( ! $user ) {
+		if ( ! $user instanceof \WP_User ) {
 			return new \WP_Error( 'user_not_found', __( 'User not found.', 'quick-2fa' ) );
 		}
 

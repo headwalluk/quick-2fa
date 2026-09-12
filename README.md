@@ -14,6 +14,7 @@ Lightweight email-based two-factor authentication for WordPress admin access.
 - Trusted-device tracking so users aren't asked to verify on every login
 - Account locking after too many failed attempts
 - Password reminders to nudge users towards regular password rotation
+- Last-login tracking for every user — a record WordPress core does not keep, recorded passively outside the 2FA flow
 - Comprehensive WP-CLI commands for incident response and recovery
 - Non-breaking by design — REST API, WP-CLI, AJAX, cron, XML-RPC, and Application Passwords all bypass 2FA so existing integrations keep working
 

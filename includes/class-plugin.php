@@ -64,6 +64,7 @@ class Plugin {
 		add_action( 'admin_init', array( $this, 'check_first_run' ), 1 );
 		add_action( 'admin_init', array( $this, 'check_verification' ), 1 );
 		add_filter( 'wp_authenticate_user', array( $this, 'check_lockout_on_login' ), 10, 1 );
+		add_action( 'wp_login', array( $this, 'record_last_login' ), 10, 2 );
 		add_action( 'login_init', array( $this, 'handle_login_actions' ) );
 		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_login_assets' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
@@ -141,6 +142,53 @@ class Plugin {
 	}
 
 	/**
+	 * Record the time of a successful login, for every user.
+	 *
+	 * Hooked to wp_login, so this covers front-end logins as well as wp-admin.
+	 * META_LAST_VERIFIED is not a substitute: it is only written on the login
+	 * paths 2FA actually guards, so it never lands for a customer signing in at
+	 * /my-account/. Recording here is independent of the verification flow, of
+	 * the configured 2FA mode, and of whether the user is a protected role.
+	 *
+	 * The second parameter is optional and re-resolved when absent. Some plugins
+	 * fire wp_login with only the login name, and a required WP_User parameter
+	 * would raise ArgumentCountError on the login path for every user on the site.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string        $user_login The user's login name.
+	 * @param \WP_User|null $user       The user who logged in, when the caller supplies it.
+	 */
+	public function record_last_login( string $user_login, ?\WP_User $user = null ): void {
+		if ( ! $user instanceof \WP_User ) {
+			$user = get_user_by( 'login', $user_login );
+		}
+
+		/**
+		 * Filter whether Quick 2FA records a last-login timestamp for this user.
+		 *
+		 * Return false to skip recording — for a service account, or to opt the
+		 * site out of last-login recording entirely.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param bool     $record Whether to record the login. Default true.
+		 * @param \WP_User $user   The user who logged in.
+		 */
+		if ( $user instanceof \WP_User && apply_filters( 'quick2fa_record_last_login', true, $user ) ) {
+			$now = time();
+
+			// Stamp the epoch on the first login recorded on this site. Without it a
+			// missing timestamp is ambiguous: "never logged in" and "last logged in
+			// before the site started recording" are indistinguishable. add_option()
+			// is a no-op once the value exists.
+			add_option( OPTION_LAST_LOGIN_SINCE, $now, '', 'yes' );
+
+			update_user_meta( $user->ID, META_LAST_LOGIN, $now );
+		}
+	}
+
+	/**
 	 * Check if user is locked out during login.
 	 *
 	 * Blocks locked users from logging in (front-end or admin).
@@ -150,31 +198,47 @@ class Plugin {
 	 * @return \WP_User|\WP_Error WP_User on success, WP_Error if locked.
 	 */
 	public function check_lockout_on_login( \WP_User|\WP_Error $user ): \WP_User|\WP_Error {
-        // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by wp_authenticate_user filter.
-		if ( is_wp_error( $user ) ) {
-			return $user;
-		}
+		$result = $user;
 
-		$security = new Account_Security_Handler( $user->ID );
-		if ( $security->is_locked() ) {
-			$time_remaining = $security->get_lock_time_remaining();
-			$locked_until   = get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
+		// A WP_Error here means an earlier authentication filter already failed;
+		// pass it through untouched rather than replacing its reason.
+		if ( ! is_wp_error( $user ) ) {
+			$security = new Account_Security_Handler( $user->ID );
 
-			// Permanent locks use a timestamp far in the future.
-			if ( $locked_until > time() + 100 * YEAR_IN_SECONDS ) {
-				$error_message = __( 'Your account has been locked. Please contact your site administrator.', 'quick-2fa' );
-			} else {
-				$error_message = sprintf(
-					/* translators: %s: Time remaining until unlock */
-					__( 'Your account has been locked. Please try again in %s.', 'quick-2fa' ),
-					human_time_diff( time(), time() + $time_remaining )
-				);
+			if ( $security->is_locked() ) {
+				$result = new \WP_Error( 'account_locked', $this->get_lockout_message( $user->ID, $security ) );
 			}
-
-			return new \WP_Error( 'account_locked', $error_message );
 		}
 
-		return $user;
+		return $result;
+	}
+
+	/**
+	 * Build the message explaining why an account is locked.
+	 *
+	 * Shared by the login filter and the admin-area check. Both used to carry
+	 * their own copy, including the permanent-lock threshold, so a wording or
+	 * threshold change had to be made twice to stay consistent.
+	 *
+	 * @since 1.3.0
+	 * @param int                      $user_id  User whose lock is being described.
+	 * @param Account_Security_Handler $security Handler already constructed for that user.
+	 * @return string Translated message, unescaped.
+	 */
+	private function get_lockout_message( int $user_id, Account_Security_Handler $security ): string {
+		$locked_until = (int) get_user_meta( $user_id, META_LOCKED_UNTIL, true );
+
+		if ( $locked_until > time() + PERMANENT_LOCK_THRESHOLD ) {
+			$message = __( 'Your account has been locked. Please contact your site administrator.', 'quick-2fa' );
+		} else {
+			$message = sprintf(
+				/* translators: %s: Time remaining until unlock */
+				__( 'Your account has been locked. Please try again in %s.', 'quick-2fa' ),
+				human_time_diff( time(), time() + $security->get_lock_time_remaining() )
+			);
+		}
+
+		return $message;
 	}
 
 	/**
@@ -189,35 +253,26 @@ class Plugin {
 
 		// Lockout applies to ALL users regardless of 2FA settings.
 		$user_id = get_current_user_id();
+
 		if ( $user_id ) {
 			$security = new Account_Security_Handler( $user_id );
+
 			if ( $security->is_locked() ) {
 				wp_logout();
-
-				$locked_until = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
-
-				if ( $locked_until > time() + 100 * YEAR_IN_SECONDS ) {
-					$error_message = __( 'Your account has been locked. Please contact your site administrator.', 'quick-2fa' );
-				} else {
-					$error_message = sprintf(
-						/* translators: %s: Time remaining until unlock */
-						__( 'Your account has been locked. Please try again in %s.', 'quick-2fa' ),
-						human_time_diff( time(), time() + $security->get_lock_time_remaining() )
-					);
-				}
-
-				wp_die( esc_html( $error_message ), esc_html__( 'Account Locked', 'quick-2fa' ), array( 'response' => 403 ) );
+				wp_die(
+					esc_html( $this->get_lockout_message( $user_id, $security ) ),
+					esc_html__( 'Account Locked', 'quick-2fa' ),
+					array( 'response' => 403 )
+				);
 			}
 		}
 
+		// Both redirect helpers exit(), so at most one of these runs and nothing
+		// follows the chain.
 		if ( $this->user_needs_verification() ) {
 			$this->redirect_to_verification();
-			return;
-		}
-
-		if ( $this->user_needs_password_reminder() ) {
+		} elseif ( $this->user_needs_password_reminder() ) {
 			$this->redirect_to_password_reminder();
-			return;
 		}
 	}
 
@@ -239,36 +294,29 @@ class Plugin {
 	private function user_needs_verification(): bool {
 		$user_id = get_current_user_id();
 
-		if ( ! $user_id ) {
+		if ( ! $user_id || ! $this->user_role_requires_2fa( $user_id ) ) {
 			return false;
 		}
 
-		if ( ! $this->user_role_requires_2fa( $user_id ) ) {
-			return false;
-		}
+		// Default to requiring verification: a user who has never verified, or
+		// whose state we cannot read, must be challenged.
+		$last_verified      = (int) get_user_meta( $user_id, META_LAST_VERIFIED, true );
+		$needs_verification = true;
 
-		$last_verified = (int) get_user_meta( $user_id, META_LAST_VERIFIED, true );
+		if ( $last_verified > 0 ) {
+			$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
 
-		if ( empty( $last_verified ) ) {
-			return true;
-		}
-
-		$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
-		$needs_verification      = false;
-
-		if ( $trusted_devices_enabled ) {
-			// If trusted devices feature is enabled, device trust is the primary check.
-			// Each trusted device entry carries its own expiry (e.g., 30 days), so the
-			// time-based verification period is not needed here. Unknown devices will
-			// fail the trust check and require verification regardless.
-			$security_handler   = new Account_Security_Handler( $user_id );
-			$needs_verification = ! $security_handler->is_device_trusted();
-		} else {
-			// Trusted devices disabled — fall back to time-based verification period.
-			$period_days         = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
-			$period_seconds      = $period_days * DAY_IN_SECONDS;
-			$time_since_verified = time() - $last_verified;
-			$needs_verification  = $time_since_verified > $period_seconds;
+			if ( $trusted_devices_enabled ) {
+				// Device trust is the primary check. Each trusted device entry carries
+				// its own expiry, so the time-based verification period is not applied
+				// here. Unknown devices fail the trust check and are challenged.
+				$security_handler   = new Account_Security_Handler( $user_id );
+				$needs_verification = ! $security_handler->is_device_trusted();
+			} else {
+				// Trusted devices disabled — fall back to the time-based period.
+				$period_seconds     = (int) get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD ) * DAY_IN_SECONDS;
+				$needs_verification = ( time() - $last_verified ) > $period_seconds;
+			}
 		}
 
 		return $needs_verification;
@@ -282,23 +330,19 @@ class Plugin {
 	 * @return bool True if user's role requires 2FA.
 	 */
 	private function user_role_requires_2fa( int $user_id ): bool {
-		$mode = get_option( OPTION_MODE, DEFAULT_MODE );
+		$mode     = get_option( OPTION_MODE, DEFAULT_MODE );
+		$requires = false;
 
 		if ( MODE_ALL === $mode ) {
-			return true;
-		}
+			$requires = true;
+		} elseif ( MODE_ROLES === $mode ) {
+			// Any other mode (including MODE_DISABLED) leaves $requires false.
+			$protected_roles = get_option( OPTION_PROTECTED_ROLES, array() );
+			$user            = get_userdata( $user_id );
 
-		if ( MODE_ROLES !== $mode ) {
-			return false;
-		}
-
-		$protected_roles = get_option( OPTION_PROTECTED_ROLES, array() );
-		$user            = get_userdata( $user_id );
-		$requires        = false;
-
-		if ( ! empty( $protected_roles ) && $user ) {
-			$user_roles = (array) $user->roles;
-			$requires   = ! empty( array_intersect( $user_roles, $protected_roles ) );
+			if ( ! empty( $protected_roles ) && $user instanceof \WP_User ) {
+				$requires = ! empty( array_intersect( (array) $user->roles, $protected_roles ) );
+			}
 		}
 
 		return $requires;
@@ -318,45 +362,34 @@ class Plugin {
 		$user_id = get_current_user_id();
 		$user    = get_userdata( $user_id );
 
-		if ( ! $user ) {
+		if ( ! $user instanceof \WP_User ) {
 			return false;
 		}
 
-		$last_pass_change = get_user_meta( $user_id, '_password_last_changed', true );
+		$last_pass_change = (int) get_user_meta( $user_id, META_PASSWORD_LAST_CHANGED, true );
 
-		if ( empty( $last_pass_change ) ) {
-			// Fall back to user registration date as baseline.
-			$reg_timestamp = strtotime( $user->user_registered );
+		if ( $last_pass_change <= 0 ) {
+			// No baseline recorded yet — seed it from the registration date and
+			// store it, so password age is measured from something real.
+			$registered_at = strtotime( $user->user_registered );
 
-			// Handle invalid/zero registration dates (e.g., '0000-00-00 00:00:00').
-			if ( false === $reg_timestamp || 0 > $reg_timestamp ) {
-				$reg_timestamp = time();
-			}
-			$last_pass_change = $reg_timestamp;
-			// Set it now for future tracking.
-			update_user_meta( $user_id, '_password_last_changed', $last_pass_change );
+			// An invalid or zero registration date ('0000-00-00 00:00:00') would
+			// otherwise read as an infinitely old password.
+			$last_pass_change = ( false === $registered_at || $registered_at < 0 ) ? time() : $registered_at;
+
+			update_user_meta( $user_id, META_PASSWORD_LAST_CHANGED, $last_pass_change );
 		}
 
-		$period_days       = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
-		$period_seconds    = $period_days * DAY_IN_SECONDS;
-		$time_since_change = time() - $last_pass_change;
+		$period_seconds = (int) get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD ) * DAY_IN_SECONDS;
+		$needs_reminder = ( time() - $last_pass_change ) > $period_seconds;
 
-		$needs_reminder = false;
+		if ( $needs_reminder ) {
+			// Respect the cooldown — don't nag the user on every page load.
+			$last_reminder = (int) get_user_meta( $user_id, META_LAST_PASSWORD_REMINDER, true );
 
-		if ( $time_since_change > $period_seconds ) {
-			$needs_reminder = true;
-
-			// Respect cooldown — don't nag the user every page load.
-			$last_reminder = get_user_meta( $user_id, META_LAST_PASSWORD_REMINDER, true );
-
-			if ( ! empty( $last_reminder ) ) {
-				$cooldown_days       = get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
-				$cooldown_seconds    = $cooldown_days * DAY_IN_SECONDS;
-				$time_since_reminder = time() - $last_reminder;
-
-				if ( $time_since_reminder < $cooldown_seconds ) {
-					$needs_reminder = false;
-				}
+			if ( $last_reminder > 0 ) {
+				$cooldown_seconds = (int) get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN ) * DAY_IN_SECONDS;
+				$needs_reminder   = ( time() - $last_reminder ) >= $cooldown_seconds;
 			}
 		}
 
@@ -427,21 +460,59 @@ class Plugin {
 	}
 
 	/**
+	 * Grant device trust after a successful verification.
+	 *
+	 * Ticking the box trusts the device for the full configured expiry; leaving
+	 * it unticked grants short-term trust matching the verification period, so
+	 * the user isn't re-prompted on every login within that window. Either way
+	 * the trust is carried by a secure cookie token set inside trust_device().
+	 *
+	 * @since 1.3.0
+	 * @param int  $user_id      User who just verified.
+	 * @param bool $trust_device Whether the user ticked "trust this device".
+	 */
+	private function apply_device_trust( int $user_id, bool $trust_device ): void {
+		if ( get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
+			return;
+		}
+
+		if ( $trust_device ) {
+			$expiry_days = (int) get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
+		} else {
+			$expiry_days = (int) get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
+		}
+
+		$security_handler = new Account_Security_Handler( $user_id );
+		$security_handler->trust_device( $expiry_days * DAY_IN_SECONDS );
+	}
+
+	/**
 	 * Handle verification page.
 	 *
 	 * @since 1.0.0
 	 */
 	private function handle_verification_page(): void {
 		$user_id = get_current_user_id();
+		$user    = get_userdata( $user_id );
 		$error   = null;
 		$message = null;
+
+		// The view dereferences $user directly. A logged-in session whose user
+		// record has gone would otherwise fatal on the one page a locked-out
+		// admin needs to reach.
+		if ( ! $user instanceof \WP_User ) {
+			wp_die(
+				esc_html__( 'Your user account could not be loaded. Please sign in again.', 'quick-2fa' ),
+				esc_html_x( 'Error', 'error page title', 'quick-2fa' ),
+				array( 'response' => 403 )
+			);
+		}
 
 		$is_post          = isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'];
 		$is_verify_submit = $is_post && isset( $_POST['q2fa_verify'] );
 		$is_resend_submit = $is_post && isset( $_POST['q2fa_resend'] );
 
-		if ( $is_verify_submit && ( ! array_key_exists( '_wpnonce', $_POST ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'quick2fa_verify' ) ) ) {
-            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce validation.
+		if ( $is_verify_submit && ! verify_page_nonce( 'quick2fa_verify' ) ) {
 			$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 		} elseif ( $is_verify_submit ) {
 			$code = isset( $_POST['q2fa_code'] ) ? sanitize_text_field( wp_unslash( $_POST['q2fa_code'] ) ) : '';
@@ -455,31 +526,15 @@ class Plugin {
 				if ( is_wp_error( $result ) ) {
 					$error = $result;
 				} else {
-					if ( ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
-						$security_handler = new Account_Security_Handler( $user_id );
+					$trust_device = isset( $_POST['q2fa_trust_device'] ) && '1' === $_POST['q2fa_trust_device'];
 
-						// Ticking the box trusts the device for the full configured
-						// expiry; leaving it unticked grants short-term trust matching
-						// the verification period, so the user isn't re-prompted on
-						// every login within that window. Either way the trust is
-						// carried by a secure cookie token set inside trust_device().
-						$trust_device = isset( $_POST['q2fa_trust_device'] ) && '1' === $_POST['q2fa_trust_device'];
-						if ( $trust_device ) {
-							$expiry_days = (int) get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
-						} else {
-							$expiry_days = (int) get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
-						}
+					$this->apply_device_trust( $user_id, $trust_device );
 
-						$security_handler->trust_device( $expiry_days * DAY_IN_SECONDS );
-					}
-
-					$return_url = get_return_url( $user_id );
-					wp_safe_redirect( $return_url );
+					wp_safe_redirect( get_return_url( $user_id ) );
 					exit();
 				}
 			}
-		} elseif ( $is_resend_submit && ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'quick2fa_resend' ) ) ) {
-            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce validation.
+		} elseif ( $is_resend_submit && ! verify_page_nonce( 'quick2fa_resend' ) ) {
 			$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 		} elseif ( $is_resend_submit ) {
 			$code_handler = new Verification_Code_Handler( $user_id );
@@ -508,8 +563,6 @@ class Plugin {
 		$trusted_device_expiry   = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 		$verify_intro            = get_verify_intro();
 
-		$user = get_userdata( $user_id );
-
 		require QUICK_2FA_PATH . 'views/verification-page.php';
 	}
 
@@ -524,40 +577,43 @@ class Plugin {
 		$error   = null;
 		$message = null;
 
+		// The view dereferences $user directly — see handle_verification_page().
+		if ( ! $user instanceof \WP_User ) {
+			wp_die(
+				esc_html__( 'Your user account could not be loaded. Please sign in again.', 'quick-2fa' ),
+				esc_html_x( 'Error', 'error page title', 'quick-2fa' ),
+				array( 'response' => 403 )
+			);
+		}
+
 		$handler        = new Password_Reminder_Handler( $user_id );
 		$days_since     = $handler->get_password_age();
 		$new_password   = $handler->generate_strong_password();
 		$password_intro = get_password_intro();
 
-		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			if ( isset( $_POST['q2fa_update_password'] ) ) {
-				if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'quick2fa_password' ) ) {
-                    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce validation.
-					$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
-				} else {
-					$password = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Password needs special chars.
-					$result   = $handler->update_password( $password );
+		$is_post          = isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'];
+		$is_update_submit = $is_post && isset( $_POST['q2fa_update_password'] );
+		$is_later_submit  = $is_post && isset( $_POST['q2fa_remind_later'] );
 
-					if ( is_wp_error( $result ) ) {
-						$error = $result;
-					} else {
-						$return_url = get_return_url( $user_id );
-						wp_safe_redirect( $return_url );
-						exit();
-					}
-				}
-			} elseif ( isset( $_POST['q2fa_remind_later'] ) ) {
-				if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'quick2fa_remind_later' ) ) {
-                    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce validation.
-					$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
-				} else {
-					$handler->dismiss_reminder();
+		if ( $is_update_submit && ! verify_page_nonce( 'quick2fa_password' ) ) {
+			$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
+		} elseif ( $is_update_submit ) {
+			$password = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Password needs special chars.
+			$result   = $handler->update_password( $password );
 
-					$return_url = get_return_url( $user_id );
-					wp_safe_redirect( $return_url );
-					exit();
-				}
+			if ( is_wp_error( $result ) ) {
+				$error = $result;
+			} else {
+				wp_safe_redirect( get_return_url( $user_id ) );
+				exit();
 			}
+		} elseif ( $is_later_submit && ! verify_page_nonce( 'quick2fa_remind_later' ) ) {
+			$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
+		} elseif ( $is_later_submit ) {
+			$handler->dismiss_reminder();
+
+			wp_safe_redirect( get_return_url( $user_id ) );
+			exit();
 		}
 
 		require QUICK_2FA_PATH . 'views/password-page.php';

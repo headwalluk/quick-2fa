@@ -298,7 +298,7 @@ class User_Management {
 		}
 
 		$user = get_userdata( $user_id );
-		if ( ! $user ) {
+		if ( ! $user instanceof \WP_User ) {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
@@ -350,7 +350,7 @@ class User_Management {
 		}
 
 		$user = get_userdata( $user_id );
-		if ( ! $user ) {
+		if ( ! $user instanceof \WP_User ) {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
@@ -414,7 +414,7 @@ class User_Management {
 	 */
 	private function format_lockout_expiry( int $timestamp ): string {
 		// Check for permanent lock (PHP_INT_MAX or very large timestamp).
-		if ( $timestamp > time() + 100 * YEAR_IN_SECONDS ) {
+		if ( $timestamp > time() + PERMANENT_LOCK_THRESHOLD ) {
 			return __( 'Locked out (manual)', 'quick-2fa' );
 		}
 
@@ -553,7 +553,7 @@ class User_Management {
 		}
 
 		$user = get_userdata( $user_id );
-		if ( ! $user ) {
+		if ( ! $user instanceof \WP_User ) {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
@@ -599,7 +599,7 @@ class User_Management {
 		}
 
 		$user = get_userdata( $user_id );
-		if ( ! $user ) {
+		if ( ! $user instanceof \WP_User ) {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 

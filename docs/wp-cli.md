@@ -65,7 +65,7 @@ wp quick-2fa list-locked --format=csv > locked.csv
 
 ### `clear-devices <user>`
 
-Remove all trusted device fingerprints for a user. They'll need to verify on every device on their next login.
+Remove all trusted device tokens for a user. They'll need to verify on every device on their next login.
 
 ```bash
 wp quick-2fa clear-devices admin

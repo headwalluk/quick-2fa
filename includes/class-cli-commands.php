@@ -298,8 +298,8 @@ class CLI_Commands {
 		$security = new Account_Security_Handler( $user->ID );
 		$locked   = $security->is_locked();
 		if ( $locked ) {
-			$locked_until = get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
-			if ( $locked_until > time() + 100 * YEAR_IN_SECONDS ) {
+			$locked_until = (int) get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
+			if ( $locked_until > time() + PERMANENT_LOCK_THRESHOLD ) {
 				$lock_status = 'Locked (permanent)';
 			} else {
 				$lock_status = sprintf( 'Locked until %s', wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $locked_until ) );
@@ -405,9 +405,9 @@ class CLI_Commands {
 
 		$locked_users = array();
 		foreach ( $users as $user ) {
-			$locked_until = get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
+			$locked_until = (int) get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
 
-			if ( $locked_until > time() + 100 * YEAR_IN_SECONDS ) {
+			if ( $locked_until > time() + PERMANENT_LOCK_THRESHOLD ) {
 				$locked_until_display = 'Permanent';
 			} else {
 				$locked_until_display = wp_date( 'Y-m-d H:i:s', $locked_until );
@@ -469,18 +469,18 @@ class CLI_Commands {
 	private function get_user( string $user_identifier ): \WP_User|\WP_Error {
 		if ( is_numeric( $user_identifier ) ) {
 			$user = get_userdata( (int) $user_identifier );
-			if ( $user ) {
+			if ( $user instanceof \WP_User ) {
 				return $user;
 			}
 		}
 
 		$user = get_user_by( 'login', $user_identifier );
-		if ( $user ) {
+		if ( $user instanceof \WP_User ) {
 			return $user;
 		}
 
 		$user = get_user_by( 'email', $user_identifier );
-		if ( $user ) {
+		if ( $user instanceof \WP_User ) {
 			return $user;
 		}
 

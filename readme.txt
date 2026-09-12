@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.2.2
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,12 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.3.0 =
+New: Quick 2FA now records when each user last logged in, for every user on the site, not just those who go through 2FA. WordPress itself keeps no such record. The timestamp is stored as user meta (`_quick2fa_last_login`) and is there for site owners and integrations to read — nothing in the plugin's own behaviour changes, and there is no new setting. Fix: the in-plugin updater no longer shows a permanent "update available" notice for a version that is already installed — sites running 1.2.2 were seeing this on every admin page load. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
+= 1.2.2 =
+Maintenance release: recompiled the Spanish, Italian and Greek translation binaries, which were showing the "Lock Out" user-row action as a noun rather than a verb. No behaviour changes. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
 = 1.2.1 =
 Default generated-password length range raised to 12–20 characters (was 10–16) for new installs. Existing sites keep their saved settings. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
@@ -76,6 +82,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Recommended for all sites. Fixes the permanent false "update available" notice that sites on 1.2.2 have been seeing on every admin page load. Also starts recording a last-login timestamp for every user — WordPress does not track this itself, and the record cannot be backfilled, so the sooner it starts the more useful it becomes. No settings change and no effect on the 2FA workflow.
 
 = 1.2.0 =
 Trusted devices now use a secure cookie instead of your IP + browser, fixing repeated 2FA prompts and duplicate code emails for staff whose IP changes through the day (multi-WAN, mobile, CGNAT, IPv6). Recommended for all sites. One-time effect: every trusted device must re-verify once after this update.
@@ -107,6 +116,7 @@ Quick 2FA stores the following data locally on your WordPress site:
 
 * Hashed verification codes (user meta, never plaintext)
 * Verification and password-change timestamps (user meta)
+* Last-login timestamps, recorded for every user on every successful login (user meta). Disable with the `quick2fa_record_last_login` filter.
 * Security event log, capped at 50 entries per user (user meta)
 * IP addresses in the event log, for incident investigation
 * Trusted device tokens (user meta, stored hashed; the raw token lives only in a secure cookie in the user's browser)

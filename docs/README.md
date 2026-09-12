@@ -14,7 +14,7 @@ Lightweight email-based two-factor authentication for WordPress admin access.
 ## For developers
 
 - [Hooks and filters](developers/hooks-and-filters.md) — The public extension surface
-- [Extending Quick 2FA](developers/extending.md) — Practical recipes (custom intro, custom passwords, disabling auto-updates)
+- [Extending Quick 2FA](developers/extending.md) — Practical recipes (custom intro, custom passwords, disabling auto-updates, reading last-login data)
 
 ## Need to escalate?
 
