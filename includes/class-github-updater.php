@@ -90,14 +90,15 @@ class Github_Updater {
 		} elseif ( ! $this->is_enabled() ) {
 			$this->log( 'check_for_update: updates disabled via filter, skipping.' );
 		} else {
-			$release = $this->get_latest_release();
+			$installed_version = $this->get_installed_version( $checked );
+			$release           = $this->get_latest_release();
 
 			if ( ! is_array( $release ) ) {
 				$this->log( 'check_for_update: no release data returned from GitHub.' );
-			} elseif ( version_compare( QUICK_2FA_VERSION, $release['version'], '>=' ) ) {
-				$this->log( 'check_for_update: current version ' . QUICK_2FA_VERSION . ' is up to date (latest: ' . $release['version'] . ').' );
+			} elseif ( version_compare( $installed_version, $release['version'], '>=' ) ) {
+				$this->log( 'check_for_update: current version ' . $installed_version . ' is up to date (latest: ' . $release['version'] . ').' );
 			} else {
-				$this->log( 'check_for_update: update available ' . QUICK_2FA_VERSION . ' → ' . $release['version'] . '.' );
+				$this->log( 'check_for_update: update available ' . $installed_version . ' → ' . $release['version'] . '.' );
 				$transient->response[ $this->plugin_basename ] = (object) array(
 					'slug'        => $this->plugin_slug,
 					'plugin'      => $this->plugin_basename,
@@ -109,6 +110,35 @@ class Github_Updater {
 		}
 
 		return $transient;
+	}
+
+	/**
+	 * Resolve the installed version that WordPress itself is working from.
+	 *
+	 * WordPress builds the transient's checked list from the plugin file
+	 * header, and that is the number it shows in the admin and compares
+	 * against new_version to decide whether to draw the update row. Comparing
+	 * anything else here — such as the hand-maintained QUICK_2FA_VERSION —
+	 * lets a stale constant advertise an update for a release that is already
+	 * installed, which the update can never clear because reinstalling ships
+	 * the same stale constant again.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $checked The transient's checked list, keyed by plugin basename.
+	 * @return string Version string WordPress considers installed.
+	 */
+	private function get_installed_version( array $checked ): string {
+		$installed_version = $checked[ $this->plugin_basename ] ?? '';
+
+		if ( '' === $installed_version ) {
+			$installed_version = QUICK_2FA_VERSION;
+			$this->log( 'get_installed_version: ' . $this->plugin_basename . ' absent from the checked list, falling back to QUICK_2FA_VERSION ' . $installed_version . '.' );
+		} elseif ( QUICK_2FA_VERSION !== $installed_version ) {
+			$this->log_error( 'get_installed_version: version drift — the plugin header reports ' . $installed_version . ' but QUICK_2FA_VERSION is ' . QUICK_2FA_VERSION . '. Both are set in quick-2fa.php and must be bumped together.' );
+		}
+
+		return $installed_version;
 	}
 
 	/**
