@@ -208,7 +208,7 @@ wp quick-2fa status <user>                  # Check user 2FA status
 wp quick-2fa lock-all --exclude=admin       # Emergency lockdown
 wp quick-2fa list-locked                    # List all locked users
 wp quick-2fa clear-devices <user>           # Clear trusted devices
-wp quick-2fa emergency_disable --yes        # Disable 2FA entirely
+wp quick-2fa emergency-disable --yes        # Disable 2FA entirely
 ```
 
 ## Release Workflow

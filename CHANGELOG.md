@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- **Breaking: four WP-CLI subcommands have been renamed to the hyphenated forms the documentation already used.** `lock_all`, `unlock_all`, `list_locked`, `clear_devices` and `emergency_disable` are now `lock-all`, `unlock-all`, `list-locked`, `clear-devices` and `emergency-disable`. The documented hyphenated names never worked — WP-CLI registered the method names verbatim — so `docs/wp-cli.md`, `docs/account-locking.md` and `docs/troubleshooting.md` were all instructing people to run commands that did not exist, including in the lockout-recovery procedure. The underscore forms are gone rather than kept as aliases; update any scripts or runbooks that use them.
 - **Raised the minimum PHP version to 8.2.** The plugin declared `Requires PHP: 8.0`, but four handlers return `true|\WP_Error` and the `true` type was only added in PHP 8.2. On 8.0 or 8.1 those files fail to compile, and because they are required unconditionally the result is a fatal on every request rather than a graceful failure. The declared floor has been wrong since roughly v0.5.0, so no site can have been running the plugin below 8.2 — this makes the header honest, and lets WordPress block installation on incompatible hosts instead of permitting a configuration that breaks.
 
 ### Removed

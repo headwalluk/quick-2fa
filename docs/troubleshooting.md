@@ -48,7 +48,7 @@ If you triggered an *automatic* lockout (failed verification too many times), it
 If you have shell access:
 
 ```bash
-wp quick-2fa emergency_disable --yes
+wp quick-2fa emergency-disable --yes
 ```
 
 This sets the plugin to `disabled` mode. Log in normally, then go to **Settings → Quick 2FA** and re-enable 2FA.

@@ -50,17 +50,7 @@ class CLI_Commands {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		$security = new Account_Security_Handler( $user->ID );
-		$security->lock_account( PHP_INT_MAX );
-		$this->destroy_all_sessions( $user->ID );
-
-		$security->log_event(
-			LOG_ACCOUNT_LOCKED,
-			array(
-				'source' => 'wp_cli',
-				'reason' => 'manual_lock',
-			)
-		);
+		$this->lock_user( $user->ID, 'manual_lock' );
 
 		\WP_CLI::success( sprintf( "User '%s' has been locked out and all sessions terminated.", $user->user_login ) );
 	}
@@ -91,17 +81,7 @@ class CLI_Commands {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		$security = new Account_Security_Handler( $user->ID );
-		$security->unlock_account();
-		update_user_meta( $user->ID, META_CODE_ATTEMPTS, 0 );
-
-		$security->log_event(
-			LOG_ACCOUNT_UNLOCKED,
-			array(
-				'source' => 'wp_cli',
-				'reason' => 'manual_unlock',
-			)
-		);
+		$this->unlock_user( $user->ID, 'manual_unlock' );
 
 		\WP_CLI::success( sprintf( "User '%s' has been unlocked.", $user->user_login ) );
 	}
@@ -128,23 +108,30 @@ class CLI_Commands {
 	 *     Are you sure you want to lock ALL users? [y/n] y
 	 *     Success: Locked 143 users.
 	 *
+	 * @subcommand lock-all
+	 *
 	 * @since 0.6.0
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
 	public function lock_all( array $args, array $assoc_args ): void {
-		$exclude          = isset( $assoc_args['exclude'] ) ? $assoc_args['exclude'] : null;
-		$excluded_user_id = null;
+		$exclude            = $assoc_args['exclude'] ?? null;
+		$excluded_user_id   = 0;
+		$excluded_user_name = '';
+
 		if ( $exclude ) {
-			$user = $this->get_user( $exclude );
-			if ( is_wp_error( $user ) ) {
-				\WP_CLI::error( sprintf( 'Excluded user not found: %s', $user->get_error_message() ) );
+			$excluded_user = $this->get_user( $exclude );
+
+			if ( is_wp_error( $excluded_user ) ) {
+				\WP_CLI::error( sprintf( 'Excluded user not found: %s', $excluded_user->get_error_message() ) );
 			}
-			$excluded_user_id = $user->ID;
+
+			$excluded_user_id   = $excluded_user->ID;
+			$excluded_user_name = $excluded_user->user_login;
 		}
 
-		if ( $excluded_user_id ) {
-			\WP_CLI::confirm( sprintf( "Are you sure you want to lock ALL users except '%s'?", $user->user_login ), $assoc_args );
+		if ( $excluded_user_id > 0 ) {
+			\WP_CLI::confirm( sprintf( "Are you sure you want to lock ALL users except '%s'?", $excluded_user_name ), $assoc_args );
 		} else {
 			\WP_CLI::confirm( 'Are you sure you want to lock ALL users?', $assoc_args );
 		}
@@ -160,23 +147,12 @@ class CLI_Commands {
 		$excluded_count = 0;
 
 		foreach ( $user_ids as $user_id ) {
-			if ( $excluded_user_id && $user_id === $excluded_user_id ) {
+			if ( $excluded_user_id > 0 && (int) $user_id === $excluded_user_id ) {
 				++$excluded_count;
 				continue;
 			}
 
-			$security = new Account_Security_Handler( $user_id );
-			$security->lock_account( PHP_INT_MAX );
-			$this->destroy_all_sessions( $user_id );
-
-			$security->log_event(
-				LOG_ACCOUNT_LOCKED,
-				array(
-					'source' => 'wp_cli',
-					'reason' => 'emergency_lockdown',
-				)
-			);
-
+			$this->lock_user( (int) $user_id, 'emergency_lockdown' );
 			++$locked_count;
 		}
 
@@ -199,6 +175,8 @@ class CLI_Commands {
 	 *
 	 *     $ wp quick-2fa unlock-all
 	 *     Success: Unlocked 23 users.
+	 *
+	 * @subcommand unlock-all
 	 *
 	 * @since 0.6.0
 	 * @param array $args       Positional arguments.
@@ -235,18 +213,7 @@ class CLI_Commands {
 		$unlocked_count = 0;
 
 		foreach ( $user_ids as $user_id ) {
-			$security = new Account_Security_Handler( $user_id );
-			$security->unlock_account();
-			update_user_meta( $user_id, META_CODE_ATTEMPTS, 0 );
-
-			$security->log_event(
-				LOG_ACCOUNT_UNLOCKED,
-				array(
-					'source' => 'wp_cli',
-					'reason' => 'bulk_unlock',
-				)
-			);
-
+			$this->unlock_user( (int) $user_id, 'bulk_unlock' );
 			++$unlocked_count;
 		}
 
@@ -373,6 +340,8 @@ class CLI_Commands {
 	 *     | 73      | jane_smith | jane@example.com     | Permanent           |
 	 *     +---------+------------+----------------------+---------------------+
 	 *
+	 * @subcommand list-locked
+	 *
 	 * @since 0.6.0
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
@@ -438,6 +407,8 @@ class CLI_Commands {
 	 *     $ wp quick-2fa clear-devices admin
 	 *     Success: Cleared 3 trusted devices for user 'admin'.
 	 *
+	 * @subcommand clear-devices
+	 *
 	 * @since 0.6.0
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments (unused, required by WP-CLI).
@@ -467,24 +438,78 @@ class CLI_Commands {
 	 * @return \WP_User|\WP_Error User object on success, WP_Error on failure.
 	 */
 	private function get_user( string $user_identifier ): \WP_User|\WP_Error {
+		$user = null;
+
+		// Numeric first, so a login that looks like a number is still reachable
+		// by its login if no such ID exists.
 		if ( is_numeric( $user_identifier ) ) {
 			$user = get_userdata( (int) $user_identifier );
-			if ( $user instanceof \WP_User ) {
-				return $user;
-			}
 		}
 
-		$user = get_user_by( 'login', $user_identifier );
-		if ( $user instanceof \WP_User ) {
-			return $user;
+		if ( ! $user instanceof \WP_User ) {
+			$user = get_user_by( 'login', $user_identifier );
 		}
 
-		$user = get_user_by( 'email', $user_identifier );
-		if ( $user instanceof \WP_User ) {
-			return $user;
+		if ( ! $user instanceof \WP_User ) {
+			$user = get_user_by( 'email', $user_identifier );
 		}
 
-		return new \WP_Error( 'user_not_found', sprintf( 'User not found: %s', $user_identifier ) );
+		if ( ! $user instanceof \WP_User ) {
+			$user = new \WP_Error( 'user_not_found', sprintf( 'User not found: %s', $user_identifier ) );
+		}
+
+		return $user;
+	}
+
+	/**
+	 * Lock one account, end its sessions, and record why.
+	 *
+	 * Shared by lock and lock-all, which carried identical bodies.
+	 *
+	 * @since 1.3.0
+	 * @param int    $user_id User to lock.
+	 * @param string $reason  Reason recorded in the event log.
+	 */
+	private function lock_user( int $user_id, string $reason ): void {
+		$security = new Account_Security_Handler( $user_id );
+		$security->lock_account( PERMANENT_LOCK_DURATION );
+
+		$this->destroy_all_sessions( $user_id );
+
+		$security->log_event(
+			LOG_ACCOUNT_LOCKED,
+			array(
+				'source' => 'wp_cli',
+				'reason' => $reason,
+			)
+		);
+	}
+
+	/**
+	 * Unlock one account and record why.
+	 *
+	 * Shared by unlock and unlock-all. The failed-attempt counter is reset here
+	 * because a human is deliberately restoring access; it is deliberately NOT
+	 * reset when a timed lock simply elapses, so a brute-force attempt does not
+	 * earn a fresh set of attempts by waiting.
+	 *
+	 * @since 1.3.0
+	 * @param int    $user_id User to unlock.
+	 * @param string $reason  Reason recorded in the event log.
+	 */
+	private function unlock_user( int $user_id, string $reason ): void {
+		$security = new Account_Security_Handler( $user_id );
+		$security->unlock_account();
+
+		update_user_meta( $user_id, META_CODE_ATTEMPTS, 0 );
+
+		$security->log_event(
+			LOG_ACCOUNT_UNLOCKED,
+			array(
+				'source' => 'wp_cli',
+				'reason' => $reason,
+			)
+		);
 	}
 
 	/**
@@ -513,10 +538,12 @@ class CLI_Commands {
 	 * ## EXAMPLES
 	 *
 	 *     # Emergency disable with confirmation
-	 *     wp quick-2fa emergency_disable
+	 *     wp quick-2fa emergency-disable
 	 *
 	 *     # Emergency disable without confirmation
-	 *     wp quick-2fa emergency_disable --yes
+	 *     wp quick-2fa emergency-disable --yes
+	 *
+	 * @subcommand emergency-disable
 	 *
 	 * @since 0.8.0
 	 * @param array<string,mixed> $args       Positional arguments.

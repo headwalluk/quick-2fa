@@ -14,7 +14,7 @@ Three options control which users are required to verify:
 
 When **roles** mode is selected, the default protected roles are any role with the `install_plugins` or `manage_options` capability (typically `administrator` and `editor` if your site has elevated editor permissions). You can edit the list in the settings page.
 
-When **disabled** mode is selected, an admin notice is shown on every admin screen warning that 2FA is off. Use the WP-CLI command `wp quick-2fa emergency_disable` if you need to flip to disabled from the command line.
+When **disabled** mode is selected, an admin notice is shown on every admin screen warning that 2FA is off. Use the WP-CLI command `wp quick-2fa emergency-disable` if you need to flip to disabled from the command line.
 
 ## Verification
 

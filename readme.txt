@@ -36,7 +36,7 @@ No. Quick 2FA only intercepts browser-based admin page access. REST API, Applica
 
 = What if I lose access to my email? =
 
-Run `wp quick-2fa emergency_disable --yes` via WP-CLI, or rename the plugin folder via SFTP to force-deactivate it. Full recovery procedures are in [`docs/troubleshooting.md`](https://github.com/headwalluk/quick-2fa/blob/master/docs/troubleshooting.md) on GitHub.
+Run `wp quick-2fa emergency-disable --yes` via WP-CLI, or rename the plugin folder via SFTP to force-deactivate it. Full recovery procedures are in [`docs/troubleshooting.md`](https://github.com/headwalluk/quick-2fa/blob/master/docs/troubleshooting.md) on GitHub.
 
 = Where's the full documentation? =
 
@@ -49,7 +49,7 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 == Changelog ==
 
 = 1.3.0 =
-New: Quick 2FA now records when each user last logged in, for every user on the site, not just those who go through 2FA. WordPress itself keeps no such record. The timestamp is stored as user meta (`_quick2fa_last_login`) and is there for site owners and integrations to read — nothing in the plugin's own behaviour changes, and there is no new setting. Fix: the in-plugin updater no longer shows a permanent "update available" notice for a version that is already installed — sites running 1.2.2 were seeing this on every admin page load. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+Breaking (WP-CLI only): five subcommands renamed to hyphenated forms (`lock-all`, `unlock-all`, `list-locked`, `clear-devices`, `emergency-disable`) — these are the names the docs always showed, but the underscore forms were the ones that worked. Minimum PHP is now 8.2. New: Quick 2FA now records when each user last logged in, for every user on the site, not just those who go through 2FA. WordPress itself keeps no such record. The timestamp is stored as user meta (`_quick2fa_last_login`) and is there for site owners and integrations to read — nothing in the plugin's own behaviour changes, and there is no new setting. Fix: the in-plugin updater no longer shows a permanent "update available" notice for a version that is already installed — sites running 1.2.2 were seeing this on every admin page load. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 = 1.2.2 =
 Maintenance release: recompiled the Spanish, Italian and Greek translation binaries, which were showing the "Lock Out" user-row action as a noun rather than a verb. No behaviour changes. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
@@ -84,7 +84,7 @@ Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2
 == Upgrade Notice ==
 
 = 1.3.0 =
-Recommended for all sites. Fixes the permanent false "update available" notice that sites on 1.2.2 have been seeing on every admin page load. Also starts recording a last-login timestamp for every user — WordPress does not track this itself, and the record cannot be backfilled, so the sooner it starts the more useful it becomes. No settings change and no effect on the 2FA workflow.
+**Breaking (WP-CLI only):** five subcommands are renamed to hyphenated names — `lock-all`, `unlock-all`, `list-locked`, `clear-devices`, `emergency-disable`. The hyphenated forms are what the documentation always showed; the underscore forms that actually worked are gone. Update any scripts before upgrading. Also requires PHP 8.2 or later. Recommended for all sites: fixes the permanent false "update available" notice that sites on 1.2.2 have been seeing on every admin page load. Also starts recording a last-login timestamp for every user — WordPress does not track this itself, and the record cannot be backfilled, so the sooner it starts the more useful it becomes. No settings change and no effect on the 2FA workflow.
 
 = 1.2.0 =
 Trusted devices now use a secure cookie instead of your IP + browser, fixing repeated 2FA prompts and duplicate code emails for staff whose IP changes through the day (multi-WAN, mobile, CGNAT, IPv6). Recommended for all sites. One-time effect: every trusted device must re-verify once after this update.

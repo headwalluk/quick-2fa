@@ -50,7 +50,7 @@ This unlocks **all** locked users — both automatic and manual locks. If you wa
 If you don't have shell access and you've locked yourself out:
 
 ```bash
-wp quick-2fa emergency_disable --yes
+wp quick-2fa emergency-disable --yes
 ```
 
 This sets `OPTION_MODE` to `disabled`, bypassing 2FA entirely. After you log back in, **re-enable 2FA immediately** and investigate why the lockout happened.

@@ -78,7 +78,7 @@ wp quick-2fa clear-devices admin
 Set Quick 2FA to `disabled` mode, bypassing all 2FA checks. Use this only if you've genuinely locked yourself out and you have no other recovery path.
 
 ```bash
-wp quick-2fa emergency_disable --yes
+wp quick-2fa emergency-disable --yes
 ```
 
 The action is recorded to the PHP error log so it leaves a paper trail. **Re-enable 2FA from the settings page as soon as you've recovered access.**
