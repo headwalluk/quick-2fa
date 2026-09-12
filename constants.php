@@ -146,6 +146,16 @@ const LOG_ACCOUNT_UNLOCKED     = 'account_unlocked';
 const LOG_PASSWORD_CHANGED     = 'password_changed';
 
 /**
+ * Maximum security-log entries retained per user.
+ *
+ * The log lives in a single user_meta row, so it is capped rather than allowed
+ * to grow without limit. Documented in readme.txt's privacy section.
+ *
+ * @since 1.3.0
+ */
+const LOG_MAX_ENTRIES = 50;
+
+/**
  * GitHub updater.
  *
  * @since 1.0.0

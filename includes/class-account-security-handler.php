@@ -31,7 +31,7 @@ class Account_Security_Handler {
 	 *
 	 * @var int
 	 */
-	private $user_id;
+	private int $user_id;
 
 	/**
 	 * Constructor.
@@ -50,31 +50,30 @@ class Account_Security_Handler {
 	 * @return bool True if account is locked.
 	 */
 	public function is_locked(): bool {
-		$locked_until = get_user_meta( $this->user_id, META_LOCKED_UNTIL, true );
+		$locked_until = (int) get_user_meta( $this->user_id, META_LOCKED_UNTIL, true );
+		$is_locked    = false;
 
-		if ( empty( $locked_until ) ) {
-			return false;
+		if ( $locked_until > 0 ) {
+			if ( time() >= $locked_until ) {
+				// Lock has elapsed — clear it, so the check is self-healing.
+				$this->unlock_account();
+			} else {
+				$is_locked = true;
+			}
 		}
 
-		if ( time() >= $locked_until ) {
-			// Lock expired, clean up.
-			$this->unlock_account();
-			return false;
-		}
-
-		return true;
+		return $is_locked;
 	}
 
 	/**
 	 * Lock user account.
 	 *
 	 * @since 0.4.0
-	 * @param int $duration Lock duration in seconds (default: from OPTION_LOCKOUT_DURATION setting).
+	 * @param int|null $duration Lock duration in seconds, or null to use the OPTION_LOCKOUT_DURATION setting.
 	 */
 	public function lock_account( ?int $duration = null ): void {
 		if ( null === $duration ) {
-			$lockout_minutes = get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION );
-			$duration        = $lockout_minutes * MINUTE_IN_SECONDS;
+			$duration = (int) get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION ) * MINUTE_IN_SECONDS;
 		}
 
 		$lock_until = time() + $duration;
@@ -107,12 +106,14 @@ class Account_Security_Handler {
 	 * @return int Seconds remaining, or 0 if not locked.
 	 */
 	public function get_lock_time_remaining(): int {
-		if ( ! $this->is_locked() ) {
-			return 0;
+		$remaining = 0;
+
+		if ( $this->is_locked() ) {
+			$locked_until = (int) get_user_meta( $this->user_id, META_LOCKED_UNTIL, true );
+			$remaining    = max( 0, $locked_until - time() );
 		}
 
-		$locked_until = get_user_meta( $this->user_id, META_LOCKED_UNTIL, true );
-		return max( 0, $locked_until - time() );
+		return $remaining;
 	}
 
 	/**
@@ -137,7 +138,7 @@ class Account_Security_Handler {
 		}
 
 		array_unshift( $logs, $log_entry );
-		$logs = array_slice( $logs, 0, 50 );
+		$logs = array_slice( $logs, 0, LOG_MAX_ENTRIES );
 		update_user_meta( $this->user_id, META_LOGS, $logs );
 	}
 
@@ -145,16 +146,13 @@ class Account_Security_Handler {
 	 * Get security event log.
 	 *
 	 * @since 0.4.0
-	 * @param int $limit Maximum number of entries to return (default: 50).
+	 * @param int $limit Maximum number of entries to return.
 	 * @return array Array of log entries.
 	 */
-	public function get_event_log( int $limit = 50 ): array {
+	public function get_event_log( int $limit = LOG_MAX_ENTRIES ): array {
 		$logs = get_user_meta( $this->user_id, META_LOGS, true );
-		if ( ! is_array( $logs ) ) {
-			return array();
-		}
 
-		return array_slice( $logs, 0, $limit );
+		return is_array( $logs ) ? array_slice( $logs, 0, $limit ) : array();
 	}
 
 	/**
@@ -164,26 +162,6 @@ class Account_Security_Handler {
 	 */
 	public function clear_event_log(): void {
 		delete_user_meta( $this->user_id, META_LOGS );
-	}
-
-	/**
-	 * Get client IP address.
-	 *
-	 * @since 0.4.0
-	 * @return string IP address.
-	 */
-	public static function get_client_ip(): string {
-		return get_ip_address();
-	}
-
-	/**
-	 * Get client user agent.
-	 *
-	 * @since 0.4.0
-	 * @return string User agent.
-	 */
-	public static function get_client_user_agent(): string {
-		return get_user_agent();
 	}
 
 	/**
@@ -248,7 +226,7 @@ class Account_Security_Handler {
 			$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
 
 			if ( is_array( $trusted_devices ) && isset( $trusted_devices[ $key ] ) ) {
-				$expiry = $trusted_devices[ $key ];
+				$expiry = (int) $trusted_devices[ $key ];
 
 				if ( $expiry > time() ) {
 					$is_trusted = true;
@@ -276,13 +254,10 @@ class Account_Security_Handler {
 	 * @return bool True on success.
 	 */
 	public function trust_device( int $expiry_seconds ): bool {
-		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
-
-		if ( ! is_array( $trusted_devices ) ) {
-			$trusted_devices = array();
-		}
-
+		// Prune first, then read: adding to a pre-cleanup snapshot could
+		// resurrect an entry that had just expired.
 		$this->cleanup_expired_devices();
+
 		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
 
 		if ( ! is_array( $trusted_devices ) ) {
@@ -315,10 +290,11 @@ class Account_Security_Handler {
 	 * @param int    $expiry Absolute expiry timestamp.
 	 */
 	private function set_device_cookie( string $token, int $expiry ): void {
-		$path = defined( 'SITECOOKIEPATH' ) ? SITECOOKIEPATH : '/';
+		$path        = defined( 'SITECOOKIEPATH' ) ? SITECOOKIEPATH : '/';
+		$cookie_name = $this->get_device_cookie_name();
 
 		setcookie(
-			$this->get_device_cookie_name(),
+			$cookie_name,
 			$token,
 			array(
 				'expires'  => $expiry,
@@ -331,7 +307,7 @@ class Account_Security_Handler {
 		);
 
 		// Keep the current request consistent with what the browser will send back.
-		$_COOKIE[ $this->get_device_cookie_name() ] = $token;
+		$_COOKIE[ $cookie_name ] = $token;
 	}
 
 	/**
@@ -342,23 +318,21 @@ class Account_Security_Handler {
 	 */
 	public function cleanup_expired_devices(): int {
 		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
+		$removed         = 0;
 
-		if ( ! is_array( $trusted_devices ) || empty( $trusted_devices ) ) {
-			return 0;
-		}
+		if ( is_array( $trusted_devices ) && ! empty( $trusted_devices ) ) {
+			$current_time = time();
 
-		$removed      = 0;
-		$current_time = time();
-
-		foreach ( $trusted_devices as $fingerprint => $expiry ) {
-			if ( $expiry < $current_time ) {
-				unset( $trusted_devices[ $fingerprint ] );
-				++$removed;
+			foreach ( $trusted_devices as $device_key => $expiry ) {
+				if ( (int) $expiry < $current_time ) {
+					unset( $trusted_devices[ $device_key ] );
+					++$removed;
+				}
 			}
-		}
 
-		if ( $removed > 0 ) {
-			update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
+			if ( $removed > 0 ) {
+				update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
+			}
 		}
 
 		return $removed;

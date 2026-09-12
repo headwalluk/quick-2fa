@@ -16,8 +16,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **Raised the minimum PHP version to 8.2.** The plugin declared `Requires PHP: 8.0`, but four handlers return `true|\WP_Error` and the `true` type was only added in PHP 8.2. On 8.0 or 8.1 those files fail to compile, and because they are required unconditionally the result is a fatal on every request rather than a graceful failure. The declared floor has been wrong since roughly v0.5.0, so no site can have been running the plugin below 8.2 — this makes the header honest, and lets WordPress block installation on incompatible hosts instead of permitting a configuration that breaks.
 
+### Removed
+
+- `Account_Security_Handler::get_client_ip()` and `::get_client_user_agent()`. Both were one-line static wrappers around the namespaced `get_ip_address()` / `get_user_agent()` helpers, and nothing in the plugin called either. The class API is internal — see `docs/developers/hooks-and-filters.md` — so this is not a supported-surface change.
+
 ### Fixed
 
+- **A corrupt lock timestamp no longer locks a user out permanently.** `Account_Security_Handler::is_locked()` tested the stored value with `empty()` and compared it untyped, so an unreadable `_quick2fa_locked_until` could report the account as locked with no expiry that would ever pass. It now casts on read and treats anything unreadable as not locked, which is also the self-healing behaviour — an elapsed lock already clears itself.
 - **A corrupt rate-limit transient no longer fatals the verification page.** `check_rate_limit()` tested only for `false` before indexing the cached value as an array, so a transient holding anything else raised an uncaught `TypeError` — on the one page a locked-out administrator has to reach. It now requires the expected array shape and starts a fresh window otherwise.
 - **A verification code with an unreadable timestamp is now treated as expired** rather than as newly issued.
 - **A verification code is no longer stored when the user record is missing.** `send_via_email()` generated and stored a fresh code before checking that the user existed, leaving orphaned state behind when it then bailed out.
