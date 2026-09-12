@@ -31,7 +31,7 @@ class Password_Reminder_Handler {
 	 *
 	 * @var int
 	 */
-	private $user_id;
+	private int $user_id;
 
 	/**
 	 * Constructor.
@@ -50,27 +50,20 @@ class Password_Reminder_Handler {
 	 * @return bool True if password reminder is needed.
 	 */
 	public function needs_reminder(): bool {
-		if ( ! get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED ) ) {
-			return false;
+		$reminders_enabled = (bool) filter_var(
+			get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED ),
+			FILTER_VALIDATE_BOOLEAN
+		);
+
+		$needs_reminder = false;
+
+		if ( $reminders_enabled && get_userdata( $this->user_id ) instanceof \WP_User ) {
+			$period_days = (int) get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
+
+			$needs_reminder = $this->get_password_age() > $period_days && ! $this->is_in_cooldown();
 		}
 
-		$user = get_userdata( $this->user_id );
-		if ( ! $user instanceof \WP_User ) {
-			return false;
-		}
-
-		$password_age_days = $this->get_password_age();
-		$period_days       = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
-
-		if ( $password_age_days <= $period_days ) {
-			return false;
-		}
-
-		if ( $this->is_in_cooldown() ) {
-			return false;
-		}
-
-		return true;
+		return $needs_reminder;
 	}
 
 	/**
@@ -80,29 +73,30 @@ class Password_Reminder_Handler {
 	 * @return int Password age in days.
 	 */
 	public function get_password_age(): int {
-		$last_pass_change = get_user_meta( $this->user_id, '_password_last_changed', true );
+		$last_pass_change = (int) get_user_meta( $this->user_id, META_PASSWORD_LAST_CHANGED, true );
+		$age_days         = 0;
 
-		if ( empty( $last_pass_change ) ) {
-			// Fall back to user registration date as baseline.
+		if ( $last_pass_change <= 0 ) {
+			// No baseline recorded yet — seed it from the registration date so age
+			// is measured from something real, and store it for future reads.
 			$user = get_userdata( $this->user_id );
-			if ( ! $user instanceof \WP_User ) {
-				return 0;
+
+			if ( $user instanceof \WP_User ) {
+				$registered_at = strtotime( $user->user_registered );
+
+				// An invalid or zero registration date ('0000-00-00 00:00:00')
+				// would otherwise read as an infinitely old password.
+				$last_pass_change = ( false === $registered_at || $registered_at < 0 ) ? time() : $registered_at;
+
+				update_user_meta( $this->user_id, META_PASSWORD_LAST_CHANGED, $last_pass_change );
 			}
-
-			$reg_timestamp = strtotime( $user->user_registered );
-
-			// Handle invalid/zero registration dates (e.g., '0000-00-00 00:00:00').
-			if ( false === $reg_timestamp || 0 > $reg_timestamp ) {
-				$reg_timestamp = time();
-			}
-
-			$last_pass_change = $reg_timestamp;
-			// Set it now for future tracking.
-			update_user_meta( $this->user_id, '_password_last_changed', $last_pass_change );
 		}
 
-		$time_since_change = time() - $last_pass_change;
-		return floor( $time_since_change / DAY_IN_SECONDS );
+		if ( $last_pass_change > 0 ) {
+			$age_days = (int) floor( ( time() - $last_pass_change ) / DAY_IN_SECONDS );
+		}
+
+		return $age_days;
 	}
 
 	/**
@@ -112,18 +106,15 @@ class Password_Reminder_Handler {
 	 * @return bool True if in cooldown period.
 	 */
 	public function is_in_cooldown(): bool {
-		$last_reminder = get_user_meta( $this->user_id, META_LAST_PASSWORD_REMINDER, true );
+		$last_reminder = (int) get_user_meta( $this->user_id, META_LAST_PASSWORD_REMINDER, true );
+		$in_cooldown   = false;
 
-		if ( empty( $last_reminder ) ) {
-			return false;
+		if ( $last_reminder > 0 ) {
+			$cooldown_seconds = (int) get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN ) * DAY_IN_SECONDS;
+			$in_cooldown      = ( time() - $last_reminder ) < $cooldown_seconds;
 		}
 
-		$cooldown_days    = get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
-		$cooldown_seconds = $cooldown_days * DAY_IN_SECONDS;
-
-		$time_since_reminder = time() - $last_reminder;
-
-		return $time_since_reminder < $cooldown_seconds;
+		return $in_cooldown;
 	}
 
 	/**
@@ -137,26 +128,34 @@ class Password_Reminder_Handler {
 	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
 	public function update_password( string $new_password ): true|\WP_Error {
-		if ( empty( $new_password ) ) {
-			return new \WP_Error( 'empty_password', __( 'Please enter a password.', 'quick-2fa' ) );
+		$result = true;
+
+		if ( '' === $new_password ) {
+			$result = new \WP_Error( 'empty_password', __( 'Please enter a password.', 'quick-2fa' ) );
+		} elseif ( mb_strlen( $new_password ) < PASSWORD_MIN_LENGTH ) {
+			// Counted in characters, not bytes, to match what the message promises.
+			$result = new \WP_Error(
+				'weak_password',
+				sprintf(
+					/* translators: %d: minimum number of characters required in a password */
+					__( 'Password must be at least %d characters long.', 'quick-2fa' ),
+					PASSWORD_MIN_LENGTH
+				)
+			);
+		} else {
+			$sessions      = \WP_Session_Tokens::get_instance( $this->user_id );
+			$current_token = wp_get_session_token();
+			$sessions->destroy_others( $current_token );
+
+			wp_set_password( $new_password, $this->user_id );
+			$this->maintain_session( $sessions, $current_token );
+			update_user_meta( $this->user_id, META_PASSWORD_LAST_CHANGED, time() );
+
+			$security = new Account_Security_Handler( $this->user_id );
+			$security->log_event( LOG_PASSWORD_CHANGED );
 		}
 
-		if ( strlen( $new_password ) < 8 ) {
-			return new \WP_Error( 'weak_password', __( 'Password must be at least 8 characters long.', 'quick-2fa' ) );
-		}
-
-		$sessions      = \WP_Session_Tokens::get_instance( $this->user_id );
-		$current_token = wp_get_session_token();
-		$sessions->destroy_others( $current_token );
-
-		wp_set_password( $new_password, $this->user_id );
-		$this->maintain_session( $sessions, $current_token );
-		update_user_meta( $this->user_id, '_password_last_changed', time() );
-
-		$security = new Account_Security_Handler( $this->user_id );
-		$security->log_event( LOG_PASSWORD_CHANGED );
-
-		return true;
+		return $result;
 	}
 
 	/**
@@ -167,7 +166,7 @@ class Password_Reminder_Handler {
 	public function dismiss_reminder(): void {
 		update_user_meta( $this->user_id, META_LAST_PASSWORD_REMINDER, time() );
 		$security = new Account_Security_Handler( $this->user_id );
-		$security->log_event( 'password_reminder_dismissed' );
+		$security->log_event( LOG_PASSWORD_REMINDER_DISMISSED );
 	}
 
 	/**
@@ -211,7 +210,7 @@ class Password_Reminder_Handler {
 			? $parameters['length']
 			: $defaults['length'];
 
-		$length = max( 8, min( 64, $length ) );
+		$length = max( PASSWORD_MIN_LENGTH, min( PASSWORD_MAX_LENGTH, $length ) );
 
 		// Validate boolean flags.
 		$special_chars = isset( $parameters['special_chars'] ) && is_bool( $parameters['special_chars'] )
@@ -237,7 +236,8 @@ class Password_Reminder_Handler {
 	private function maintain_session( \WP_Session_Tokens $sessions, string $current_token ): void {
 		// Force user to stay logged in by updating the session token.
 		$current_session = $sessions->get( $current_token );
-		if ( $current_session ) {
+
+		if ( is_array( $current_session ) ) {
 			// Update the session with the new password hash verification.
 			$sessions->update( $current_token, $current_session );
 		}

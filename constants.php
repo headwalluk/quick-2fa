@@ -147,13 +147,14 @@ const ACTION_PASSWORD = 'password';
  *
  * @since 1.0.0
  */
-const LOG_CODE_GENERATED       = 'code_generated';
-const LOG_CODE_SENT            = 'code_sent';
-const LOG_VERIFICATION_SUCCESS = 'verification_success';
-const LOG_VERIFICATION_FAILED  = 'verification_failed';
-const LOG_ACCOUNT_LOCKED       = 'account_locked';
-const LOG_ACCOUNT_UNLOCKED     = 'account_unlocked';
-const LOG_PASSWORD_CHANGED     = 'password_changed';
+const LOG_CODE_GENERATED              = 'code_generated';
+const LOG_CODE_SENT                   = 'code_sent';
+const LOG_VERIFICATION_SUCCESS        = 'verification_success';
+const LOG_VERIFICATION_FAILED         = 'verification_failed';
+const LOG_ACCOUNT_LOCKED              = 'account_locked';
+const LOG_ACCOUNT_UNLOCKED            = 'account_unlocked';
+const LOG_PASSWORD_CHANGED            = 'password_changed';
+const LOG_PASSWORD_REMINDER_DISMISSED = 'password_reminder_dismissed';
 
 /**
  * Maximum security-log entries retained per user.
@@ -190,6 +191,18 @@ const DEFAULT_PASSWORD_LENGTH_MIN        = 12;
 const DEFAULT_PASSWORD_LENGTH_MAX        = 20;
 const DEFAULT_PASSWORD_SPECIAL_CHARS     = true;
 const DEFAULT_PASSWORD_EXTRA_SPECIAL     = false;
-const DEFAULT_DISABLE_TRUSTED_DEVICES    = false;
-const DEFAULT_TRUSTED_DEVICE_EXPIRY      = 30;
-const DEFAULT_LOCKOUT_DURATION           = 60;
+
+/**
+ * Absolute password length bounds.
+ *
+ * Distinct from DEFAULT_PASSWORD_LENGTH_MIN/MAX, which are only the range a
+ * generated suggestion is drawn from. These bound what is accepted on update
+ * and clamp whatever the quick2fa_password_parameters filter returns.
+ *
+ * @since 1.3.0
+ */
+const PASSWORD_MIN_LENGTH             = 8;
+const PASSWORD_MAX_LENGTH             = 64;
+const DEFAULT_DISABLE_TRUSTED_DEVICES = false;
+const DEFAULT_TRUSTED_DEVICE_EXPIRY   = 30;
+const DEFAULT_LOCKOUT_DURATION        = 60;

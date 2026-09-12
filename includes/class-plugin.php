@@ -351,49 +351,18 @@ class Plugin {
 	/**
 	 * Check if current user needs password reminder.
 	 *
+	 * Delegates to Password_Reminder_Handler, which owns the rule. This method
+	 * previously reimplemented it inline — including the registration-date
+	 * fallback and the cooldown — while the handler's own needs_reminder() sat
+	 * unused, so the same policy existed twice and could drift.
+	 *
 	 * @since 1.0.0
 	 * @return bool True if password reminder is needed.
 	 */
 	private function user_needs_password_reminder(): bool {
-		if ( ! get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED ) ) {
-			return false;
-		}
-
 		$user_id = get_current_user_id();
-		$user    = get_userdata( $user_id );
 
-		if ( ! $user instanceof \WP_User ) {
-			return false;
-		}
-
-		$last_pass_change = (int) get_user_meta( $user_id, META_PASSWORD_LAST_CHANGED, true );
-
-		if ( $last_pass_change <= 0 ) {
-			// No baseline recorded yet — seed it from the registration date and
-			// store it, so password age is measured from something real.
-			$registered_at = strtotime( $user->user_registered );
-
-			// An invalid or zero registration date ('0000-00-00 00:00:00') would
-			// otherwise read as an infinitely old password.
-			$last_pass_change = ( false === $registered_at || $registered_at < 0 ) ? time() : $registered_at;
-
-			update_user_meta( $user_id, META_PASSWORD_LAST_CHANGED, $last_pass_change );
-		}
-
-		$period_seconds = (int) get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD ) * DAY_IN_SECONDS;
-		$needs_reminder = ( time() - $last_pass_change ) > $period_seconds;
-
-		if ( $needs_reminder ) {
-			// Respect the cooldown — don't nag the user on every page load.
-			$last_reminder = (int) get_user_meta( $user_id, META_LAST_PASSWORD_REMINDER, true );
-
-			if ( $last_reminder > 0 ) {
-				$cooldown_seconds = (int) get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN ) * DAY_IN_SECONDS;
-				$needs_reminder   = ( time() - $last_reminder ) >= $cooldown_seconds;
-			}
-		}
-
-		return $needs_reminder;
+		return $user_id > 0 && ( new Password_Reminder_Handler( $user_id ) )->needs_reminder();
 	}
 
 	/**
