@@ -66,12 +66,22 @@ class User_Management {
 	 */
 	public function add_lockout_column( array $columns ): array {
 		$new_columns = array();
+
 		foreach ( $columns as $key => $value ) {
 			$new_columns[ $key ] = $value;
+
 			if ( 'email' === $key ) {
-				$new_columns['quick2fa_status'] = __( 'Lock Status', 'quick-2fa' );
+				$new_columns[ COLUMN_LOCK_STATUS ] = __( 'Lock Status', 'quick-2fa' );
 			}
 		}
+
+		// Preferred position is after the email column, but that column is not
+		// ours to rely on — another plugin may have removed it. Append rather
+		// than let our column disappear without trace.
+		if ( ! isset( $new_columns[ COLUMN_LOCK_STATUS ] ) ) {
+			$new_columns[ COLUMN_LOCK_STATUS ] = __( 'Lock Status', 'quick-2fa' );
+		}
+
 		return $new_columns;
 	}
 
@@ -85,7 +95,7 @@ class User_Management {
 	 * @return string Column content.
 	 */
 	public function render_lockout_column( string $output, string $column_name, int $user_id ): string {
-		if ( 'quick2fa_status' !== $column_name ) {
+		if ( COLUMN_LOCK_STATUS !== $column_name ) {
 			return $output;
 		}
 
@@ -112,7 +122,7 @@ class User_Management {
 	 * @return array Modified sortable columns.
 	 */
 	public function make_column_sortable( array $columns ): array {
-		$columns['quick2fa_status'] = 'quick2fa_locked';
+		$columns[ COLUMN_LOCK_STATUS ] = SORT_KEY_LOCKED;
 		return $columns;
 	}
 
@@ -128,7 +138,7 @@ class User_Management {
 		}
 
 		$orderby = $query->get( 'orderby' );
-		if ( 'quick2fa_locked' === $orderby ) {
+		if ( SORT_KEY_LOCKED === $orderby ) {
 			$query->set( 'meta_key', META_LOCKED_UNTIL );
 			$query->set( 'orderby', 'meta_value_num' );
 		}
@@ -147,12 +157,12 @@ class User_Management {
 		$total_users  = isset( $total_count['total_users'] ) && is_numeric( $total_count['total_users'] ) ? (int) $total_count['total_users'] : 0;
 
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking filter state.
-		$current_filter = isset( $_GET['quick2fa_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['quick2fa_filter'] ) ) : '';
+		$current_filter = isset( $_GET[ QUERY_ARG_FILTER ] ) ? sanitize_text_field( wp_unslash( $_GET[ QUERY_ARG_FILTER ] ) ) : '';
 
 		// Locked users filter.
 		$locked_class             = 'locked' === $current_filter ? ' class="current"' : '';
-		$locked_url               = add_query_arg( 'quick2fa_filter', 'locked', admin_url( 'users.php' ) );
-		$views['quick2fa_locked'] = sprintf(
+		$locked_url               = add_query_arg( QUERY_ARG_FILTER, 'locked', admin_url( 'users.php' ) );
+		$views[ SORT_KEY_LOCKED ] = sprintf(
 			'<a href="%s"%s>%s <span class="count">(%d)</span></a>',
 			esc_url( $locked_url ),
 			$locked_class,
@@ -163,7 +173,7 @@ class User_Management {
 		// Not locked users filter.
 		$unlocked_count             = $total_users - $locked_count;
 		$unlocked_class             = 'unlocked' === $current_filter ? ' class="current"' : '';
-		$unlocked_url               = add_query_arg( 'quick2fa_filter', 'unlocked', admin_url( 'users.php' ) );
+		$unlocked_url               = add_query_arg( QUERY_ARG_FILTER, 'unlocked', admin_url( 'users.php' ) );
 		$views['quick2fa_unlocked'] = sprintf(
 			'<a href="%s"%s>%s <span class="count">(%d)</span></a>',
 			esc_url( $unlocked_url ),
@@ -187,7 +197,7 @@ class User_Management {
 		}
 
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking filter state.
-		$filter = isset( $_GET['quick2fa_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['quick2fa_filter'] ) ) : '';
+		$filter = isset( $_GET[ QUERY_ARG_FILTER ] ) ? sanitize_text_field( wp_unslash( $_GET[ QUERY_ARG_FILTER ] ) ) : '';
 
 		if ( 'locked' === $filter ) {
 			// Show only locked users.
@@ -285,7 +295,7 @@ class User_Management {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user'] ) ? absint( $_GET['user'] ) : 0;
 
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'quick2fa_lock_' . $user_id ) ) {
+		if ( ! verify_admin_action_nonce( 'quick2fa_lock_' . $user_id ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'quick-2fa' ) );
 		}
 
@@ -303,7 +313,7 @@ class User_Management {
 		}
 
 		$security = new Account_Security_Handler( $user_id );
-		$security->lock_account( PHP_INT_MAX );
+		$security->lock_account( PERMANENT_LOCK_DURATION );
 
 		$sessions = \WP_Session_Tokens::get_instance( $user_id );
 		$sessions->destroy_all();
@@ -341,7 +351,7 @@ class User_Management {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user'] ) ? absint( $_GET['user'] ) : 0;
 
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'quick2fa_unlock_' . $user_id ) ) {
+		if ( ! verify_admin_action_nonce( 'quick2fa_unlock_' . $user_id ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'quick-2fa' ) );
 		}
 
@@ -438,40 +448,35 @@ class User_Management {
 	 * @return int Number of locked users.
 	 */
 	private function count_locked_users(): int {
-		$cache_key = 'quick2fa_locked_user_count';
-		$count     = get_transient( $cache_key );
+		$count = get_transient( TRANSIENT_LOCKED_COUNT );
 
-		if ( false !== $count ) {
-			return (int) $count;
+		if ( false === $count ) {
+			$query = new \WP_User_Query(
+				array(
+					'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Admin-only cached query for the locked-user badge.
+						'relation' => 'AND',
+						array(
+							'key'     => META_LOCKED_UNTIL,
+							'compare' => 'EXISTS',
+						),
+						array(
+							'key'     => META_LOCKED_UNTIL,
+							'value'   => time(),
+							'compare' => '>',
+							'type'    => 'NUMERIC',
+						),
+					),
+					'count_total' => true,
+					'fields'      => 'ID',
+				)
+			);
+
+			$count = $query->get_total();
+
+			set_transient( TRANSIENT_LOCKED_COUNT, $count, LOCKED_COUNT_CACHE_TTL );
 		}
 
-		// Query locked users.
-		$query = new \WP_User_Query(
-			array(
-				'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Admin-only cached query for locked user count badge.
-					'relation' => 'AND',
-					array(
-						'key'     => META_LOCKED_UNTIL,
-						'compare' => 'EXISTS',
-					),
-					array(
-						'key'     => META_LOCKED_UNTIL,
-						'value'   => time(),
-						'compare' => '>',
-						'type'    => 'NUMERIC',
-					),
-				),
-				'count_total' => true,
-				'fields'      => 'ID',
-			)
-		);
-
-		$count = $query->get_total();
-
-		// Cache for 5 minutes.
-		set_transient( $cache_key, $count, 5 * MINUTE_IN_SECONDS );
-
-		return $count;
+		return (int) $count;
 	}
 
 	/**
@@ -486,8 +491,8 @@ class User_Management {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading filter/pagination state for redirect, not processing actions.
 
 		// Preserve current filter.
-		if ( isset( $_GET['quick2fa_filter'] ) ) {
-			$redirect_url = add_query_arg( 'quick2fa_filter', sanitize_text_field( wp_unslash( $_GET['quick2fa_filter'] ) ), $redirect_url );
+		if ( isset( $_GET[ QUERY_ARG_FILTER ] ) ) {
+			$redirect_url = add_query_arg( QUERY_ARG_FILTER, sanitize_text_field( wp_unslash( $_GET[ QUERY_ARG_FILTER ] ) ), $redirect_url );
 		}
 
 		// Preserve pagination.
@@ -528,7 +533,7 @@ class User_Management {
 
 		// Key identifying the browser viewing this page, so the list can flag
 		// the current device. Empty when this browser holds no trust cookie.
-		$current_fingerprint = $security_handler->get_current_device_key();
+		$current_device_key = $security_handler->get_current_device_key();
 
 		require QUICK_2FA_PATH . 'views/profile-trusted-devices.php';
 	}
@@ -542,9 +547,9 @@ class User_Management {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user_id'] ) ? absint( $_GET['user_id'] ) : 0;
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
-		$fingerprint = isset( $_GET['fingerprint'] ) ? sanitize_text_field( wp_unslash( $_GET['fingerprint'] ) ) : '';
+		$device_key = isset( $_GET['device_key'] ) ? sanitize_text_field( wp_unslash( $_GET['device_key'] ) ) : '';
 
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'quick2fa_revoke_device_' . $user_id . '_' . $fingerprint ) ) {
+		if ( ! verify_admin_action_nonce( 'quick2fa_revoke_device_' . $user_id . '_' . $device_key ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'quick-2fa' ) );
 		}
 
@@ -562,16 +567,16 @@ class User_Management {
 			$trusted_devices = array();
 		}
 
-		if ( isset( $trusted_devices[ $fingerprint ] ) ) {
-			unset( $trusted_devices[ $fingerprint ] );
+		if ( isset( $trusted_devices[ $device_key ] ) ) {
+			unset( $trusted_devices[ $device_key ] );
 			update_user_meta( $user_id, META_TRUSTED_DEVICES, $trusted_devices );
 
 			$security = new Account_Security_Handler( $user_id );
 			$security->log_event(
-				'device_revoked',
+				LOG_DEVICE_REVOKED,
 				array(
-					'admin_id'    => get_current_user_id(),
-					'fingerprint' => $fingerprint,
+					'admin_id'   => get_current_user_id(),
+					'device_key' => $device_key,
 				)
 			);
 		}
@@ -590,7 +595,7 @@ class User_Management {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user_id'] ) ? absint( $_GET['user_id'] ) : 0;
 
-		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'quick2fa_revoke_all_devices_' . $user_id ) ) {
+		if ( ! verify_admin_action_nonce( 'quick2fa_revoke_all_devices_' . $user_id ) ) {
 			wp_die( esc_html__( 'Security check failed.', 'quick-2fa' ) );
 		}
 
@@ -610,7 +615,7 @@ class User_Management {
 		$security->clear_trusted_devices();
 
 		$security->log_event(
-			'all_devices_revoked',
+			LOG_ALL_DEVICES_REVOKED,
 			array(
 				'admin_id'     => get_current_user_id(),
 				'device_count' => $device_count,

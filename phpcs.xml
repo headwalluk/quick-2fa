@@ -32,6 +32,7 @@
 		<properties>
 			<property name="customNonceVerificationFunctions" type="array">
 				<element value="verify_page_nonce"/>
+				<element value="verify_admin_action_nonce"/>
 			</property>
 		</properties>
 	</rule>

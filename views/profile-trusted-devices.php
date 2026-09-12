@@ -8,7 +8,7 @@
  * Variables available in this template:
  * @var WP_User $user                User object
  * @var array   $trusted_devices     Array of trusted devices (device key => expiry timestamp)
- * @var string  $current_fingerprint Device key for the current browser, or '' if none
+ * @var string  $current_device_key  Device key for the current browser, or '' if none
  */
 
 // Exit if accessed directly.
@@ -33,25 +33,25 @@ if ( empty( $trusted_devices ) ) {
 	echo '</tr></thead><tbody>';
 
 	$quick_2fa_device_num = 1;
-	foreach ( $trusted_devices as $quick_2fa_fingerprint => $quick_2fa_expiry ) {
+	foreach ( $trusted_devices as $quick_2fa_device_key => $quick_2fa_expiry ) {
 		$quick_2fa_expires_in_days = ceil( ( $quick_2fa_expiry - time() ) / DAY_IN_SECONDS );
 		$quick_2fa_revoke_url      = wp_nonce_url(
 			add_query_arg(
 				array(
-					'action'      => 'quick2fa_revoke_device',
-					'user_id'     => $user->ID,
-					'fingerprint' => $quick_2fa_fingerprint,
+					'action'     => 'quick2fa_revoke_device',
+					'user_id'    => $user->ID,
+					'device_key' => $quick_2fa_device_key,
 				),
 				admin_url( 'admin.php' )
 			),
-			'quick2fa_revoke_device_' . $user->ID . '_' . $quick_2fa_fingerprint
+			'quick2fa_revoke_device_' . $user->ID . '_' . $quick_2fa_device_key
 		);
 
 		echo '<tr><td>';
 
 		/* translators: %d: device number */
 		printf( esc_html__( 'Device #%d', 'quick-2fa' ), (int) $quick_2fa_device_num );
-		if ( $quick_2fa_fingerprint === $current_fingerprint ) {
+		if ( $quick_2fa_device_key === $current_device_key ) {
 			printf( ' <strong>(%s)</strong>', esc_html__( 'This Device', 'quick-2fa' ) );
 		}
 		++$quick_2fa_device_num;

@@ -427,3 +427,21 @@ function verify_page_nonce( string $action ): bool {
 
 	return '' !== $nonce && false !== wp_verify_nonce( $nonce, $action );
 }
+
+/**
+ * Check the nonce on an admin action link.
+ *
+ * The GET counterpart of verify_page_nonce(), and a namespaced function for
+ * the same reason: WordPress.Security.NonceVerification only recognises a
+ * nonce check made through a global function call.
+ *
+ * @since 1.3.0
+ * @param string $action Nonce action name.
+ * @return bool True when a valid nonce for $action was supplied.
+ */
+function verify_admin_action_nonce( string $action ): bool {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitised on the same line.
+	$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+
+	return '' !== $nonce && false !== wp_verify_nonce( $nonce, $action );
+}

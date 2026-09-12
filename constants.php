@@ -126,6 +126,18 @@ const RATE_LIMIT_ACCOUNT_LOCK_DURATION  = 3600; // 1 hour in seconds.
 const PERMANENT_LOCK_THRESHOLD = 100 * YEAR_IN_SECONDS;
 
 /**
+ * Duration applied by a manual, indefinite lock.
+ *
+ * Comfortably past PERMANENT_LOCK_THRESHOLD, but small enough that
+ * time() + this stays an integer. Using PHP_INT_MAX here overflowed to a
+ * float, so the lock was stored as '9.223372038644E+18' and every reader had
+ * to cope with scientific notation.
+ *
+ * @since 1.3.0
+ */
+const PERMANENT_LOCK_DURATION = 200 * YEAR_IN_SECONDS;
+
+/**
  * Trusted-device cookie.
  *
  * Device trust is carried by a persistent secure cookie token (since 1.2.0),
@@ -158,6 +170,27 @@ const TRANSIENT_RATE_LIMIT = 'q2fa_rate_limit_';
 const RETURN_URL_TTL = 5 * MINUTE_IN_SECONDS;
 
 /**
+ * Cached count of locked users, for the users-list filter badge.
+ *
+ * Invalidated by Account_Security_Handler::lock_account() and
+ * ::unlock_account(), so the badge is correct after an automatic lockout as
+ * well as an admin or CLI one.
+ *
+ * @since 1.3.0
+ */
+/**
+ * Users-list column, sort and filter identifiers.
+ *
+ * @since 1.3.0
+ */
+const COLUMN_LOCK_STATUS = 'quick2fa_status';
+const SORT_KEY_LOCKED    = 'quick2fa_locked';
+const QUERY_ARG_FILTER   = 'quick2fa_filter';
+
+const TRANSIENT_LOCKED_COUNT = 'quick2fa_locked_user_count';
+const LOCKED_COUNT_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
+
+/**
  * Query parameter for 2FA pages.
  *
  * @since 1.0.0
@@ -185,6 +218,8 @@ const LOG_ACCOUNT_LOCKED              = 'account_locked';
 const LOG_ACCOUNT_UNLOCKED            = 'account_unlocked';
 const LOG_PASSWORD_CHANGED            = 'password_changed';
 const LOG_PASSWORD_REMINDER_DISMISSED = 'password_reminder_dismissed';
+const LOG_DEVICE_REVOKED              = 'device_revoked';
+const LOG_ALL_DEVICES_REVOKED         = 'all_devices_revoked';
 
 /**
  * Maximum security-log entries retained per user.

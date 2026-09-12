@@ -79,6 +79,7 @@ class Account_Security_Handler {
 		$lock_until = time() + $duration;
 
 		update_user_meta( $this->user_id, META_LOCKED_UNTIL, $lock_until );
+		delete_transient( TRANSIENT_LOCKED_COUNT );
 
 		$this->log_event(
 			LOG_ACCOUNT_LOCKED,
@@ -97,6 +98,7 @@ class Account_Security_Handler {
 	 */
 	public function unlock_account(): void {
 		delete_user_meta( $this->user_id, META_LOCKED_UNTIL );
+		delete_transient( TRANSIENT_LOCKED_COUNT );
 	}
 
 	/**
