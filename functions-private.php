@@ -24,10 +24,10 @@ defined( 'ABSPATH' ) || die();
  * @return array Default settings.
  */
 function get_default_settings(): array {
-	global $quick_2fa_default_settings;
+	static $default_settings = null;
 
-	if ( is_null( $quick_2fa_default_settings ) ) {
-		$quick_2fa_default_settings = array(
+	if ( null === $default_settings ) {
+		$default_settings = array(
 			OPTION_MODE                       => DEFAULT_MODE,
 			OPTION_PROTECTED_ROLES            => get_default_protected_roles(),
 			OPTION_VERIFICATION_PERIOD        => DEFAULT_VERIFICATION_PERIOD,
@@ -45,7 +45,7 @@ function get_default_settings(): array {
 		);
 	}
 
-	return $quick_2fa_default_settings;
+	return $default_settings;
 }
 
 /**
@@ -57,24 +57,22 @@ function get_default_settings(): array {
  * @return array Array of role slugs.
  */
 function get_default_protected_roles(): array {
-	global $quick_2fa_default_protected_roles;
+	static $default_protected_roles = null;
 
-	if ( is_null( $quick_2fa_default_protected_roles ) ) {
-		$roles           = wp_roles();
-		$protected_roles = array();
+	if ( null === $default_protected_roles ) {
+		$roles                   = wp_roles();
+		$default_protected_roles = array();
 
-		foreach ( $roles->roles as $role_slug => $role_info ) {
+		foreach ( array_keys( $roles->roles ) as $role_slug ) {
 			$role = get_role( $role_slug );
 
-			if ( $role && ( $role->has_cap( 'install_plugins' ) || $role->has_cap( 'manage_options' ) ) ) {
-				$protected_roles[] = $role_slug;
+			if ( $role instanceof \WP_Role && ( $role->has_cap( 'install_plugins' ) || $role->has_cap( 'manage_options' ) ) ) {
+				$default_protected_roles[] = $role_slug;
 			}
 		}
-
-		$quick_2fa_default_protected_roles = $protected_roles;
 	}
 
-	return $quick_2fa_default_protected_roles;
+	return $default_protected_roles;
 }
 
 /**
@@ -205,8 +203,12 @@ function is_2fa_page(): bool {
 /**
  * Get client IP address.
  *
+ * Reads client-supplied proxy headers, so the result is spoofable and is for
+ * logging only. Since 1.2.0 nothing gates access on it — device trust is
+ * carried by a cookie token. Do not reintroduce it into any access decision.
+ *
  * @since 1.0.0
- * @return string IP address.
+ * @return string IP address, or '' if none could be validated.
  */
 function get_ip_address(): string {
 	$ip = '';
@@ -237,11 +239,13 @@ function get_ip_address(): string {
  * @return string User agent.
  */
 function get_user_agent(): string {
-	if ( ! isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
-		return '';
+	$user_agent = '';
+
+	if ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
+		$user_agent = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
 	}
 
-	return sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
+	return $user_agent;
 }
 
 /**
@@ -251,21 +255,19 @@ function get_user_agent(): string {
  * @return string Current admin URL.
  */
 function get_current_admin_url(): string {
-	if ( ! isset( $_SERVER['REQUEST_URI'] ) ) {
-		return admin_url();
+	$admin_url   = admin_url();
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+
+	if ( '' !== $request_uri ) {
+		// Keep only the path and query; the host comes from home_url().
+		$parsed = wp_parse_url( $request_uri );
+		$path   = $parsed['path'] ?? '';
+		$query  = isset( $parsed['query'] ) ? '?' . $parsed['query'] : '';
+
+		$admin_url = home_url( $path . $query );
 	}
 
-	$request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) );
-	if ( empty( $request_uri ) ) {
-		return admin_url();
-	}
-
-	// Parse the request URI to get just the path and query.
-	$parsed = wp_parse_url( $request_uri );
-	$path   = isset( $parsed['path'] ) ? $parsed['path'] : '';
-	$query  = isset( $parsed['query'] ) ? '?' . $parsed['query'] : '';
-
-	return home_url( $path . $query );
+	return $admin_url;
 }
 
 /**
@@ -275,8 +277,7 @@ function get_current_admin_url(): string {
  * @param int $user_id User ID.
  */
 function store_return_url( int $user_id ): void {
-	$return_url = get_current_admin_url();
-	set_transient( TRANSIENT_RETURN_URL . $user_id, $return_url, 5 * MINUTE_IN_SECONDS );
+	set_transient( TRANSIENT_RETURN_URL . $user_id, get_current_admin_url(), RETURN_URL_TTL );
 }
 
 /**
@@ -287,125 +288,124 @@ function store_return_url( int $user_id ): void {
  * @return string Return URL (defaults to admin_url if not found).
  */
 function get_return_url( int $user_id ): string {
-	$return_url = get_transient( TRANSIENT_RETURN_URL . $user_id );
+	$transient_key = TRANSIENT_RETURN_URL . $user_id;
+	$return_url    = get_transient( $transient_key );
 
-	delete_transient( TRANSIENT_RETURN_URL . $user_id );
+	// Single-use: consumed whether or not it turns out to be usable.
+	delete_transient( $transient_key );
 
-	if ( empty( $return_url ) ) {
+	if ( empty( $return_url ) || ! is_string( $return_url ) ) {
 		$return_url = admin_url();
 	}
 
-	$return_url = wp_validate_redirect( $return_url, admin_url() );
+	return wp_validate_redirect( $return_url, admin_url() );
+}
 
-	return $return_url;
+/**
+ * Whether this request is core's theme/plugin editor loopback.
+ *
+ * After a PHP edit, core requests an admin URL carrying wp_scrape_key and
+ * wp_scrape_nonce to check the site still loads. That loopback presents the
+ * admin's auth cookie but WordPress's own User-Agent, so it looks like an
+ * untrusted device; redirecting it makes core revert the edit with
+ * "loopback_request_failed". The nonce is compared against the transient core
+ * itself sets, so bare query parameters cannot use this to bypass 2FA.
+ *
+ * @since 1.3.0
+ * @return bool True if this is a verified editor loopback request.
+ */
+function is_editor_loopback_request(): bool {
+	$is_loopback = false;
+
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Validated against core's transient below.
+	if ( isset( $_REQUEST['wp_scrape_key'], $_REQUEST['wp_scrape_nonce'] ) ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Validated against core's transient below.
+		$scrape_key = substr( sanitize_key( wp_unslash( $_REQUEST['wp_scrape_key'] ) ), 0, 32 );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Compared as a string to core's transient below.
+		$scrape_nonce = (string) wp_unslash( $_REQUEST['wp_scrape_nonce'] );
+
+		$is_loopback = (string) get_transient( 'scrape_key_' . $scrape_key ) === $scrape_nonce;
+	}
+
+	return $is_loopback;
 }
 
 /**
  * Check if 2FA should be skipped for current request.
  *
+ * The branches are ordered cheapest-first, and each records why it matched.
+ * $skip_reason is not returned, but it makes every branch self-labelling and
+ * gives a single place to inspect when a request is unexpectedly skipped --
+ * previously there was no way to tell which of ten guards had fired.
+ *
  * @since 1.0.0
  * @return bool True if 2FA should be skipped.
  */
 function should_skip_check(): bool {
-	// WP-CLI.
+	$skip_reason = '';
+
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
-		return true;
+		$skip_reason = 'wp-cli';
+	} elseif ( wp_doing_ajax() ) {
+		$skip_reason = 'ajax';
+	} elseif ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		$skip_reason = 'rest-api';
+	} elseif ( wp_doing_cron() ) {
+		$skip_reason = 'cron';
+	} elseif ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) {
+		$skip_reason = 'xml-rpc';
+	} elseif ( did_action( 'application_password_did_authenticate' ) ) {
+		$skip_reason = 'application-password';
+	} elseif ( function_exists( 'current_user_switched' ) && current_user_switched() ) {
+		// User Switching plugin: the switch is admin-initiated and already authenticated.
+		$skip_reason = 'user-switching';
+	} elseif ( is_2fa_page() ) {
+		// Already on a 2FA page; redirecting again would loop.
+		$skip_reason = '2fa-page';
+	} elseif ( is_editor_loopback_request() ) {
+		$skip_reason = 'editor-loopback';
+	} elseif ( MODE_DISABLED === get_option( OPTION_MODE, DEFAULT_MODE ) ) {
+		$skip_reason = 'mode-disabled';
 	}
 
-	// AJAX requests.
-	if ( wp_doing_ajax() ) {
-		return true;
-	}
-
-	// REST API requests.
-	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-		return true;
-	}
-
-	// Cron jobs.
-	if ( wp_doing_cron() ) {
-		return true;
-	}
-
-	// XML-RPC.
-	if ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) {
-		return true;
-	}
-
-	// Application Password authentication.
-	if ( did_action( 'application_password_did_authenticate' ) ) {
-		return true;
-	}
-
-	// User Switching plugin - skip verification when switching between users.
-	if ( function_exists( 'current_user_switched' ) && current_user_switched() ) {
-		return true;
-	}
-
-	// Already on a 2FA page (prevents redirect loops).
-	if ( is_2fa_page() ) {
-		return true;
-	}
-
-	// Theme/plugin editor loopback: core hits an admin URL with wp_scrape_key +
-	// wp_scrape_nonce to check that a PHP edit didn't whitescreen the site. The
-	// loopback carries the admin's auth cookie but WordPress's own User-Agent,
-	// so it looks like an untrusted device to us — redirecting it would cause
-	// core to revert the edit with "loopback_request_failed". Validate against
-	// the transient core itself sets so bare query params can't bypass 2FA.
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Validated against transient below.
-	if ( isset( $_REQUEST['wp_scrape_key'], $_REQUEST['wp_scrape_nonce'] ) ) {
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Validated against transient below.
-		$scrape_key = substr( sanitize_key( wp_unslash( $_REQUEST['wp_scrape_key'] ) ), 0, 32 );
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Compared as string to transient below.
-		$scrape_nonce = (string) wp_unslash( $_REQUEST['wp_scrape_nonce'] );
-		if ( (string) get_transient( 'scrape_key_' . $scrape_key ) === $scrape_nonce ) {
-			return true;
-		}
-	}
-
-	// Plugin is disabled.
-	$mode = get_option( OPTION_MODE, DEFAULT_MODE );
-	if ( MODE_DISABLED === $mode ) {
-		return true;
-	}
-
-	return false;
+	return '' !== $skip_reason;
 }
 
 /**
  * Mask an email address for privacy.
  *
  * Masks the local part and domain to prevent email disclosure.
- * Example: paul@headwall.co.uk becomes p***@h***********.uk
+ * Example: paul@headwall.co.uk becomes p***@h**********.uk
  *
  * @since 0.9.1
  * @param string $email Email address to mask.
  * @return string Masked email address.
  */
 function mask_email( string $email ): string {
-	if ( ! is_email( $email ) ) {
-		return $email;
-	}
-
 	$parts = explode( '@', $email );
-	if ( count( $parts ) !== 2 ) {
-		return $email;
-	}
 
-	[$local, $domain] = $parts;
-
-	$local_masked = mb_substr( $local, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $local ) - 1 ) );
-	$domain_parts = explode( '.', $domain );
-	if ( count( $domain_parts ) < 2 ) {
-		$domain_masked = mb_substr( $domain, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain ) - 1 ) );
+	// Anything we cannot parse is returned untouched rather than half-masked.
+	if ( ! is_email( $email ) || 2 !== count( $parts ) ) {
+		$masked = $email;
 	} else {
-		$tld           = array_pop( $domain_parts );
-		$domain_name   = implode( '.', $domain_parts );
-		$domain_masked = mb_substr( $domain_name, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain_name ) - 1 ) ) . '.' . $tld;
+		[$local, $domain] = $parts;
+
+		$local_masked = mb_substr( $local, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $local ) - 1 ) );
+		$domain_parts = explode( '.', $domain );
+
+		if ( count( $domain_parts ) < 2 ) {
+			// Defensive: is_email() already rejects a domain with no dot.
+			$domain_masked = mb_substr( $domain, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain ) - 1 ) );
+		} else {
+			$tld           = array_pop( $domain_parts );
+			$domain_name   = implode( '.', $domain_parts );
+			$domain_masked = mb_substr( $domain_name, 0, 1 ) . str_repeat( '*', max( 3, mb_strlen( $domain_name ) - 1 ) ) . '.' . $tld;
+		}
+
+		$masked = $local_masked . '@' . $domain_masked;
 	}
 
-	return $local_masked . '@' . $domain_masked;
+	return $masked;
 }
 
 /**

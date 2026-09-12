@@ -118,6 +118,16 @@ const TRANSIENT_RETURN_URL = 'q2fa_return_';
 const TRANSIENT_RATE_LIMIT = 'q2fa_rate_limit_';
 
 /**
+ * How long a stored return URL stays valid.
+ *
+ * Long enough to read an email and type a code, short enough that a stale
+ * destination is not sitting around after an abandoned login.
+ *
+ * @since 1.3.0
+ */
+const RETURN_URL_TTL = 5 * MINUTE_IN_SECONDS;
+
+/**
  * Query parameter for 2FA pages.
  *
  * @since 1.0.0
