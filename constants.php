@@ -176,6 +176,26 @@ const UPDATER_CACHE_TTL   = 12 * HOUR_IN_SECONDS;
 const UPDATER_CACHE_KEY   = 'quick_2fa_github_release';
 
 /**
+ * Back-off after a failed release lookup.
+ *
+ * A failure was previously not cached at all, so every update check retried
+ * the API and blocked for up to UPDATER_REQUEST_TIMEOUT seconds while GitHub
+ * was unreachable or rate-limiting. Shorter than UPDATER_CACHE_TTL so a real
+ * release is not missed for long.
+ *
+ * @since 1.3.0
+ */
+const UPDATER_FAILURE_CACHE_KEY = 'quick_2fa_github_failed';
+const UPDATER_FAILURE_CACHE_TTL = HOUR_IN_SECONDS;
+
+/**
+ * Seconds to wait on the GitHub API before giving up.
+ *
+ * @since 1.3.0
+ */
+const UPDATER_REQUEST_TIMEOUT = 10;
+
+/**
  * Defaults.
  *
  * @since 1.0.0
