@@ -244,7 +244,9 @@ code.
 
 Supporting material (private, untracked):
 
-- `dev-notes/00-project-tracker.md` — current milestones and tech debt
+- `dev-notes/00-project-tracker.md` — milestones, open design questions, deferred features
+- `dev-notes/02-snagging-list.md` — small agreed items awaiting a convenient moment. Check it
+  before starting work: an item there may already cover the file you are about to touch
 - `dev-notes/archive/` — superseded material kept for reference, including the retired
   `copilot-instructions.md` and the old `patterns/` and `workflows/` guides. Archived, not
   authoritative: **this file is the standard**, not anything under `archive/`
