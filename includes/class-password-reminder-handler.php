@@ -138,7 +138,12 @@ class Password_Reminder_Handler {
 				'weak_password',
 				sprintf(
 					/* translators: %d: minimum number of characters required in a password */
-					__( 'Password must be at least %d characters long.', 'quick-2fa' ),
+					_n(
+						'Password must be at least %d character long.',
+						'Password must be at least %d characters long.',
+						PASSWORD_MIN_LENGTH,
+						'quick-2fa'
+					),
 					PASSWORD_MIN_LENGTH
 				)
 			);

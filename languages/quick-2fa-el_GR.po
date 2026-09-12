@@ -1,8 +1,5 @@
-# Copyright (C) 2026 Paul Faulkner
-# This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Language: el_GR\n"
 "Project-Id-Version: Quick 2FA 1.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/quick-2fa\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
@@ -12,6 +9,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-06-21T14:16:24+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: el_GR\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: quick-2fa\n"
 
@@ -19,7 +18,7 @@ msgstr ""
 #: quick-2fa.php
 #: includes/class-settings.php:38
 msgid "Quick 2FA"
-msgstr "Γρήγορη 2FA"
+msgstr "Quick 2FA"
 
 #. Plugin URI of the plugin
 #: quick-2fa.php
@@ -34,7 +33,7 @@ msgstr "Ελαφρύ σύστημα διπλής επαλήθευσης ταυτ
 #. Author of the plugin
 #: quick-2fa.php
 msgid "Paul Faulkner"
-msgstr "Πολ Φόλκνερ"
+msgstr "Paul Faulkner"
 
 #. Author URI of the plugin
 #: quick-2fa.php
@@ -53,27 +52,21 @@ msgstr "Γεια σου %s,"
 msgid "Your verification code is: %s"
 msgstr "Ο κωδικός επαλήθευσης είναι: %s"
 
-#. translators: %d: Number of minutes
-#: emails/verification-code.php:34
-#, php-format
-msgid "This code will expire in %d minutes."
-msgstr "Αυτός ο κωδικός θα λήξει σε %d λεπτά."
-
 #: emails/verification-code.php:39
 msgid "If you did not request this code, please contact your site administrator immediately."
 msgstr "Εάν δεν ζητήσατε εσείς αυτόν τον κωδικό, παρακαλούμε επικοινωνήστε αμέσως με τον διαχειριστή του ιστότοπου."
 
 #: functions-private.php:44
 #: includes/class-email-handler.php:38
-#: includes/class-settings.php:352
+#: includes/class-settings.php:371
 msgid "Your verification code"
 msgstr "Ο κωδικός επαλήθευσης σας"
 
-#: functions-private.php:124
+#: functions-private.php:122
 msgid "For your security, we need to verify your identity before you can access the admin area."
 msgstr "Για λόγους ασφαλείας, πρέπει να επαληθεύσουμε την ταυτότητά σας προτού μπορέσετε να αποκτήσετε πρόσβαση στον χώρο διαχείρισης."
 
-#: functions-private.php:153
+#: functions-private.php:151
 msgid "Regular password changes help keep your account secure. We recommend updating your password every 60 days."
 msgstr "Η τακτική αλλαγή του κωδικού πρόσβασης συμβάλλει στη διατήρηση της ασφάλειας του λογαριασμού σας. Σας συνιστούμε να ανανεώνετε τον κωδικό πρόσβασής σας κάθε 60 ημέρες."
 
@@ -81,63 +74,59 @@ msgstr "Η τακτική αλλαγή του κωδικού πρόσβασης 
 msgid "Failed to send verification email. Please contact your site administrator."
 msgstr "Δεν κατέστη δυνατή η αποστολή του email επαλήθευσης. Παρακαλούμε επικοινωνήστε με τον διαχειριστή του ιστότοπου."
 
-#: includes/class-password-reminder-handler.php:141
+#: includes/class-password-reminder-handler.php:134
 msgid "Please enter a password."
 msgstr "Παρακαλώ εισάγετε έναν κωδικό πρόσβασης."
 
-#: includes/class-password-reminder-handler.php:145
-msgid "Password must be at least 8 characters long."
-msgstr "Ο κωδικός πρόσβασης πρέπει να αποτελείται από τουλάχιστον 8 χαρακτήρες."
-
-#: includes/class-plugin.php:165
-#: includes/class-plugin.php:200
+#: includes/class-plugin.php:232
 msgid "Your account has been locked. Please contact your site administrator."
 msgstr "Ο λογαριασμός σας έχει κλειδωθεί. Παρακαλούμε επικοινωνήστε με τον διαχειριστή του ιστότοπου."
 
 #. translators: %s: Time remaining until unlock
-#: includes/class-plugin.php:169
-#: includes/class-plugin.php:204
+#: includes/class-plugin.php:236
 #, php-format
 msgid "Your account has been locked. Please try again in %s."
 msgstr "Ο λογαριασμός σας έχει κλειδωθεί. Παρακαλώ δοκιμάστε ξανά σε %s."
 
-#: includes/class-plugin.php:209
+#: includes/class-plugin.php:264
 msgid "Account Locked"
 msgstr "Ο λογαριασμός έχει κλειδωθεί"
 
-#: includes/class-plugin.php:423
+#: includes/class-plugin.php:425
 msgid "Invalid action"
 msgstr "Μη έγκυρη ενέργεια"
 
-#: includes/class-plugin.php:423
+#: includes/class-plugin.php:425
+#: includes/class-plugin.php:475
+#: includes/class-plugin.php:553
 msgctxt "error page title"
 msgid "Error"
 msgstr "Σφάλμα"
 
-#: includes/class-plugin.php:445
-#: includes/class-plugin.php:483
-#: includes/class-plugin.php:536
-#: includes/class-plugin.php:552
+#: includes/class-plugin.php:485
+#: includes/class-plugin.php:507
+#: includes/class-plugin.php:568
+#: includes/class-plugin.php:580
 msgid "Security check failed. Please try again."
 msgstr "Ο έλεγχος ασφαλείας απέτυχε. Παρακαλώ, δοκιμάστε ξανά."
 
-#: includes/class-plugin.php:450
+#: includes/class-plugin.php:490
 msgid "Please enter the verification code."
 msgstr "Παρακαλώ εισάγετε τον κωδικό επαλήθευσης."
 
-#: includes/class-plugin.php:490
+#: includes/class-plugin.php:514
 msgid "A new verification code has been sent to your email."
 msgstr "Έχει σταλεί ένας νέος κωδικός επαλήθευσης στο email σας."
 
-#: includes/class-plugin.php:583
+#: includes/class-plugin.php:608
 msgid "Quick 2FA is currently disabled."
 msgstr "Η λειτουργία «Quick 2FA» είναι προς το παρόν απενεργοποιημένη."
 
-#: includes/class-plugin.php:584
+#: includes/class-plugin.php:609
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "Ο πίνακας ελέγχου σας δεν προστατεύεται από έλεγχο ταυτότητας δύο παραγόντων."
 
-#: includes/class-plugin.php:586
+#: includes/class-plugin.php:611
 msgid "Enable 2FA"
 msgstr "Ενεργοποίηση της διπλής επαλήθευσης (2FA)"
 
@@ -145,125 +134,107 @@ msgstr "Ενεργοποίηση της διπλής επαλήθευσης (2FA
 msgid "Quick 2FA Settings"
 msgstr "Γρήγορες ρυθμίσεις 2FA"
 
-#: includes/class-settings.php:328
+#: includes/class-settings.php:347
 msgid "Select roles..."
 msgstr "Επιλέξτε ρόλους..."
 
-#: includes/class-user-management.php:72
+#: includes/class-user-management.php:74
+#: includes/class-user-management.php:82
 msgid "Lock Status"
 msgstr "Κατάσταση κλειδώματος"
 
-#: includes/class-user-management.php:101
+#: includes/class-user-management.php:111
 msgid "Not locked out"
 msgstr "Δεν έχει κλειδωθεί έξω"
 
-#: includes/class-user-management.php:159
+#: includes/class-user-management.php:169
 msgid "Locked Out"
 msgstr "Αποκλεισμένος"
 
-#: includes/class-user-management.php:171
+#: includes/class-user-management.php:181
 msgid "Not Locked Out"
 msgstr "Δεν έχει κλειδωθεί έξω"
 
-#: includes/class-user-management.php:261
+#: includes/class-user-management.php:271
 msgctxt "verb; user row action"
 msgid "Unlock"
 msgstr "Ξεκλείδωμα"
 
-#: includes/class-user-management.php:273
+#: includes/class-user-management.php:283
 msgctxt "verb; user row action"
 msgid "Lock Out"
 msgstr "Κλείδωμα"
 
-#: includes/class-user-management.php:289
-#: includes/class-user-management.php:345
-#: includes/class-user-management.php:548
-#: includes/class-user-management.php:594
+#: includes/class-user-management.php:299
+#: includes/class-user-management.php:355
+#: includes/class-user-management.php:553
+#: includes/class-user-management.php:599
 msgid "Security check failed."
 msgstr "Ο έλεγχος ασφαλείας απέτυχε."
 
-#: includes/class-user-management.php:293
-#: includes/class-user-management.php:349
-#: includes/class-user-management.php:552
-#: includes/class-user-management.php:598
+#: includes/class-user-management.php:303
+#: includes/class-user-management.php:359
+#: includes/class-user-management.php:557
+#: includes/class-user-management.php:603
 msgid "You do not have permission to perform this action."
 msgstr "Δεν έχετε δικαίωμα να εκτελέσετε αυτήν την ενέργεια."
 
-#: includes/class-user-management.php:297
+#: includes/class-user-management.php:307
 msgid "You cannot lock out your own account."
 msgstr "Δεν μπορείτε να κλειδώσετε τον δικό σας λογαριασμό."
 
-#: includes/class-user-management.php:302
-#: includes/class-user-management.php:354
-#: includes/class-user-management.php:557
-#: includes/class-user-management.php:603
+#: includes/class-user-management.php:312
+#: includes/class-user-management.php:364
+#: includes/class-user-management.php:562
+#: includes/class-user-management.php:608
 msgid "Invalid user."
 msgstr "Μη έγκυρος χρήστης."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:324
+#: includes/class-user-management.php:334
 #, php-format
 msgid "User %s has been locked out."
 msgstr "Ο χρήστης %s έχει αποκλειστεί."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:374
+#: includes/class-user-management.php:384
 #, php-format
 msgid "User %s has been unlocked."
 msgstr "Ο χρήστης %s έχει ξεκλειδωθεί."
 
-#: includes/class-user-management.php:418
+#: includes/class-user-management.php:428
 msgid "Locked out (manual)"
 msgstr "Κλείδωμα (χειροκίνητο)"
 
 #. translators: %s: Formatted date and time
-#: includes/class-user-management.php:429
+#: includes/class-user-management.php:439
 #, php-format
 msgid "Locked out until %s"
 msgstr "Αποκλεισμός μέχρι τις %s"
 
-#: includes/class-verification-code-handler.php:109
+#: includes/class-verification-code-handler.php:114
 msgid "Too many verification codes requested. Please wait a few more seconds before requesting another code."
 msgstr "Ζητήθηκαν πάρα πολλοί κωδικοί επαλήθευσης. Παρακαλώ περιμένετε μερικά δευτερόλεπτα ακόμα πριν ζητήσετε έναν άλλο κωδικό."
 
-#. translators: %d: number of minutes to wait
-#: includes/class-verification-code-handler.php:115
-#, php-format
-msgid "Too many verification codes requested. Please wait %d minutes before requesting another code."
-msgstr "Ζητήθηκαν πάρα πολλοί κωδικοί επαλήθευσης. Παρακαλώ περιμένετε %d λεπτά πριν ζητήσετε έναν άλλο κωδικό."
-
-#: includes/class-verification-code-handler.php:200
+#: includes/class-verification-code-handler.php:204
 msgid "User not found."
 msgstr "Ο χρήστης δεν βρέθηκε."
 
-#. translators: %d: number of minutes until unlock
-#: includes/class-verification-code-handler.php:244
-#, php-format
-msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
-msgstr "Ο λογαριασμός σας έχει κλειδωθεί προσωρινά λόγω υπερβολικού αριθμού αποτυχημένων προσπαθειών. Παρακαλώ δοκιμάστε ξανά σε %d λεπτά."
-
-#: includes/class-verification-code-handler.php:253
+#: includes/class-verification-code-handler.php:285
 msgid "No verification code found. Please request a new code."
 msgstr "Δεν βρέθηκε κωδικός επαλήθευσης. Παρακαλώ ζητήστε νέο κωδικό."
 
-#. translators: %d: number of minutes until expiry
-#: includes/class-verification-code-handler.php:264
-#, php-format
-msgid "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
-msgstr "Ο κωδικός επαλήθευσης έχει λήξει. Οι κωδικοί ισχύουν για %d λεπτά. Παρακαλώ ζητήστε έναν νέο κωδικό."
-
-#: includes/class-verification-code-handler.php:275
-#: includes/class-verification-code-handler.php:306
+#: includes/class-verification-code-handler.php:246
 msgid "Too many failed verification attempts. Your account has been temporarily locked for security."
 msgstr "Πάρα πολλές αποτυχημένες προσπάθειες επαλήθευσης. Ο λογαριασμός σας έχει κλειδωθεί προσωρινά για λόγους ασφαλείας."
 
 #. translators: %d: number of attempts remaining
-#: includes/class-verification-code-handler.php:300
+#: includes/class-verification-code-handler.php:336
 #, php-format
 msgid "Invalid verification code. You have %d attempt remaining."
 msgid_plural "Invalid verification code. You have %d attempts remaining."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Μη έγκυρος κωδικός επαλήθευσης. Σας απομένουν %d προσπάθειες."
+msgstr[1] "Μη έγκυρος κωδικός επαλήθευσης. Σας απομένουν %d προσπάθειες."
 
 #: views/password-page.php:31
 msgid "Update Your Password"
@@ -273,37 +244,31 @@ msgstr "Ενημέρωση του κωδικού πρόσβασής σας"
 msgid "It's been over a year since you last changed your password. For your security, we recommend updating it regularly."
 msgstr "Έχει περάσει πάνω από ένας χρόνος από την τελευταία φορά που αλλάξατε τον κωδικό πρόσβασής σας. Για τη δική σας ασφάλεια, σας συνιστούμε να τον ανανεώνετε τακτικά."
 
-#. translators: %d: number of days since last password change
-#: views/password-page.php:59
-#, php-format
-msgid "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
-msgstr "Έχουν περάσει %d ημέρες από την τελευταία αλλαγή του κωδικού πρόσβασής σας. Για λόγους ασφαλείας, σας συνιστούμε να τον ενημερώνετε τακτικά."
-
-#: views/password-page.php:82
+#: views/password-page.php:87
 msgid "New Password:"
 msgstr "Νέος κωδικός πρόσβασης:"
 
-#: views/password-page.php:91
+#: views/password-page.php:96
 msgid "Show password"
 msgstr "Εμφάνιση κωδικού πρόσβασης"
 
-#: views/password-page.php:92
+#: views/password-page.php:97
 msgid "Hide password"
 msgstr "Απόκρυψη κωδικού πρόσβασης"
 
-#: views/password-page.php:97
+#: views/password-page.php:102
 msgid "A strong password has been generated for you. You can use it as-is or change it to your own."
 msgstr "Έχει δημιουργηθεί ένας ισχυρός κωδικός πρόσβασης για εσάς. Μπορείτε να τον χρησιμοποιήσετε όπως είναι ή να τον αλλάξετε με δικό σας."
 
-#: views/password-page.php:102
+#: views/password-page.php:107
 msgid "Update Password"
 msgstr "Ενημέρωση κωδικού πρόσβασης"
 
-#: views/password-page.php:111
+#: views/password-page.php:116
 msgid "Remind Me Later"
 msgstr "Υπενθύμισέ μου αργότερα"
 
-#: views/password-page.php:118
+#: views/password-page.php:123
 #: views/verification-page.php:94
 msgid "&larr; Log out"
 msgstr "&larr; Αποσύνδεση"
@@ -325,8 +290,8 @@ msgstr "Δεν υπάρχουν αξιόπιστες συσκευές."
 #, php-format
 msgid "You have %d trusted device."
 msgid_plural "You have %d trusted devices."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Έχετε %d αξιόπιστη συσκευή."
+msgstr[1] "Έχετε %d αξιόπιστες συσκευές."
 
 #: views/profile-trusted-devices.php:30
 msgctxt "table column header"
@@ -358,8 +323,8 @@ msgstr "Αυτή η συσκευή"
 #, php-format
 msgid "In %d day"
 msgid_plural "In %d days"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Σε %d ημέρα"
+msgstr[1] "Σε %d ημέρες"
 
 #: views/profile-trusted-devices.php:66
 msgctxt "device trust expires today"
@@ -379,160 +344,160 @@ msgstr "Ανάκληση όλων των συσκευών"
 msgid "Revoking devices will require re-verification from those devices on the next login."
 msgstr "Η ανάκληση συσκευών θα απαιτήσει εκ νέου επαλήθευση από τις συγκεκριμένες συσκευές κατά την επόμενη σύνδεση."
 
+#: views/settings-page.php:52
 #: views/settings-page.php:53
-#: views/settings-page.php:54
 msgid "2FA Mode"
 msgstr "Λειτουργία 2FA"
 
-#: views/settings-page.php:61
+#: views/settings-page.php:60
 msgctxt "2FA mode option label"
 msgid "Disabled"
 msgstr "Απενεργοποιημένη"
 
-#: views/settings-page.php:62
+#: views/settings-page.php:61
 msgid "Two-factor authentication is disabled. Not recommended for production sites."
 msgstr "Η επαλήθευση δύο παραγόντων είναι απενεργοποιημένη. Δεν συνιστάται για ιστότοπους παραγωγής."
 
-#: views/settings-page.php:70
+#: views/settings-page.php:69
 msgid "Enabled for all users"
 msgstr "Ενεργοποιημένο για όλους τους χρήστες"
 
-#: views/settings-page.php:71
+#: views/settings-page.php:70
 msgid "All users, including subscribers, will be required to verify their identity."
 msgstr "Όλοι οι χρήστες, συμπεριλαμβανομένων των συνδρομητών, θα πρέπει να επαληθεύσουν την ταυτότητά τους."
 
-#: views/settings-page.php:79
+#: views/settings-page.php:78
 msgid "Enabled for specific roles"
 msgstr "Ενεργοποιημένο για συγκεκριμένους ρόλους"
 
-#: views/settings-page.php:80
+#: views/settings-page.php:79
 msgid "Only users with selected roles will be required to verify their identity."
 msgstr "Μόνο οι χρήστες με συγκεκριμένους ρόλους θα υποχρεούνται να επαληθεύσουν την ταυτότητά τους."
 
-#: views/settings-page.php:88
+#: views/settings-page.php:87
 msgid "Protected Roles"
 msgstr "Προστατευμένοι ρόλοι"
 
-#: views/settings-page.php:107
+#: views/settings-page.php:106
 msgid "Select which user roles require two-factor authentication."
 msgstr "Επιλέξτε τους ρόλους χρηστών για τους οποίους απαιτείται έλεγχος ταυτότητας δύο παραγόντων."
 
-#: views/settings-page.php:112
+#: views/settings-page.php:111
 msgid "Verification Period"
 msgstr "Περίοδος επαλήθευσης"
 
-#: views/settings-page.php:115
-#: views/settings-page.php:142
-#: views/settings-page.php:205
-#: views/settings-page.php:214
+#: views/settings-page.php:114
+#: views/settings-page.php:141
+#: views/settings-page.php:204
+#: views/settings-page.php:213
 msgctxt "unit suffix after a number input"
 msgid "days"
 msgstr "ημέρες"
 
-#: views/settings-page.php:116
+#: views/settings-page.php:115
 msgid "How often users need to re-verify their identity (1-365 days)."
 msgstr "Πόσο συχνά πρέπει οι χρήστες να επαληθεύουν εκ νέου την ταυτότητά τους (1–365 ημέρες)."
 
-#: views/settings-page.php:121
+#: views/settings-page.php:120
 msgid "Code Length"
 msgstr "Μήκος κώδικα"
 
-#: views/settings-page.php:124
+#: views/settings-page.php:123
 msgctxt "unit suffix after a number input"
 msgid "digits"
 msgstr "ψηφία"
 
-#: views/settings-page.php:125
+#: views/settings-page.php:124
 msgid "Length of the verification code (4-8 digits)."
 msgstr "Μήκος του κωδικού επαλήθευσης (4-8 ψηφία)."
 
-#: views/settings-page.php:130
+#: views/settings-page.php:129
 msgid "Code Expiry"
 msgstr "Λήξη κωδικού"
 
-#: views/settings-page.php:133
-#: views/settings-page.php:151
+#: views/settings-page.php:132
+#: views/settings-page.php:150
 msgctxt "unit suffix after a number input"
 msgid "minutes"
 msgstr "λεπτά"
 
-#: views/settings-page.php:134
+#: views/settings-page.php:133
 msgid "How long verification codes remain valid (5-60 minutes)."
 msgstr "Πόσο καιρό παραμένουν σε ισχύ οι κωδικοί επαλήθευσης (5-60 λεπτά)."
 
-#: views/settings-page.php:139
+#: views/settings-page.php:138
 msgid "Trust Device Duration"
 msgstr "Διάρκεια ισχύος της συσκευής εμπιστοσύνης"
 
-#: views/settings-page.php:143
+#: views/settings-page.php:142
 msgid "How long a trusted device remains trusted before requiring 2FA again (1-365 days)."
 msgstr "Πόσο καιρό μια αξιόπιστη συσκευή παραμένει αξιόπιστη πριν απαιτηθεί εκ νέου η χρήση της διπλής επαλήθευσης (2FA) (1–365 ημέρες)."
 
-#: views/settings-page.php:148
+#: views/settings-page.php:147
 msgid "Auto-Lock Duration"
 msgstr "Διάρκεια αυτόματου κλειδώματος"
 
-#: views/settings-page.php:152
+#: views/settings-page.php:151
 msgid "Duration to lock accounts after too many failed verification attempts (1-1440 minutes = 1 minute to 24 hours)."
 msgstr "Χρονικό διάστημα κατά το οποίο οι λογαριασμοί θα παραμείνουν κλειδωμένοι μετά από υπερβολικά πολλές αποτυχημένες προσπάθειες επαλήθευσης (1-1440 λεπτά = 1 λεπτό έως 24 ώρες)."
 
-#: views/settings-page.php:158
+#: views/settings-page.php:157
 msgid "Email Settings"
 msgstr "Ρυθμίσεις ηλεκτρονικού ταχυδρομείου"
 
-#: views/settings-page.php:163
+#: views/settings-page.php:162
 msgid "From Name"
 msgstr "Από Όνομα"
 
-#: views/settings-page.php:166
+#: views/settings-page.php:165
 msgid "The name that appears in the \"From\" field of verification emails."
 msgstr "Το όνομα που εμφανίζεται στο πεδίο «Από» των μηνυμάτων ηλεκτρονικού ταχυδρομείου επαλήθευσης."
 
-#: views/settings-page.php:171
+#: views/settings-page.php:170
 msgid "From Address"
 msgstr "Από τη διεύθυνση"
 
-#: views/settings-page.php:174
+#: views/settings-page.php:173
 msgid "The email address that appears in the \"From\" field of verification emails."
 msgstr "Η διεύθυνση ηλεκτρονικού ταχυδρομείου που εμφανίζεται στο πεδίο «Από» των μηνυμάτων επαλήθευσης."
 
-#: views/settings-page.php:179
+#: views/settings-page.php:178
 msgid "Email Subject"
 msgstr "Θέμα email"
 
-#: views/settings-page.php:182
+#: views/settings-page.php:181
 msgid "Subject line for verification emails."
 msgstr "Θέμα για τα μηνύματα ηλεκτρονικού ταχυδρομείου επαλήθευσης."
 
-#: views/settings-page.php:188
+#: views/settings-page.php:187
 msgid "Password Reminder Settings"
 msgstr "Ρυθμίσεις υπενθύμισης κωδικού πρόσβασης"
 
-#: views/settings-page.php:193
+#: views/settings-page.php:192
 msgid "Password Reminders"
 msgstr "Υπενθυμίσεις κωδικού πρόσβασης"
 
-#: views/settings-page.php:196
+#: views/settings-page.php:195
 msgid "Enable password change reminders"
 msgstr "Ενεργοποίηση υπενθυμίσεων αλλαγής κωδικού πρόσβασης"
 
-#: views/settings-page.php:197
+#: views/settings-page.php:196
 msgid "Periodically remind users to update their passwords."
 msgstr "Υπενθυμίζετε περιοδικά στους χρήστες να ενημερώνουν τους κωδικούς πρόσβασής τους."
 
-#: views/settings-page.php:202
+#: views/settings-page.php:201
 msgid "Reminder Period"
 msgstr "Περίοδος υπενθύμισης"
 
-#: views/settings-page.php:206
+#: views/settings-page.php:205
 msgid "Remind users to change their password after this many days (30-365 days)."
 msgstr "Υπενθυμίστε στους χρήστες να αλλάξουν τον κωδικό πρόσβασής τους μετά από τόσες ημέρες (30-365 ημέρες)."
 
-#: views/settings-page.php:211
+#: views/settings-page.php:210
 msgid "Reminder Cooldown"
 msgstr "Χρόνος αναμονής υπενθύμισης"
 
-#: views/settings-page.php:215
+#: views/settings-page.php:214
 msgid "Wait this many days before showing the reminder again if dismissed (1-90 days)."
 msgstr "Περίμενε τόσες ημέρες πριν εμφανιστεί ξανά η υπενθύμιση, αν έχει απορριφθεί (1-90 ημέρες)."
 
@@ -554,8 +519,8 @@ msgstr "Κωδικός επαλήθευσης:"
 #, php-format
 msgid "Trust this device for %d day"
 msgid_plural "Trust this device for %d days"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Εμπιστευθείτε αυτή τη συσκευή για %d ημέρα"
+msgstr[1] "Εμπιστευθείτε αυτή τη συσκευή για %d ημέρες"
 
 #: views/verification-page.php:81
 msgctxt "verb; submit button label"
@@ -565,3 +530,56 @@ msgstr "Επαλήθευση"
 #: views/verification-page.php:87
 msgid "Resend Code"
 msgstr "Επανάληψη αποστολής κωδικού"
+
+#. translators: %d: Number of minutes
+#: emails/verification-code.php:34
+#, php-format
+msgid "This code will expire in %d minute."
+msgid_plural "This code will expire in %d minutes."
+msgstr[0] "Αυτός ο κωδικός θα λήξει σε %d λεπτό."
+msgstr[1] "Αυτός ο κωδικός θα λήξει σε %d λεπτά."
+
+#. translators: %d: minimum number of characters required in a password
+#: includes/class-password-reminder-handler.php:141
+#, php-format
+msgid "Password must be at least %d character long."
+msgid_plural "Password must be at least %d characters long."
+msgstr[0] "Ο κωδικός πρόσβασης πρέπει να έχει μήκος τουλάχιστον %d χαρακτήρες."
+msgstr[1] "Ο κωδικός πρόσβασης πρέπει να έχει μήκος τουλάχιστον %d χαρακτήρες."
+
+#: includes/class-plugin.php:474
+#: includes/class-plugin.php:552
+msgid "Your user account could not be loaded. Please sign in again."
+msgstr "Δεν ήταν δυνατή η φόρτωση του λογαριασμού χρήστη σας. Παρακαλώ, συνδεθείτε ξανά."
+
+#. translators: %d: number of minutes to wait
+#: includes/class-verification-code-handler.php:120
+#, php-format
+msgid "Too many verification codes requested. Please wait %d minute before requesting another code."
+msgid_plural "Too many verification codes requested. Please wait %d minutes before requesting another code."
+msgstr[0] "Ζητήθηκαν πάρα πολλοί κωδικοί επαλήθευσης. Παρακαλώ περιμένετε %d λεπτό πριν ζητήσετε έναν άλλο κωδικό."
+msgstr[1] "Ζητήθηκαν πάρα πολλοί κωδικοί επαλήθευσης. Παρακαλώ περιμένετε %d λεπτά πριν ζητήσετε έναν άλλο κωδικό."
+
+#. translators: %d: number of minutes until unlock
+#: includes/class-verification-code-handler.php:271
+#, php-format
+msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minute."
+msgid_plural "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
+msgstr[0] "Ο λογαριασμός σας έχει κλειδωθεί προσωρινά λόγω υπερβολικού αριθμού αποτυχημένων προσπαθειών. Παρακαλώ δοκιμάστε ξανά σε %d λεπτό."
+msgstr[1] "Ο λογαριασμός σας έχει κλειδωθεί προσωρινά λόγω υπερβολικού αριθμού αποτυχημένων προσπαθειών. Παρακαλώ δοκιμάστε ξανά σε %d λεπτά."
+
+#. translators: %d: number of minutes until expiry
+#: includes/class-verification-code-handler.php:297
+#, php-format
+msgid "Your verification code has expired. Codes are valid for %d minute. Please request a new code."
+msgid_plural "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
+msgstr[0] "Ο κωδικός επαλήθευσής σας έχει λήξει. Οι κωδικοί ισχύουν για %d λεπτό. Παρακαλώ ζητήστε έναν νέο κωδικό."
+msgstr[1] "Ο κωδικός επαλήθευσής σας έχει λήξει. Οι κωδικοί ισχύουν για %d λεπτά. Παρακαλώ ζητήστε έναν νέο κωδικό."
+
+#. translators: %d: number of days since last password change
+#: views/password-page.php:59
+#, php-format
+msgid "It's been %d day since you last changed your password. For your security, we recommend updating it regularly."
+msgid_plural "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
+msgstr[0] "Έχουν περάσει %d ημέρες από την τελευταία αλλαγή του κωδικού πρόσβασής σας. Για την ασφάλειά σας, σας συνιστούμε να τον ανανεώνετε τακτικά."
+msgstr[1] "Έχουν περάσει %d ημέρες από την τελευταία αλλαγή του κωδικού πρόσβασής σας. Για τη δική σας ασφάλεια, σας συνιστούμε να τον ενημερώνετε τακτικά."

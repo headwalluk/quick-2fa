@@ -31,8 +31,8 @@ echo "\n\n";
 
 printf(
 	/* translators: %d: Number of minutes */
-	esc_html__( 'This code will expire in %d minutes.', 'quick-2fa' ),
-	intval( $code_expiry )
+	esc_html( _n( 'This code will expire in %d minute.', 'This code will expire in %d minutes.', (int) $code_expiry, 'quick-2fa' ) ),
+	(int) $code_expiry
 );
 echo "\n\n";
 

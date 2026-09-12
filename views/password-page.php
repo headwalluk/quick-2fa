@@ -56,7 +56,12 @@ if ( (int) $days_since > 365 ) {
 } else {
 	$quick_2fa_age_message = sprintf(
 		/* translators: %d: number of days since last password change */
-		__( "It's been %d days since you last changed your password. For your security, we recommend updating it regularly.", 'quick-2fa' ),
+		_n(
+			"It's been %d day since you last changed your password. For your security, we recommend updating it regularly.",
+			"It's been %d days since you last changed your password. For your security, we recommend updating it regularly.",
+			(int) $days_since,
+			'quick-2fa'
+		),
 		(int) $days_since
 	);
 }

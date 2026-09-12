@@ -117,7 +117,12 @@ class Verification_Code_Handler {
 					'rate_limited',
 					sprintf(
 						/* translators: %d: number of minutes to wait */
-						__( 'Too many verification codes requested. Please wait %d minutes before requesting another code.', 'quick-2fa' ),
+						_n(
+							'Too many verification codes requested. Please wait %d minute before requesting another code.',
+							'Too many verification codes requested. Please wait %d minutes before requesting another code.',
+							$wait_time,
+							'quick-2fa'
+						),
 						$wait_time
 					)
 				);
@@ -263,7 +268,12 @@ class Verification_Code_Handler {
 				'account_locked',
 				sprintf(
 					/* translators: %d: number of minutes until unlock */
-					__( 'Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes.', 'quick-2fa' ),
+					_n(
+						'Your account has been temporarily locked due to too many failed attempts. Please try again in %d minute.',
+						'Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes.',
+						$wait_time,
+						'quick-2fa'
+					),
 					$wait_time
 				)
 			);
@@ -284,7 +294,12 @@ class Verification_Code_Handler {
 				'expired',
 				sprintf(
 					/* translators: %d: number of minutes until expiry */
-					__( 'Your verification code has expired. Codes are valid for %d minutes. Please request a new code.', 'quick-2fa' ),
+					_n(
+						'Your verification code has expired. Codes are valid for %d minute. Please request a new code.',
+						'Your verification code has expired. Codes are valid for %d minutes. Please request a new code.',
+						$expiry_minutes,
+						'quick-2fa'
+					),
 					$expiry_minutes
 				)
 			);
