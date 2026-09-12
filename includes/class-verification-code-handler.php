@@ -31,7 +31,7 @@ class Verification_Code_Handler {
 	 *
 	 * @var int
 	 */
-	private $user_id;
+	private int $user_id;
 
 	/**
 	 * Constructor.
@@ -50,11 +50,15 @@ class Verification_Code_Handler {
 	 * @return string Verification code.
 	 */
 	public function generate(): string {
-		$length = get_option( OPTION_CODE_LENGTH, DEFAULT_CODE_LENGTH );
-		$max    = (int) str_repeat( '9', $length );
-		$code   = random_int( 0, $max );
+		// Clamped as well as validated on save: a length written straight to the
+		// database would otherwise shorten every code with no visible symptom.
+		$length = (int) get_option( OPTION_CODE_LENGTH, DEFAULT_CODE_LENGTH );
+		$length = max( CODE_LENGTH_MIN, min( CODE_LENGTH_MAX, $length ) );
 
-		return str_pad( $code, $length, '0', STR_PAD_LEFT );
+		$max  = (int) str_repeat( '9', $length );
+		$code = random_int( 0, $max );
+
+		return str_pad( (string) $code, $length, '0', STR_PAD_LEFT );
 	}
 
 	/**
@@ -90,7 +94,8 @@ class Verification_Code_Handler {
 		$limit_data = get_transient( $cache_key );
 
 		// Determine if we need to start a fresh window: no prior data, or the previous window has elapsed.
-		$no_existing_window = ( false === $limit_data );
+		// Anything that is not our own array shape counts as "no window" rather than being indexed into.
+		$no_existing_window = ! is_array( $limit_data ) || ! isset( $limit_data['window_start'], $limit_data['count'] );
 		$elapsed            = $no_existing_window ? PHP_INT_MAX : ( time() - $limit_data['window_start'] );
 		$is_new_window      = $no_existing_window || ( $elapsed > RATE_LIMIT_CODE_GENERATION_WINDOW );
 
@@ -103,7 +108,7 @@ class Verification_Code_Handler {
 			);
 			set_transient( $cache_key, $limit_data, RATE_LIMIT_CODE_GENERATION_WINDOW );
 		} elseif ( $limit_data['count'] >= RATE_LIMIT_CODE_GENERATION_MAX ) {
-			$wait_time = ceil( ( RATE_LIMIT_CODE_GENERATION_WINDOW - $elapsed ) / 60 );
+			$wait_time = (int) ceil( ( RATE_LIMIT_CODE_GENERATION_WINDOW - $elapsed ) / MINUTE_IN_SECONDS );
 
 			if ( $wait_time < 1 ) {
 				$result = new \WP_Error( 'rate_limited', __( 'Too many verification codes requested. Please wait a few more seconds before requesting another code.', 'quick-2fa' ) );
@@ -133,16 +138,16 @@ class Verification_Code_Handler {
 	 * @return bool True if expired, false otherwise.
 	 */
 	public function is_expired(): bool {
-		$code_timestamp = get_user_meta( $this->user_id, META_CODE_TIMESTAMP, true );
+		// Default to expired: a code we cannot read the age of must not be accepted.
+		$code_timestamp = (int) get_user_meta( $this->user_id, META_CODE_TIMESTAMP, true );
+		$is_expired     = true;
 
-		if ( empty( $code_timestamp ) ) {
-			return true;
+		if ( $code_timestamp > 0 ) {
+			$expiry_seconds = (int) get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY ) * MINUTE_IN_SECONDS;
+			$is_expired     = ( time() - $code_timestamp ) > $expiry_seconds;
 		}
 
-		$expiry_minutes = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
-		$expiry_seconds = $expiry_minutes * MINUTE_IN_SECONDS;
-
-		return time() - $code_timestamp > $expiry_seconds;
+		return $is_expired;
 	}
 
 	/**
@@ -159,11 +164,7 @@ class Verification_Code_Handler {
 	public function has_valid_code(): bool {
 		$hash = get_user_meta( $this->user_id, META_CODE_HASH, true );
 
-		if ( empty( $hash ) ) {
-			return false;
-		}
-
-		return ! $this->is_expired();
+		return ! empty( $hash ) && ! $this->is_expired();
 	}
 
 	/**
@@ -187,37 +188,58 @@ class Verification_Code_Handler {
 	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
 	public function send_via_email(): true|\WP_Error {
-		$rate_check = $this->check_rate_limit();
-		if ( is_wp_error( $rate_check ) ) {
-			return $rate_check;
+		$result = $this->check_rate_limit();
+
+		if ( true === $result ) {
+			// Resolve the user before generating anything: bailing out after
+			// store() would leave a fresh code behind that nobody was sent.
+			$user = get_userdata( $this->user_id );
+
+			if ( ! $user instanceof \WP_User ) {
+				$result = new \WP_Error( 'user_not_found', __( 'User not found.', 'quick-2fa' ) );
+			} else {
+				$code = $this->generate();
+				$this->store( $code );
+
+				$email_handler = new Email_Handler();
+				$send_result   = $email_handler->send_verification_code( $user, $code );
+
+				$security = new Account_Security_Handler( $this->user_id );
+				$security->log_event(
+					LOG_CODE_SENT,
+					array(
+						'timestamp' => time(),
+						'email'     => $user->user_email,
+						'success'   => $send_result['success'],
+					)
+				);
+
+				if ( ! $send_result['success'] ) {
+					$result = new \WP_Error( 'email_failed', $send_result['error'] );
+				}
+			}
 		}
 
-		$code = $this->generate();
-		$this->store( $code );
+		return $result;
+	}
 
-		$user = get_userdata( $this->user_id );
-		if ( ! $user instanceof \WP_User ) {
-			return new \WP_Error( 'user_not_found', __( 'User not found.', 'quick-2fa' ) );
-		}
+	/**
+	 * Lock the account and build the matching error.
+	 *
+	 * Both exhausted-attempt paths in verify() did this identically, so the
+	 * message and the lock could drift apart.
+	 *
+	 * @since 1.3.0
+	 * @param Account_Security_Handler $security Handler for this user.
+	 * @return \WP_Error
+	 */
+	private function lock_and_build_error( Account_Security_Handler $security ): \WP_Error {
+		$security->lock_account();
 
-		$email_handler = new Email_Handler();
-		$result        = $email_handler->send_verification_code( $user, $code );
-
-		$security = new Account_Security_Handler( $this->user_id );
-		$security->log_event(
-			LOG_CODE_SENT,
-			array(
-				'timestamp' => time(),
-				'email'     => $user->user_email,
-				'success'   => $result['success'],
-			)
+		return new \WP_Error(
+			'too_many_attempts',
+			__( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' )
 		);
-
-		if ( ! $result['success'] ) {
-			return new \WP_Error( 'email_failed', $result['error'] );
-		}
-
-		return true;
 	}
 
 	/**
@@ -235,7 +257,7 @@ class Verification_Code_Handler {
 
 		// Top guards: account locked, no stored code, code expired, attempts exhausted.
 		if ( $security->is_locked() ) {
-			$wait_time = ceil( $security->get_lock_time_remaining() / 60 );
+			$wait_time = (int) ceil( $security->get_lock_time_remaining() / MINUTE_IN_SECONDS );
 
 			return new \WP_Error(
 				'account_locked',
@@ -256,7 +278,8 @@ class Verification_Code_Handler {
 		if ( $this->is_expired() ) {
 			$this->cleanup();
 
-			$expiry_minutes = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
+			$expiry_minutes = (int) get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
+
 			return new \WP_Error(
 				'expired',
 				sprintf(
@@ -270,9 +293,7 @@ class Verification_Code_Handler {
 		$attempts = (int) get_user_meta( $this->user_id, META_CODE_ATTEMPTS, true );
 
 		if ( $attempts >= RATE_LIMIT_VERIFICATION_MAX ) {
-			$security->lock_account();
-
-			return new \WP_Error( 'too_many_attempts', __( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' ) );
+			return $this->lock_and_build_error( $security );
 		}
 
 		// Main check: compare submitted code against the stored hash.
@@ -302,8 +323,7 @@ class Verification_Code_Handler {
 					)
 				);
 			} else {
-				$security->lock_account();
-				$result = new \WP_Error( 'too_many_attempts', __( 'Too many failed verification attempts. Your account has been temporarily locked for security.', 'quick-2fa' ) );
+				$result = $this->lock_and_build_error( $security );
 			}
 		} else {
 			update_user_meta( $this->user_id, META_LAST_VERIFIED, time() );

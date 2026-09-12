@@ -237,7 +237,7 @@ class Settings {
 	 */
 	public function sanitize_code_length( mixed $value ): int {
 		$val = (int) $value;
-		return $val >= 4 && $val <= 10 ? $val : DEFAULT_CODE_LENGTH;
+		return $val >= CODE_LENGTH_MIN && $val <= CODE_LENGTH_MAX ? $val : DEFAULT_CODE_LENGTH;
 	}
 
 	/**

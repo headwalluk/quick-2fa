@@ -8,7 +8,7 @@ Quick 2FA is a WordPress plugin providing email-based two-factor authentication 
 
 - **Namespace:** `Quick_2FA` for all classes
 - **Text Domain:** `quick-2fa`
-- **PHP:** 8.0+ (do NOT use `declare(strict_types=1)` — breaks WordPress interop)
+- **PHP:** 8.2+ (do NOT use `declare(strict_types=1)` — breaks WordPress interop). The floor is 8.2 because four handlers return `true|\WP_Error`, and the `true` type landed in 8.2; on 8.0/8.1 that is a compile-time fatal, not a graceful failure
 - **WordPress:** 6.0+
 - **No build system** — no npm, no Composer, no bundler. Assets are plain CSS/JS.
 
@@ -133,7 +133,7 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 - **Single-Entry Single-Exit (SESE):** Functions should generally have one return at the end. Top-of-function guard clauses (capability checks, disabled-mode short-circuits, missing-input early-exits) are acceptable when they keep the rest of the function flat and readable. What is **not** acceptable: `return` statements scattered mid-function, inside loops, or nested several `if` blocks deep — these make the control flow hard to trace when debugging
 - **No unreachable `return`.** A `return` after a call that always `exit()`s (a redirect helper, `wp_die()`) is dead code, and so is a bare `return;` as the last statement of a `void` function. Both read as control flow that isn't there
 - **Constants for all magic strings/numbers** in `constants.php` — never use raw strings for meta keys, option names, etc.
-- **Type hints and return types** on all functions (PHP 8.0+ features: union types, nullsafe operators, named arguments)
+- **Type hints and return types** on all functions, and on class properties too (union types, nullsafe operators, named arguments). Check any type syntax newer than 8.2 against the declared floor before using it — nothing here enforces it mechanically
 - **Guard object lookups with `instanceof`, not truthiness.** `get_userdata()`, `get_user_by()`, `wc_get_product()` and friends are documented as returning `Object|false` — but `get_userdata()` and `get_user_by()` are *pluggable*, so any plugin loading earlier can replace them wholesale with no contract at all. `if ( ! $user )` and `if ( ! empty( $user ) )` are exactly equivalent (`empty()` is just `! isset() || == false`), and both let truthy junk — a `stdClass`, a non-empty string, a populated array — through to `$user->user_email` and a fatal. `if ( ! $user instanceof \WP_User )` accepts only the contract the code actually relies on. Never pass an unguarded lookup into a view
 - **Cast at the boundary.** WordPress returns loosely-typed data — `get_user_meta()` and `get_option()` hand back strings (or `''`, or `false`). Cast on the way in, at the point of read, so the rest of the function works with a known type: `$locked_until = (int) get_user_meta( $user_id, META_LOCKED_UNTIL, true );`. Don't feed a raw meta value straight into a numeric comparison
 - **Don't duplicate derived values.** Where two hooks need the same message or computation, extract a helper. Two copies of a rule (a lockout message, a threshold) will diverge the first time one is edited

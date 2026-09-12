@@ -62,6 +62,18 @@ const MODE_ROLES    = 'roles';
 const MODE_DISABLED = 'disabled';
 
 /**
+ * Verification code length bounds.
+ *
+ * Enforced by the settings validator on save, and again in
+ * Verification_Code_Handler::generate() — a value written straight to the
+ * database would otherwise silently shorten every code.
+ *
+ * @since 1.3.0
+ */
+const CODE_LENGTH_MIN = 4;
+const CODE_LENGTH_MAX = 10;
+
+/**
  * Rate limiting.
  *
  * @since 1.0.0

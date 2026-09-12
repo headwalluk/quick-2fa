@@ -5,7 +5,7 @@
  * Description: Lightweight email-based two-factor authentication for WordPress admin access.
  * Version: 1.3.0
  * Requires at least: 6.0
- * Requires PHP: 8.0
+ * Requires PHP: 8.2
  * Author: Paul Faulkner
  * Author URI: https://headwall-hosting.com
  * License: GPL v2 or later

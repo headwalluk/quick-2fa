@@ -1,7 +1,7 @@
 # Quick 2FA
 
 [![Version](https://img.shields.io/github/v/release/headwalluk/quick-2fa?label=version&color=blue)](https://github.com/headwalluk/quick-2fa/releases/latest)
-[![PHP](https://img.shields.io/badge/PHP-8.0+-purple.svg)](https://www.php.net/)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-purple.svg)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.0+-21759B.svg)](https://wordpress.org/)
 [![License](https://img.shields.io/badge/license-GPL--2.0+-green.svg)](LICENSE)
 [![Coding Standards](https://img.shields.io/badge/WordPress-Coding%20Standards-blue.svg)](https://github.com/WordPress/WordPress-Coding-Standards)
@@ -38,7 +38,7 @@ After install, the plugin will receive future updates automatically via the bund
 ### Requirements
 
 - WordPress 6.0 or later
-- PHP 8.0 or later
+- PHP 8.2 or later
 - Working `wp_mail()` (any SMTP plugin or transactional email service)
 
 ## Documentation
