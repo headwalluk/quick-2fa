@@ -2,9 +2,9 @@
 Contributors: headwalluk
 Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,9 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.3.2 =
+Fix: a new password set from the password-reminder page could be saved with characters removed — anything resembling an HTML tag, a `%` followed by two hex digits, or repeated spaces — leaving the user unable to log in with the password they chose. Tested up to WordPress 7.1. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
 = 1.3.1 =
 Maintenance release that tidies the code structure and comments. It changes no behaviour, adds no settings and leaves translations untouched. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
@@ -85,6 +88,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.3.2 =
+Fixes passwords set from the password-reminder page being saved with some characters removed, which could leave users unable to log in with their new password. Recommended for all sites.
 
 = 1.3.0 =
 **Breaking (WP-CLI only):** five subcommands are renamed to hyphenated names — `lock-all`, `unlock-all`, `list-locked`, `clear-devices`, `emergency-disable`. The hyphenated forms are what the documentation always showed; the underscore forms that actually worked are gone. Update any scripts before upgrading. Also requires PHP 8.2 or later. Recommended for all sites: fixes the permanent false "update available" notice that sites on 1.2.2 have been seeing on every admin page load. Also starts recording a last-login timestamp for every user — WordPress does not track this itself, and the record cannot be backfilled, so the sooner it starts the more useful it becomes. No settings change and no effect on the 2FA workflow.

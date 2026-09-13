@@ -4,6 +4,16 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] — 2026-09-13
+
+### Fixed
+
+- **A password set from the password-reminder page could be saved differently from what was typed.** The submitted password went through `sanitize_text_field()`, which strips anything that looks like an HTML tag, removes `%XX` octets, collapses repeated whitespace and trims the ends. `Abc<def>Ghi123!` was saved as `AbcGhi123!` and `Pass%41word99` as `Password99`, so the user and their password manager held a password that no longer worked, and only a password reset got them back in. Nearly 2% of the passwords the page generates were affected at the default settings (a `%` followed by two hex characters), and around a quarter with the extra special characters enabled through `quick2fa_password_parameters`. The password is now only unslashed, as WordPress core's own reset form does.
+
+### Changed
+
+- Tested up to WordPress 7.1.
+
 ## [1.3.1] — 2026-09-13
 
 ### Changed
