@@ -559,7 +559,8 @@ class Plugin {
 		if ( $is_update_submit && ! verify_page_nonce( 'quick2fa_password' ) ) {
 			$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 		} elseif ( $is_update_submit ) {
-			$password = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Password needs special chars.
+			// Unslashed only: sanitising would strip tags, %XX octets and repeated whitespace from the password.
+			$password = isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$result   = $handler->update_password( $password );
 
 			if ( is_wp_error( $result ) ) {
