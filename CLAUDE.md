@@ -136,7 +136,7 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 - **Namespace:** `Quick_2FA` for all classes
 - **No `declare(strict_types=1)`** — breaks WordPress interop
 - **Single-Entry Single-Exit (SESE):** Functions should generally have one return at the end. Top-of-function guard clauses (capability checks, disabled-mode short-circuits, missing-input early-exits) are acceptable when they keep the rest of the function flat and readable. What is **not** acceptable: `return` statements scattered mid-function, inside loops, or nested several `if` blocks deep — these make the control flow hard to trace when debugging
-- **Every `if`/`elseif` chain ends in a plain `else`**, never an `elseif`, so every case is handled on purpose instead of falling through. A branch that does nothing is still written out, with a short comment. `phpcs.xml` excludes the `if`/`elseif`/`else` codes of `Generic.CodeAnalysis.EmptyStatement` so these comment-only branches pass; empty `catch`, loop and `switch` bodies are still errors
+- **An `if` with one or more `elseif` branches ends in a plain `else`**, never an `elseif`, so every case is handled on purpose instead of falling through. A branch that does nothing is still written out, with a short comment. A lone `if` needs no `else`. `phpcs.xml` excludes the `if`/`elseif`/`else` codes of `Generic.CodeAnalysis.EmptyStatement` so these comment-only branches pass; empty `catch`, loop and `switch` bodies are still errors
 - **No assignment inside a condition** — WPCS flags it (`AssignmentInCondition`, `DisallowMultipleAssignments`). Assign on the line before, and nest when the value is only needed by a later branch:
 
 ```php
