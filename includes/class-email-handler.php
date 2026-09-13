@@ -35,10 +35,24 @@ class Email_Handler {
 	 */
 	public function send_verification_code( \WP_User $user, string $code ): array {
 		$to      = $user->user_email;
-		$subject = get_option( OPTION_EMAIL_SUBJECT, __( 'Your verification code', 'quick-2fa' ) );
+		$subject = (string) get_option( OPTION_EMAIL_SUBJECT, __( 'Your verification code', 'quick-2fa' ) );
 		$message = $this->get_message( $code, $user );
 		$headers = $this->get_headers();
-		$sent    = wp_mail( $to, $subject, $message, $headers );
+
+		// wp_mail() only returns false; the reason arrives through the wp_mail_failed action.
+		$mail_error         = null;
+		$capture_mail_error = static function ( mixed $error ) use ( &$mail_error ): void {
+			$mail_error = $error;
+		};
+
+		add_action( 'wp_mail_failed', $capture_mail_error );
+		$sent = wp_mail( $to, $subject, $message, $headers );
+		remove_action( 'wp_mail_failed', $capture_mail_error );
+
+		if ( ! $sent ) {
+			$reason = $mail_error instanceof \WP_Error ? $mail_error->get_error_message() : 'wp_mail() returned false';
+			error_log( sprintf( 'Quick_2FA Email_Handler [error]: verification code email to user %d failed: %s', $user->ID, $reason ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Delivery failures log unconditionally.
+		}
 
 		return array(
 			'success' => $sent,
@@ -55,7 +69,7 @@ class Email_Handler {
 	 * @return string Formatted email message.
 	 */
 	public function get_message( string $code, \WP_User $user ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $code and $user are used in the included email template.
-		$code_expiry = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
+		$code_expiry = (int) get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
 
 		ob_start();
 		include \QUICK_2FA_PATH . 'emails/verification-code.php';
@@ -69,8 +83,8 @@ class Email_Handler {
 	 * @return array Email headers.
 	 */
 	public function get_headers(): array {
-		$from_name  = get_option( OPTION_EMAIL_FROM_NAME, get_bloginfo( 'name' ) );
-		$from_email = get_option( OPTION_EMAIL_FROM_ADDRESS, get_option( 'admin_email' ) );
+		$from_name  = (string) get_option( OPTION_EMAIL_FROM_NAME, get_bloginfo( 'name' ) );
+		$from_email = (string) get_option( OPTION_EMAIL_FROM_ADDRESS, get_option( 'admin_email' ) );
 
 		[$from_name, $from_email] = $this->sanitize_headers( $from_name, $from_email );
 
@@ -96,7 +110,7 @@ class Email_Handler {
 		$from_email = str_replace( array( "\r", "\n", '%0a', '%0d' ), '', $from_email );
 
 		if ( ! is_email( $from_email ) ) {
-			$from_email = get_option( 'admin_email' );
+			$from_email = (string) get_option( 'admin_email' );
 		}
 
 		return array( $from_name, $from_email );

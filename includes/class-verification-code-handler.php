@@ -220,6 +220,9 @@ class Verification_Code_Handler {
 				);
 
 				if ( ! $send_result['success'] ) {
+					// Drop the undelivered code, so the next page load sends a fresh one.
+					$this->cleanup();
+
 					$result = new \WP_Error( 'email_failed', $send_result['error'] );
 				}
 			}

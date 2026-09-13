@@ -111,9 +111,6 @@ const CODE_LENGTH_MAX = 10;
 const RATE_LIMIT_CODE_GENERATION_MAX    = 3;
 const RATE_LIMIT_CODE_GENERATION_WINDOW = 900; // 15 minutes in seconds.
 const RATE_LIMIT_VERIFICATION_MAX       = 5;
-const RATE_LIMIT_ACCOUNT_LOCK_THRESHOLD = 10;
-const RATE_LIMIT_ACCOUNT_LOCK_WINDOW    = 3600; // 1 hour in seconds.
-const RATE_LIMIT_ACCOUNT_LOCK_DURATION  = 3600; // 1 hour in seconds.
 
 /**
  * Permanent locks are stored as a lock-until timestamp far enough in the
@@ -170,15 +167,6 @@ const TRANSIENT_RATE_LIMIT = 'q2fa_rate_limit_';
 const RETURN_URL_TTL = 5 * MINUTE_IN_SECONDS;
 
 /**
- * Cached count of locked users, for the users-list filter badge.
- *
- * Invalidated by Account_Security_Handler::lock_account() and
- * ::unlock_account(), so the badge is correct after an automatic lockout as
- * well as an admin or CLI one.
- *
- * @since 1.3.0
- */
-/**
  * Users-list column, sort and filter identifiers.
  *
  * @since 1.3.0
@@ -187,6 +175,15 @@ const COLUMN_LOCK_STATUS = 'quick2fa_status';
 const SORT_KEY_LOCKED    = 'quick2fa_locked';
 const QUERY_ARG_FILTER   = 'quick2fa_filter';
 
+/**
+ * Cached count of locked users, for the users-list filter badge.
+ *
+ * Invalidated by Account_Security_Handler::lock_account() and
+ * ::unlock_account(), so the badge is correct after an automatic lockout as
+ * well as an admin or CLI one.
+ *
+ * @since 1.3.0
+ */
 const TRANSIENT_LOCKED_COUNT = 'quick2fa_locked_user_count';
 const LOCKED_COUNT_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
 

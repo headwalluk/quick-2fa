@@ -321,13 +321,13 @@ class Plugin {
 	 * @return bool True if user's role requires 2FA.
 	 */
 	private function user_role_requires_2fa( int $user_id ): bool {
-		$mode     = get_option( OPTION_MODE, DEFAULT_MODE );
+		$mode     = (string) get_option( OPTION_MODE, DEFAULT_MODE );
 		$requires = false;
 
 		if ( MODE_ALL === $mode ) {
 			$requires = true;
 		} elseif ( MODE_ROLES === $mode ) {
-			$protected_roles = get_option( OPTION_PROTECTED_ROLES, array() );
+			$protected_roles = (array) get_option( OPTION_PROTECTED_ROLES, array() );
 			$user            = get_userdata( $user_id );
 
 			if ( ! empty( $protected_roles ) && $user instanceof \WP_User ) {
@@ -428,7 +428,7 @@ class Plugin {
 	 * @param bool $trust_device Whether the user ticked "trust this device".
 	 */
 	private function apply_device_trust( int $user_id, bool $trust_device ): void {
-		if ( get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
+		if ( ! are_trusted_devices_enabled() ) {
 			return;
 		}
 
@@ -520,8 +520,8 @@ class Plugin {
 			// POST with no recognised submit button; render the form.
 		}
 
-		$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
-		$trusted_device_expiry   = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
+		$trusted_devices_enabled = are_trusted_devices_enabled();
+		$trusted_device_expiry   = (int) get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 		$verify_intro            = get_verify_intro();
 
 		require QUICK_2FA_PATH . 'views/verification-page.php';
@@ -593,7 +593,7 @@ class Plugin {
 			return;
 		}
 
-		$mode = get_option( OPTION_MODE, DEFAULT_MODE );
+		$mode = (string) get_option( OPTION_MODE, DEFAULT_MODE );
 
 		if ( MODE_DISABLED === $mode ) {
 			$settings_url = admin_url( 'options-general.php?page=quick-2fa' );

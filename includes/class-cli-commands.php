@@ -275,14 +275,13 @@ class CLI_Commands {
 			$lock_status = 'Unlocked';
 		}
 
-		$last_verified         = get_user_meta( $user->ID, META_LAST_VERIFIED, true );
-		$last_verified_display = $last_verified ? human_time_diff( $last_verified ) . ' ago' : 'Never';
+		$last_verified         = (int) get_user_meta( $user->ID, META_LAST_VERIFIED, true );
+		$last_verified_display = $last_verified > 0 ? human_time_diff( $last_verified ) . ' ago' : 'Never';
 
 		$trusted_devices       = get_user_meta( $user->ID, META_TRUSTED_DEVICES, true );
 		$trusted_devices_count = is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
 
-		$failed_attempts = get_user_meta( $user->ID, META_CODE_ATTEMPTS, true );
-		$failed_attempts = $failed_attempts ? $failed_attempts : 0;
+		$failed_attempts = (int) get_user_meta( $user->ID, META_CODE_ATTEMPTS, true );
 		$status          = array(
 			array(
 				'Field' => 'User',
@@ -550,7 +549,7 @@ class CLI_Commands {
 	 * @param array<string,mixed> $assoc_args Associative arguments.
 	 */
 	public function emergency_disable( array $args, array $assoc_args ): void {
-		$current_mode = get_option( OPTION_MODE, DEFAULT_MODE );
+		$current_mode = (string) get_option( OPTION_MODE, DEFAULT_MODE );
 		if ( MODE_DISABLED === $current_mode ) {
 			\WP_CLI::warning( 'Quick 2FA is already in disabled mode.' );
 			return;

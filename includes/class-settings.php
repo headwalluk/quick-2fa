@@ -361,19 +361,19 @@ class Settings {
 			return;
 		}
 
-		$mode                       = get_option( OPTION_MODE, DEFAULT_MODE );
-		$protected_roles            = get_option( OPTION_PROTECTED_ROLES, get_default_protected_roles() );
-		$verification_period        = get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
-		$code_length                = get_option( OPTION_CODE_LENGTH, DEFAULT_CODE_LENGTH );
-		$code_expiry                = get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
-		$email_from_name            = get_option( OPTION_EMAIL_FROM_NAME, get_bloginfo( 'name' ) );
-		$email_from_address         = get_option( OPTION_EMAIL_FROM_ADDRESS, get_option( 'admin_email' ) );
-		$email_subject              = get_option( OPTION_EMAIL_SUBJECT, __( 'Your verification code', 'quick-2fa' ) );
-		$password_reminders_enabled = get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED );
-		$password_reminder_period   = get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
-		$password_reminder_cooldown = get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
-		$trusted_device_expiry      = get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
-		$lockout_duration           = get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION );
+		$mode                       = (string) get_option( OPTION_MODE, DEFAULT_MODE );
+		$protected_roles            = (array) get_option( OPTION_PROTECTED_ROLES, get_default_protected_roles() );
+		$verification_period        = (int) get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
+		$code_length                = (int) get_option( OPTION_CODE_LENGTH, DEFAULT_CODE_LENGTH );
+		$code_expiry                = (int) get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
+		$email_from_name            = (string) get_option( OPTION_EMAIL_FROM_NAME, get_bloginfo( 'name' ) );
+		$email_from_address         = (string) get_option( OPTION_EMAIL_FROM_ADDRESS, get_option( 'admin_email' ) );
+		$email_subject              = (string) get_option( OPTION_EMAIL_SUBJECT, __( 'Your verification code', 'quick-2fa' ) );
+		$password_reminders_enabled = (bool) filter_var( get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED ), FILTER_VALIDATE_BOOLEAN );
+		$password_reminder_period   = (int) get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
+		$password_reminder_cooldown = (int) get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
+		$trusted_device_expiry      = (int) get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
+		$lockout_duration           = (int) get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION );
 
 		$wp_roles  = wp_roles();
 		$all_roles = $wp_roles->get_names();

@@ -516,7 +516,7 @@ class User_Management {
 	 * @param \WP_User $user User object.
 	 */
 	public function render_profile_section( \WP_User $user ): void {
-		if ( get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ) ) {
+		if ( ! are_trusted_devices_enabled() ) {
 			return;
 		}
 

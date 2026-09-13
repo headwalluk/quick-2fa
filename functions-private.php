@@ -196,6 +196,21 @@ function is_2fa_page(): bool {
 	return isset( $_GET[ QUERY_PARAM ] );
 }
 
+/**
+ * Whether trusted devices are enabled, reading the disable option as a boolean.
+ *
+ * @since 1.4.0
+ * @return bool True unless quick2fa_disable_trusted_devices holds a true value.
+ */
+function are_trusted_devices_enabled(): bool {
+	$disabled = (bool) filter_var(
+		get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ),
+		FILTER_VALIDATE_BOOLEAN
+	);
+
+	return ! $disabled;
+}
+
 // ============================================================================
 // Utility Functions
 // ============================================================================

@@ -107,6 +107,7 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 | `includes/class-password-reminder-handler.php` | Password age tracking, reminder cooldowns |
 | `includes/class-user-management.php` | Users table UI customization, lock/unlock row actions |
 | `includes/class-cli-commands.php` | WP-CLI commands for lock/unlock/status/emergency-disable |
+| `includes/class-github-updater.php` | In-plugin updater: checks GitHub Releases and feeds the WordPress update transient. Holds the `log()` / `log_error()` split described under **Logging** |
 
 ### Data Storage
 
@@ -176,7 +177,9 @@ printf(
 <button><?php esc_html_e( 'Click', 'quick-2fa' ); ?></button>
 ```
 
-Template variables must be prefixed with `q2fa_` to comply with WordPress global naming standards (phpcs requirement).
+phpcs treats a template's scope as global, so variables a template defines itself are prefixed
+`quick_2fa_` (`WordPress.NamingConventions.PrefixAllGlobals`). Variables handed in by the rendering
+method keep their plain names and are listed in the template's `@var` docblock.
 
 ### Login Page Templates
 
