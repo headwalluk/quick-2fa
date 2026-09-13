@@ -9,16 +9,22 @@
 1. Send a test email from any "test email" plugin or via `wp eval 'wp_mail("you@example.com", "test", "test");'`. If that fails, the issue is your `wp_mail()` setup, not Quick 2FA.
 2. Check your spam folder. Verification codes are short transactional emails — some filters flag them.
 3. If you use an SMTP plugin, check its log for delivery errors.
-4. Check the user's security event log for `code_sent` events with `success: false`. That indicates `wp_mail()` returned a failure.
+4. Check the PHP error log for lines starting `Quick_2FA Email_Handler [error]:`. Quick 2FA logs every failed send there, whether or not `WP_DEBUG` is on, with the reason WordPress reported when it gave one.
+5. Check the user's security event log for `code_sent` events with `success: false`. That indicates `wp_mail()` returned a failure.
+
+A code whose email failed is discarded, so reloading the verification page tries to send a fresh one. Each attempt counts towards the limit of 3 codes per 15 minutes.
 
 **Fix:** install a transactional email service (Postmark, SendGrid, AWS SES, Mailgun) and a corresponding WordPress integration. Sending mail straight from PHP via `sendmail` is fragile and frequently lands in spam.
 
 ## I'm being asked to verify on every page load
 
-First, check **Settings → Quick 2FA**:
+First, check whether trusted devices have been turned off. There is no field for this on the settings page; it is the `quick2fa_disable_trusted_devices` option:
 
-- Verification period (days): if this is `0` and trusted devices are disabled, every page load will trigger verification
-- Disable trusted devices: if `true`, every login requires verification (this is by design — see [trusted devices](trusted-devices.md))
+```bash
+wp option get quick2fa_disable_trusted_devices
+```
+
+If it holds a true value (`1`, `true`, `yes` or `on`), device trust is off and users verify once per login session: a code on every login, but not on every page load within a session. See [trusted devices](trusted-devices.md).
 
 If trusted devices are *enabled* and you're still being challenged constantly, the cause is almost always that the **device-trust cookie isn't being kept or sent back**:
 

@@ -149,6 +149,15 @@ const COOKIE_DEVICE_TOKEN = 'quick2fa_device';
 const DEVICE_TOKEN_BYTES  = 32;
 
 /**
+ * Key in a WordPress login session's data recording when that session passed verification.
+ *
+ * Checked when trusted devices are disabled, so each new login session is challenged.
+ *
+ * @since 1.4.0
+ */
+const SESSION_KEY_VERIFIED = 'quick2fa_verified';
+
+/**
  * Transient key prefixes.
  *
  * @since 1.0.0

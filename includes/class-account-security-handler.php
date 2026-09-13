@@ -349,4 +349,42 @@ class Account_Security_Handler {
 	public function clear_trusted_devices(): bool {
 		return delete_user_meta( $this->user_id, META_TRUSTED_DEVICES );
 	}
+
+	/**
+	 * Record that the current login session has passed verification.
+	 *
+	 * @since 1.4.0
+	 */
+	public function mark_current_session_verified(): void {
+		$token = wp_get_session_token();
+
+		if ( '' !== $token ) {
+			$sessions = \WP_Session_Tokens::get_instance( $this->user_id );
+			$session  = $sessions->get( $token );
+
+			// get() returns null for an expired session or a token belonging to another user.
+			if ( is_array( $session ) ) {
+				$session[ SESSION_KEY_VERIFIED ] = time();
+				$sessions->update( $token, $session );
+			}
+		}
+	}
+
+	/**
+	 * Check whether the current login session has passed verification.
+	 *
+	 * @since 1.4.0
+	 * @return bool True when the session carries a verification timestamp.
+	 */
+	public function is_current_session_verified(): bool {
+		$token    = wp_get_session_token();
+		$verified = false;
+
+		if ( '' !== $token ) {
+			$session  = \WP_Session_Tokens::get_instance( $this->user_id )->get( $token );
+			$verified = is_array( $session ) && (int) ( $session[ SESSION_KEY_VERIFIED ] ?? 0 ) > 0;
+		}
+
+		return $verified;
+	}
 }

@@ -89,7 +89,7 @@ A small number of plugin settings have **no UI** in the settings page and must b
 
 ### Disable trusted devices
 
-Force every login to require verification, regardless of any previously-trusted devices:
+Require verification once per login session, regardless of any previously-trusted devices:
 
 ```bash
 wp option update quick2fa_disable_trusted_devices 1

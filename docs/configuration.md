@@ -20,7 +20,7 @@ When **disabled** mode is selected, an admin notice is shown on every admin scre
 
 | Setting | Default | What it does |
 |---------|---------|--------------|
-| Verification period | `3` days | How long a successful verification stays valid (only used when trusted devices are disabled — see [trusted devices](trusted-devices.md)) |
+| Verification period | `3` days | How long a verification trusts the device when "Trust this device" is left unticked. Not used when trusted devices are disabled — see [trusted devices](trusted-devices.md) |
 | Code length | `6` digits | Length of the emailed numeric code |
 | Code expiry | `15` minutes | How long an emailed code remains valid before the user must request a new one |
 
@@ -40,7 +40,7 @@ Quick 2FA can periodically nudge users to change their password. This is indepen
 |---------|---------|--------------|
 | Trusted device expiry | `30` days | How long a "trust this device" tick survives before re-verification is required |
 
-The **disable trusted devices** master switch is currently CLI/database-only — there is no checkbox in the settings UI. To force verification on every login regardless of device, run:
+The **disable trusted devices** master switch is currently CLI/database-only — there is no checkbox in the settings UI. To require verification once per login session, whatever the device, run:
 
 ```bash
 wp option update quick2fa_disable_trusted_devices 1

@@ -247,7 +247,7 @@ class Password_Reminder_Handler {
 			$sessions->update( $current_token, $current_session );
 		}
 
-		// Log the user back in to create a fresh session.
-		wp_set_auth_cookie( $this->user_id, true );
+		// Reissue the auth cookie for the same session token, so the session keeps its verification record.
+		wp_set_auth_cookie( $this->user_id, true, '', $current_token );
 	}
 }

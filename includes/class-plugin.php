@@ -268,16 +268,10 @@ class Plugin {
 	}
 
 	/**
-	 * Check if current user needs verification.
+	 * Check whether the current user must verify before reaching the admin area.
 	 *
-	 * Security model (when trusted devices enabled):
-	 * 1. Unknown devices always require verification (device-based security)
-	 * 2. Trusted devices skip verification until their trust expires (e.g., 30 days)
-	 *
-	 * When trusted devices are disabled, falls back to time-based verification period.
-	 *
-	 * This prevents the security hole where anyone with the password can access
-	 * an account from an unknown device.
+	 * Trusted devices on: an untrusted device is challenged. Trusted devices off: each
+	 * login session is challenged once. See docs/trusted-devices.md.
 	 *
 	 * @since 1.0.0
 	 * @return bool True if verification is needed.
@@ -295,18 +289,15 @@ class Plugin {
 		$needs_verification = true;
 
 		if ( $last_verified > 0 ) {
-			$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
+			$security_handler = new Account_Security_Handler( $user_id );
 
-			if ( $trusted_devices_enabled ) {
-				// Device trust is the primary check. Each trusted device entry carries
-				// its own expiry, so the time-based verification period is not applied
-				// here. Unknown devices fail the trust check and are challenged.
-				$security_handler   = new Account_Security_Handler( $user_id );
+			if ( are_trusted_devices_enabled() ) {
+				// Each trusted device entry carries its own expiry, so no time-based
+				// period applies here. Unknown devices fail the check and are challenged.
 				$needs_verification = ! $security_handler->is_device_trusted();
 			} else {
-				// Trusted devices disabled — fall back to the time-based period.
-				$period_seconds     = (int) get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD ) * DAY_IN_SECONDS;
-				$needs_verification = ( time() - $last_verified ) > $period_seconds;
+				// Trusted devices disabled: every login session must verify once.
+				$needs_verification = ! $security_handler->is_current_session_verified();
 			}
 		}
 

@@ -112,7 +112,7 @@ printf(
 	esc_attr( $const_option_verification_period ),
 	esc_attr( $verification_period ),
 	esc_html_x( 'days', 'unit suffix after a number input', 'quick-2fa' ),
-	esc_html__( 'How often users need to re-verify their identity (1-365 days).', 'quick-2fa' )
+	esc_html__( 'How long a verification trusts the device when "Trust this device" is left unticked (1-365 days). Not used when trusted devices are disabled.', 'quick-2fa' )
 );
 
 printf(

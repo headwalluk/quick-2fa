@@ -70,7 +70,7 @@ msgstr "Omwille van uw veiligheid moeten we uw identiteit verifiëren voordat u 
 msgid "Regular password changes help keep your account secure. We recommend updating your password every 60 days."
 msgstr "Door je wachtwoord regelmatig te wijzigen, blijft je account veilig. We raden je aan je wachtwoord elke 60 dagen te wijzigen."
 
-#: includes/class-email-handler.php:45
+#: includes/class-email-handler.php:59
 msgid "Failed to send verification email. Please contact your site administrator."
 msgstr "Het is niet gelukt om de verificatiemail te versturen. Neem contact op met de beheerder van de site."
 
@@ -78,55 +78,55 @@ msgstr "Het is niet gelukt om de verificatiemail te versturen. Neem contact op m
 msgid "Please enter a password."
 msgstr "Voer een wachtwoord in."
 
-#: includes/class-plugin.php:232
+#: includes/class-plugin.php:221
 msgid "Your account has been locked. Please contact your site administrator."
 msgstr "Uw account is geblokkeerd. Neem contact op met de beheerder van de site."
 
 #. translators: %s: Time remaining until unlock
-#: includes/class-plugin.php:236
+#: includes/class-plugin.php:225
 #, php-format
 msgid "Your account has been locked. Please try again in %s."
 msgstr "Je account is geblokkeerd. Probeer het over %s nog eens."
 
-#: includes/class-plugin.php:264
+#: includes/class-plugin.php:253
 msgid "Account Locked"
 msgstr "Account geblokkeerd"
 
-#: includes/class-plugin.php:425
+#: includes/class-plugin.php:403
 msgid "Invalid action"
 msgstr "Ongeldige actie"
 
-#: includes/class-plugin.php:425
-#: includes/class-plugin.php:475
-#: includes/class-plugin.php:553
+#: includes/class-plugin.php:403
+#: includes/class-plugin.php:453
+#: includes/class-plugin.php:536
 msgctxt "error page title"
 msgid "Error"
 msgstr "Fout"
 
+#: includes/class-plugin.php:463
 #: includes/class-plugin.php:485
-#: includes/class-plugin.php:507
-#: includes/class-plugin.php:568
-#: includes/class-plugin.php:580
+#: includes/class-plugin.php:551
+#: includes/class-plugin.php:564
 msgid "Security check failed. Please try again."
 msgstr "De veiligheidscontrole is mislukt. Probeer het nog eens."
 
-#: includes/class-plugin.php:490
+#: includes/class-plugin.php:468
 msgid "Please enter the verification code."
 msgstr "Voer de verificatiecode in."
 
-#: includes/class-plugin.php:514
+#: includes/class-plugin.php:492
 msgid "A new verification code has been sent to your email."
 msgstr "Er is een nieuwe verificatiecode naar je e-mailadres verzonden."
 
-#: includes/class-plugin.php:608
+#: includes/class-plugin.php:594
 msgid "Quick 2FA is currently disabled."
 msgstr "Quick 2FA is momenteel uitgeschakeld."
 
-#: includes/class-plugin.php:609
+#: includes/class-plugin.php:595
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "Uw beheerdersgedeelte is niet beveiligd met tweefactorauthenticatie."
 
-#: includes/class-plugin.php:611
+#: includes/class-plugin.php:597
 msgid "Enable 2FA"
 msgstr "2FA inschakelen"
 
@@ -143,71 +143,71 @@ msgstr "Selecteer rollen..."
 msgid "Lock Status"
 msgstr "Vergrendelingsstatus"
 
-#: includes/class-user-management.php:111
+#: includes/class-user-management.php:110
 msgid "Not locked out"
 msgstr "Niet buitengesloten"
 
-#: includes/class-user-management.php:169
+#: includes/class-user-management.php:171
 msgid "Locked Out"
 msgstr "Buiten gesloten"
 
-#: includes/class-user-management.php:181
+#: includes/class-user-management.php:183
 msgid "Not Locked Out"
 msgstr "Niet buitengesloten"
 
-#: includes/class-user-management.php:271
+#: includes/class-user-management.php:275
 msgctxt "verb; user row action"
 msgid "Unlock"
 msgstr "Ontgrendelen"
 
-#: includes/class-user-management.php:283
+#: includes/class-user-management.php:287
 msgctxt "verb; user row action"
 msgid "Lock Out"
 msgstr "Vergrendelen"
-
-#: includes/class-user-management.php:299
-#: includes/class-user-management.php:355
-#: includes/class-user-management.php:553
-#: includes/class-user-management.php:599
-msgid "Security check failed."
-msgstr "De veiligheidscontrole is mislukt."
 
 #: includes/class-user-management.php:303
 #: includes/class-user-management.php:359
 #: includes/class-user-management.php:557
 #: includes/class-user-management.php:603
+msgid "Security check failed."
+msgstr "De veiligheidscontrole is mislukt."
+
+#: includes/class-user-management.php:307
+#: includes/class-user-management.php:363
+#: includes/class-user-management.php:561
+#: includes/class-user-management.php:607
 msgid "You do not have permission to perform this action."
 msgstr "Je hebt geen toestemming om deze handeling uit te voeren."
 
-#: includes/class-user-management.php:307
+#: includes/class-user-management.php:311
 msgid "You cannot lock out your own account."
 msgstr "Je kunt je eigen account niet blokkeren."
 
-#: includes/class-user-management.php:312
-#: includes/class-user-management.php:364
-#: includes/class-user-management.php:562
-#: includes/class-user-management.php:608
+#: includes/class-user-management.php:316
+#: includes/class-user-management.php:368
+#: includes/class-user-management.php:566
+#: includes/class-user-management.php:612
 msgid "Invalid user."
 msgstr "Ongeldige gebruiker."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:334
+#: includes/class-user-management.php:338
 #, php-format
 msgid "User %s has been locked out."
 msgstr "Gebruiker %s is geblokkeerd."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:384
+#: includes/class-user-management.php:388
 #, php-format
 msgid "User %s has been unlocked."
 msgstr "Gebruiker %s is ontgrendeld."
 
-#: includes/class-user-management.php:428
+#: includes/class-user-management.php:432
 msgid "Locked out (manual)"
 msgstr "Vergrendeld (handmatig)"
 
 #. translators: %s: Formatted date and time
-#: includes/class-user-management.php:439
+#: includes/class-user-management.php:443
 #, php-format
 msgid "Locked out until %s"
 msgstr "Vergrendeld tot %s"
@@ -220,16 +220,16 @@ msgstr "Er zijn te veel verificatiecodes aangevraagd. Wacht nog een paar seconde
 msgid "User not found."
 msgstr "Gebruiker niet gevonden."
 
-#: includes/class-verification-code-handler.php:285
+#: includes/class-verification-code-handler.php:288
 msgid "No verification code found. Please request a new code."
 msgstr "Er is geen verificatiecode gevonden. Vraag een nieuwe code aan."
 
-#: includes/class-verification-code-handler.php:246
+#: includes/class-verification-code-handler.php:249
 msgid "Too many failed verification attempts. Your account has been temporarily locked for security."
 msgstr "Er zijn te veel mislukte verificatiepogingen gedaan. Je account is om veiligheidsredenen tijdelijk geblokkeerd."
 
 #. translators: %d: number of attempts remaining
-#: includes/class-verification-code-handler.php:336
+#: includes/class-verification-code-handler.php:339
 #, php-format
 msgid "Invalid verification code. You have %d attempt remaining."
 msgid_plural "Invalid verification code. You have %d attempts remaining."
@@ -394,10 +394,6 @@ msgctxt "unit suffix after a number input"
 msgid "days"
 msgstr "dagen"
 
-#: views/settings-page.php:115
-msgid "How often users need to re-verify their identity (1-365 days)."
-msgstr "Hoe vaak gebruikers hun identiteit opnieuw moeten verifiëren (1–365 dagen)."
-
 #: views/settings-page.php:120
 msgid "Code Length"
 msgstr "Codelengte"
@@ -547,8 +543,8 @@ msgid_plural "Password must be at least %d characters long."
 msgstr[0] "Het wachtwoord moet minimaal %d tekens lang zijn."
 msgstr[1] "Het wachtwoord moet uit minimaal %d tekens bestaan."
 
-#: includes/class-plugin.php:474
-#: includes/class-plugin.php:552
+#: includes/class-plugin.php:452
+#: includes/class-plugin.php:535
 msgid "Your user account could not be loaded. Please sign in again."
 msgstr "Uw gebruikersaccount kon niet worden geladen. Log alstublieft opnieuw in."
 
@@ -561,7 +557,7 @@ msgstr[0] "Er zijn te veel verificatiecodes aangevraagd. Wacht %d minuut voordat
 msgstr[1] "Er zijn te veel verificatiecodes aangevraagd. Wacht %d minuten voordat u een nieuwe code aanvraagt."
 
 #. translators: %d: number of minutes until unlock
-#: includes/class-verification-code-handler.php:271
+#: includes/class-verification-code-handler.php:274
 #, php-format
 msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minute."
 msgid_plural "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
@@ -569,7 +565,7 @@ msgstr[0] "Uw account is tijdelijk geblokkeerd vanwege te veel mislukte pogingen
 msgstr[1] "Uw account is tijdelijk geblokkeerd vanwege te veel mislukte pogingen. Probeer het over %d minuten opnieuw."
 
 #. translators: %d: number of minutes until expiry
-#: includes/class-verification-code-handler.php:297
+#: includes/class-verification-code-handler.php:300
 #, php-format
 msgid "Your verification code has expired. Codes are valid for %d minute. Please request a new code."
 msgid_plural "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
@@ -583,3 +579,7 @@ msgid "It's been %d day since you last changed your password. For your security,
 msgid_plural "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
 msgstr[0] "Het is %d dag geleden dat u uw wachtwoord voor het laatst hebt gewijzigd. Voor uw veiligheid raden wij u aan dit regelmatig bij te werken."
 msgstr[1] "Het is %d dagen geleden dat u uw wachtwoord voor het laatst hebt gewijzigd. Voor uw veiligheid raden wij u aan het regelmatig bij te werken."
+
+#: views/settings-page.php:115
+msgid "How long a verification trusts the device when \"Trust this device\" is left unticked (1-365 days). Not used when trusted devices are disabled."
+msgstr "Hoe lang een verificatie het apparaat vertrouwt wanneer het vakje ‘Dit apparaat vertrouwen’ niet is aangevinkt (1–365 dagen). Wordt niet gebruikt wanneer vertrouwde apparaten zijn uitgeschakeld."

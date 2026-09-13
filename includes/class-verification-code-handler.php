@@ -345,6 +345,7 @@ class Verification_Code_Handler {
 			}
 		} else {
 			update_user_meta( $this->user_id, META_LAST_VERIFIED, time() );
+			$security->mark_current_session_verified();
 			$this->cleanup();
 
 			$security->log_event(

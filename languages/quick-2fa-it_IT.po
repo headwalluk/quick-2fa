@@ -70,7 +70,7 @@ msgstr "Per motivi di sicurezza, dobbiamo verificare la tua identità prima che 
 msgid "Regular password changes help keep your account secure. We recommend updating your password every 60 days."
 msgstr "Cambiare regolarmente la password contribuisce a garantire la sicurezza del tuo account. Ti consigliamo di aggiornare la password ogni 60 giorni."
 
-#: includes/class-email-handler.php:45
+#: includes/class-email-handler.php:59
 msgid "Failed to send verification email. Please contact your site administrator."
 msgstr "Impossibile inviare l'e-mail di verifica. Contatta l'amministratore del sito."
 
@@ -78,55 +78,55 @@ msgstr "Impossibile inviare l'e-mail di verifica. Contatta l'amministratore del 
 msgid "Please enter a password."
 msgstr "Inserisci una password."
 
-#: includes/class-plugin.php:232
+#: includes/class-plugin.php:221
 msgid "Your account has been locked. Please contact your site administrator."
 msgstr "Il tuo account è stato bloccato. Contatta l'amministratore del sito."
 
 #. translators: %s: Time remaining until unlock
-#: includes/class-plugin.php:236
+#: includes/class-plugin.php:225
 #, php-format
 msgid "Your account has been locked. Please try again in %s."
 msgstr "Il tuo account è stato bloccato. Riprova tra %s."
 
-#: includes/class-plugin.php:264
+#: includes/class-plugin.php:253
 msgid "Account Locked"
 msgstr "Account bloccato"
 
-#: includes/class-plugin.php:425
+#: includes/class-plugin.php:403
 msgid "Invalid action"
 msgstr "Azione non valida"
 
-#: includes/class-plugin.php:425
-#: includes/class-plugin.php:475
-#: includes/class-plugin.php:553
+#: includes/class-plugin.php:403
+#: includes/class-plugin.php:453
+#: includes/class-plugin.php:536
 msgctxt "error page title"
 msgid "Error"
 msgstr "Errore"
 
+#: includes/class-plugin.php:463
 #: includes/class-plugin.php:485
-#: includes/class-plugin.php:507
-#: includes/class-plugin.php:568
-#: includes/class-plugin.php:580
+#: includes/class-plugin.php:551
+#: includes/class-plugin.php:564
 msgid "Security check failed. Please try again."
 msgstr "Controllo di sicurezza non riuscito. Riprovare."
 
-#: includes/class-plugin.php:490
+#: includes/class-plugin.php:468
 msgid "Please enter the verification code."
 msgstr "Inserisci il codice di verifica."
 
-#: includes/class-plugin.php:514
+#: includes/class-plugin.php:492
 msgid "A new verification code has been sent to your email."
 msgstr "Ti è stato inviato un nuovo codice di verifica al tuo indirizzo e-mail."
 
-#: includes/class-plugin.php:608
+#: includes/class-plugin.php:594
 msgid "Quick 2FA is currently disabled."
 msgstr "La verifica a due fattori rapida (2FA) è attualmente disattivata."
 
-#: includes/class-plugin.php:609
+#: includes/class-plugin.php:595
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "La tua area di amministrazione non è protetta dall'autenticazione a due fattori."
 
-#: includes/class-plugin.php:611
+#: includes/class-plugin.php:597
 msgid "Enable 2FA"
 msgstr "Abilita l'autenticazione a due fattori (2FA)"
 
@@ -143,71 +143,71 @@ msgstr "Seleziona i ruoli..."
 msgid "Lock Status"
 msgstr "Stato del blocco"
 
-#: includes/class-user-management.php:111
+#: includes/class-user-management.php:110
 msgid "Not locked out"
 msgstr "Non bloccato"
 
-#: includes/class-user-management.php:169
+#: includes/class-user-management.php:171
 msgid "Locked Out"
 msgstr "Chiuso fuori"
 
-#: includes/class-user-management.php:181
+#: includes/class-user-management.php:183
 msgid "Not Locked Out"
 msgstr "Non escluso"
 
-#: includes/class-user-management.php:271
+#: includes/class-user-management.php:275
 msgctxt "verb; user row action"
 msgid "Unlock"
 msgstr "Sblocca"
 
-#: includes/class-user-management.php:283
+#: includes/class-user-management.php:287
 msgctxt "verb; user row action"
 msgid "Lock Out"
 msgstr "Blocca"
-
-#: includes/class-user-management.php:299
-#: includes/class-user-management.php:355
-#: includes/class-user-management.php:553
-#: includes/class-user-management.php:599
-msgid "Security check failed."
-msgstr "Controllo di sicurezza non superato."
 
 #: includes/class-user-management.php:303
 #: includes/class-user-management.php:359
 #: includes/class-user-management.php:557
 #: includes/class-user-management.php:603
+msgid "Security check failed."
+msgstr "Controllo di sicurezza non superato."
+
+#: includes/class-user-management.php:307
+#: includes/class-user-management.php:363
+#: includes/class-user-management.php:561
+#: includes/class-user-management.php:607
 msgid "You do not have permission to perform this action."
 msgstr "Non disponi dell'autorizzazione necessaria per eseguire questa operazione."
 
-#: includes/class-user-management.php:307
+#: includes/class-user-management.php:311
 msgid "You cannot lock out your own account."
 msgstr "Non è possibile bloccare il proprio account."
 
-#: includes/class-user-management.php:312
-#: includes/class-user-management.php:364
-#: includes/class-user-management.php:562
-#: includes/class-user-management.php:608
+#: includes/class-user-management.php:316
+#: includes/class-user-management.php:368
+#: includes/class-user-management.php:566
+#: includes/class-user-management.php:612
 msgid "Invalid user."
 msgstr "Utente non valido."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:334
+#: includes/class-user-management.php:338
 #, php-format
 msgid "User %s has been locked out."
 msgstr "L'utente %s è stato bloccato."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:384
+#: includes/class-user-management.php:388
 #, php-format
 msgid "User %s has been unlocked."
 msgstr "L'utente %s è stato sbloccato."
 
-#: includes/class-user-management.php:428
+#: includes/class-user-management.php:432
 msgid "Locked out (manual)"
 msgstr "Blocco esterno (manuale)"
 
 #. translators: %s: Formatted date and time
-#: includes/class-user-management.php:439
+#: includes/class-user-management.php:443
 #, php-format
 msgid "Locked out until %s"
 msgstr "Bloccato fino alle %s"
@@ -220,16 +220,16 @@ msgstr "Sono stati richiesti troppi codici di verifica. Attendi qualche secondo 
 msgid "User not found."
 msgstr "Utente non trovato."
 
-#: includes/class-verification-code-handler.php:285
+#: includes/class-verification-code-handler.php:288
 msgid "No verification code found. Please request a new code."
 msgstr "Non è stato trovato alcun codice di verifica. Richiedi un nuovo codice."
 
-#: includes/class-verification-code-handler.php:246
+#: includes/class-verification-code-handler.php:249
 msgid "Too many failed verification attempts. Your account has been temporarily locked for security."
 msgstr "Troppi tentativi di verifica falliti. Il tuo account è stato temporaneamente bloccato per motivi di sicurezza."
 
 #. translators: %d: number of attempts remaining
-#: includes/class-verification-code-handler.php:336
+#: includes/class-verification-code-handler.php:339
 #, php-format
 msgid "Invalid verification code. You have %d attempt remaining."
 msgid_plural "Invalid verification code. You have %d attempts remaining."
@@ -394,10 +394,6 @@ msgctxt "unit suffix after a number input"
 msgid "days"
 msgstr "giorni"
 
-#: views/settings-page.php:115
-msgid "How often users need to re-verify their identity (1-365 days)."
-msgstr "Con quale frequenza gli utenti devono confermare nuovamente la propria identità (da 1 a 365 giorni)."
-
 #: views/settings-page.php:120
 msgid "Code Length"
 msgstr "Lunghezza del codice"
@@ -547,8 +543,8 @@ msgid_plural "Password must be at least %d characters long."
 msgstr[0] "La password deve contenere almeno %d caratteri."
 msgstr[1] "La password deve contenere almeno %d caratteri."
 
-#: includes/class-plugin.php:474
-#: includes/class-plugin.php:552
+#: includes/class-plugin.php:452
+#: includes/class-plugin.php:535
 msgid "Your user account could not be loaded. Please sign in again."
 msgstr "Impossibile caricare il tuo account utente. Effettua nuovamente l'accesso."
 
@@ -561,7 +557,7 @@ msgstr[0] "Sono stati richiesti troppi codici di verifica. Attendere %d minuto p
 msgstr[1] "Sono stati richiesti troppi codici di verifica. Attendere %d minuti prima di richiedere un altro codice."
 
 #. translators: %d: number of minutes until unlock
-#: includes/class-verification-code-handler.php:271
+#: includes/class-verification-code-handler.php:274
 #, php-format
 msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minute."
 msgid_plural "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
@@ -569,7 +565,7 @@ msgstr[0] "Il tuo account è stato temporaneamente bloccato a causa di un numero
 msgstr[1] "Il tuo account è stato temporaneamente bloccato a causa di un numero eccessivo di tentativi falliti. Riprova tra %d minuti."
 
 #. translators: %d: number of minutes until expiry
-#: includes/class-verification-code-handler.php:297
+#: includes/class-verification-code-handler.php:300
 #, php-format
 msgid "Your verification code has expired. Codes are valid for %d minute. Please request a new code."
 msgid_plural "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
@@ -583,3 +579,7 @@ msgid "It's been %d day since you last changed your password. For your security,
 msgid_plural "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
 msgstr[0] "Sono passati %d giorni dall'ultima modifica della password. Per la tua sicurezza, ti consigliamo di aggiornarla regolarmente."
 msgstr[1] "Sono passati %d giorni dall'ultima volta che hai cambiato la password. Per la tua sicurezza, ti consigliamo di aggiornarla regolarmente."
+
+#: views/settings-page.php:115
+msgid "How long a verification trusts the device when \"Trust this device\" is left unticked (1-365 days). Not used when trusted devices are disabled."
+msgstr "Per quanto tempo un sistema di verifica considera affidabile il dispositivo quando l'opzione \"Considera affidabile questo dispositivo\" non è selezionata (da 1 a 365 giorni). Non viene utilizzata quando i dispositivi considerati affidabili sono disabilitati."

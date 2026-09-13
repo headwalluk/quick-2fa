@@ -89,7 +89,7 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 1. User logs in → `admin_init` fires → `Plugin::check_verification()` checks if user needs 2FA
 2. If yes → stores return URL in transient (`q2fa_return_{user_id}`, 5 min expiry) → redirect to `wp-login.php?q2fa=verify`
 3. `login_init` hook fires → renders verification form, generates code, emails user
-4. User submits code → `Verification_Code_Handler::verify()` → success sets trusted device → retrieves return URL from transient → redirect
+4. User submits code → `Verification_Code_Handler::verify()` → success records the verification against the login session → optional trusted device → retrieves return URL from transient → redirect
 5. After verification → `check_password_reminder()` may redirect to `wp-login.php?q2fa=password` if password is aged
 
 ### Key Files
@@ -119,9 +119,10 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 
 - **Code generation:** `random_int()` for cryptographically secure codes
 - **Code storage:** hashed with `wp_hash_password()`, verified with `wp_check_password()` — never store plaintext
-- **Rate limiting:** max 3 code generation requests per 15 min, max 5 verification attempts per session
-- **Account locking:** 10 failed attempts in 1 hour triggers 1-hour lockout (all configurable via constants)
+- **Rate limiting:** at most 3 codes per user per 15 minutes (`RATE_LIMIT_CODE_GENERATION_MAX` / `_WINDOW`)
+- **Account locking:** the 5th failed attempt against a code locks the account (`RATE_LIMIT_VERIFICATION_MAX`); storing a new code resets the count. The lock lasts for the *Lockout duration* setting (`OPTION_LOCKOUT_DURATION`, 60 minutes by default)
 - **Device trust:** a random token set as a secure cookie (`HttpOnly`, `SameSite=Lax`, `Secure` on HTTPS); only the token's SHA-256 is stored in user meta, expiring after a configurable TTL. Identity is the cookie, **not** IP/User-Agent (those churn on real connections and are log-only). See `dev-notes/00-project-tracker.md` (v1.2.0) and `docs/trusted-devices.md`
+- **Per-session verification:** a successful `verify()` stamps `SESSION_KEY_VERIFIED` into the current WordPress login session (`WP_Session_Tokens`). With trusted devices disabled that stamp is the check, so each new login session is challenged once. `Password_Reminder_Handler::maintain_session()` reissues the auth cookie for the same token, so a password change keeps the stamp
 - **Session management:** on password change, destroy other sessions via `WP_Session_Tokens::destroy_others()` while keeping current session alive
 
 ### 2FA Modes

@@ -11,7 +11,7 @@ When trusted devices are **enabled** (default), the request flow is:
 
 After a successful verification, the user can tick "trust this device". Quick 2FA then mints a random token, sends it to the browser as a secure cookie, and records the token's hash against an expiry (by default 30 days). Leaving the box unticked still grants *short-term* trust — a cookie that lasts for the verification period (3 days by default) — so the user isn't challenged on every single login within that window.
 
-When trusted devices are **disabled**, every login requires verification, full stop. Use this on high-risk sites where convenience is not a priority.
+When trusted devices are **disabled**, every login session requires verification. The result is recorded against that WordPress login session, so logging in again — on any device, or after the session expires — asks for a new code, while pages within a verified session do not. Use this on high-risk sites where convenience is not a priority.
 
 ## Why device-based, not just time-based?
 
@@ -37,7 +37,7 @@ Each trusted-device entry stores its own expiry timestamp, set when the device w
 - If the cookie token matches an entry **and** it hasn't expired → trusted, skip verification
 - If it matches **but** has expired → the entry is silently removed and verification is required
 
-There's no separate "verification period" check overlaid on top of trusted devices — the per-device expiry is the only timer. (When trusted devices are *disabled*, the verification period becomes the active timer instead.)
+There's no separate "verification period" check overlaid on top of trusted devices — the per-device expiry is the only timer. (When trusted devices are *disabled*, there is no timer at all: each login session verifies once.)
 
 ## Revoking devices
 
@@ -58,7 +58,7 @@ Lock-outs **do not** wipe trusted devices automatically — when an admin unlock
 
 ## Disabling the feature entirely
 
-The disable-trusted-devices toggle is **CLI-only** for now — there's no settings UI checkbox. To force every login to require verification:
+The disable-trusted-devices toggle is **CLI-only** for now — there's no settings UI checkbox. To require verification once per login session:
 
 ```bash
 wp option update quick2fa_disable_trusted_devices 1
