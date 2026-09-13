@@ -114,15 +114,9 @@ class Github_Updater {
 	}
 
 	/**
-	 * Resolve the installed version that WordPress itself is working from.
+	 * Resolve the installed version from the file header, as recorded in the update transient.
 	 *
-	 * WordPress builds the transient's checked list from the plugin file
-	 * header, and that is the number it shows in the admin and compares
-	 * against new_version to decide whether to draw the update row. Comparing
-	 * anything else here — such as the hand-maintained QUICK_2FA_VERSION —
-	 * lets a stale constant advertise an update for a release that is already
-	 * installed, which the update can never clear because reinstalling ships
-	 * the same stale constant again.
+	 * Reads the header rather than QUICK_2FA_VERSION; see CHANGELOG.md, 1.3.0.
 	 *
 	 * @since 1.3.0
 	 *

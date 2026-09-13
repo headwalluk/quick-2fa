@@ -25,6 +25,7 @@ admin_init (priority 1)
         │     ├── Application Password auth? → skip
         │     ├── User Switching active? → skip
         │     ├── already on a ?q2fa= page? → skip (no loops)
+        │     ├── theme/plugin editor loopback? → skip
         │     └── plugin in disabled mode? → skip
         │
         ├── Account locked? → wp_logout() + wp_die()

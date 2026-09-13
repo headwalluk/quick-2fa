@@ -144,17 +144,9 @@ class Plugin {
 	}
 
 	/**
-	 * Record the time of a successful login, for every user.
+	 * Record the time of a successful login on wp_login, for every user.
 	 *
-	 * Hooked to wp_login, so this covers front-end logins as well as wp-admin.
-	 * META_LAST_VERIFIED is not a substitute: it is only written on the login
-	 * paths 2FA actually guards, so it never lands for a customer signing in at
-	 * /my-account/. Recording here is independent of the verification flow, of
-	 * the configured 2FA mode, and of whether the user is a protected role.
-	 *
-	 * The second parameter is optional and re-resolved when absent. Some plugins
-	 * fire wp_login with only the login name, and a required WP_User parameter
-	 * would raise ArgumentCountError on the login path for every user on the site.
+	 * See docs/how-it-works.md, "Last-login recording".
 	 *
 	 * @since 1.3.0
 	 *
@@ -162,6 +154,7 @@ class Plugin {
 	 * @param \WP_User|null $user       The user who logged in, when the caller supplies it.
 	 */
 	public function record_last_login( string $user_login, ?\WP_User $user = null ): void {
+		// Some plugins fire wp_login with only the login name, so $user is optional.
 		if ( ! $user instanceof \WP_User ) {
 			$user = get_user_by( 'login', $user_login );
 		}
@@ -180,10 +173,8 @@ class Plugin {
 		if ( $user instanceof \WP_User && apply_filters( 'quick2fa_record_last_login', true, $user ) ) {
 			$now = time();
 
-			// Stamp the epoch on the first login recorded on this site. Without it a
-			// missing timestamp is ambiguous: "never logged in" and "last logged in
-			// before the site started recording" are indistinguishable. add_option()
-			// is a no-op once the value exists.
+			// The first recorded login stamps the site's recording epoch; add_option()
+			// is a no-op once it exists. See docs/developers/extending.md.
 			add_option( OPTION_LAST_LOGIN_SINCE, $now, '', 'yes' );
 
 			update_user_meta( $user->ID, META_LAST_LOGIN, $now );
@@ -216,11 +207,7 @@ class Plugin {
 	}
 
 	/**
-	 * Build the message explaining why an account is locked.
-	 *
-	 * Shared by the login filter and the admin-area check. Both used to carry
-	 * their own copy, including the permanent-lock threshold, so a wording or
-	 * threshold change had to be made twice to stay consistent.
+	 * Build the locked-account message for the login filter and the admin-area check.
 	 *
 	 * @since 1.3.0
 	 * @param int                      $user_id  User whose lock is being described.
@@ -354,12 +341,7 @@ class Plugin {
 	}
 
 	/**
-	 * Check if current user needs password reminder.
-	 *
-	 * Delegates to Password_Reminder_Handler, which owns the rule. This method
-	 * previously reimplemented it inline — including the registration-date
-	 * fallback and the cooldown — while the handler's own needs_reminder() sat
-	 * unused, so the same policy existed twice and could drift.
+	 * Check if the current user is due a password reminder.
 	 *
 	 * @since 1.0.0
 	 * @return bool True if password reminder is needed.

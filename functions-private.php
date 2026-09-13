@@ -333,17 +333,16 @@ function is_editor_loopback_request(): bool {
 }
 
 /**
- * Check if 2FA should be skipped for current request.
+ * Check if 2FA should be skipped for the current request.
  *
- * The branches are ordered cheapest-first, and each records why it matched.
- * $skip_reason is not returned, but it makes every branch self-labelling and
- * gives a single place to inspect when a request is unexpectedly skipped --
- * previously there was no way to tell which of ten guards had fired.
+ * See docs/how-it-works.md, "What bypasses 2FA".
  *
  * @since 1.0.0
  * @return bool True if 2FA should be skipped.
  */
 function should_skip_check(): bool {
+	// Branches run cheapest-first. $skip_reason names the branch that matched,
+	// for inspection when debugging; it is not returned.
 	$skip_reason = '';
 
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
