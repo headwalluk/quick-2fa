@@ -4,6 +4,24 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] — 2026-09-13
+
+### Added
+
+- **With trusted devices disabled, every login session must now verify.** A successful verification is recorded in that WordPress login session's own data, and the check runs against it. Each new login, on any device, asks for a code, while pages within a verified session do not, and logging out ends the session and its record. Previously, disabling trusted devices fell back to the verification period: a user who had verified within the last 3 days (by default) could log in again from any device without a challenge, although the documentation said every login required verification. Changing password from the password-reminder page now reissues the auth cookie for the current session, as WordPress's own profile page does, so it keeps its verification. **On sites with trusted devices disabled, every existing session is challenged once after upgrading.** Sites using trusted devices, the default, see no change.
+
+### Fixed
+
+- **Storing `false` in `quick2fa_disable_trusted_devices` disabled trusted devices.** The option was read as plain truthy, so `wp option update quick2fa_disable_trusted_devices false` stored the string `"false"` and turned device trust off. It is now read as a boolean: `1`, `true`, `yes` and `on` disable device trust, and anything else leaves it on.
+- **A failed verification email left a code behind and logged nothing.** The code was stored before sending, so after a failure a reload found a valid code, sent nothing and showed no error. The undelivered code is now discarded so the next page load tries again, and every failed send is written to the PHP error log with the reason WordPress reported, whether or not `WP_DEBUG` is on.
+- Option and user-meta values are cast to their expected type where they are read. A malformed protected-roles option could previously throw a `TypeError` in the role check.
+
+### Changed
+
+- The Verification Period setting's help text now says what the setting does: how long a verification trusts the device when "Trust this device" is left unticked. Translated in all eight locales.
+- Removed three unused lockout constants describing a 10-attempts-per-hour policy the plugin never enforced. Lockout is unchanged: the 5th failed attempt against a code locks the account for the Lockout duration setting.
+- Documentation corrected for trusted-device behaviour, email-failure troubleshooting and `CLAUDE.md`.
+
 ## [1.3.2] — 2026-09-13
 
 ### Fixed

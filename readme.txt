@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 1.3.2
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,9 @@ See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY
 
 == Changelog ==
 
+= 1.4.0 =
+New: with trusted devices disabled, every login session must verify. Previously a recent verification let a user log in again from any device until the verification period ran out. On sites with trusted devices disabled, existing sessions are challenged once after upgrading. Fixes: storing `false` in `quick2fa_disable_trusted_devices` no longer disables trusted devices, and a failed verification email no longer leaves an undelivered code behind, and is now logged. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
+
 = 1.3.2 =
 Fix: a new password set from the password-reminder page could be saved with characters removed — anything resembling an HTML tag, a `%` followed by two hex digits, or repeated spaces — leaving the user unable to log in with the password they chose. Tested up to WordPress 7.1. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
@@ -88,6 +91,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Sites with trusted devices disabled now require verification once per login session, and existing sessions are challenged once after upgrading. Also fixes failed code emails and a boolean option bug. No change for sites using trusted devices.
 
 = 1.3.2 =
 Fixes passwords set from the password-reminder page being saved with some characters removed, which could leave users unable to log in with their new password. Recommended for all sites.
