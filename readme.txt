@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,9 @@ On GitHub: [headwalluk/quick-2fa](https://github.com/headwalluk/quick-2fa). The 
 See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY.md) in the repository for the responsible-disclosure process.
 
 == Changelog ==
+
+= 1.3.1 =
+Maintenance release that tidies the code structure and comments. It changes no behaviour, adds no settings and leaves translations untouched. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 = 1.3.0 =
 Breaking (WP-CLI only): five subcommands renamed to hyphenated forms (`lock-all`, `unlock-all`, `list-locked`, `clear-devices`, `emergency-disable`) — these are the names the docs always showed, but the underscore forms were the ones that worked. Minimum PHP is now 8.2. New: Quick 2FA now records when each user last logged in, for every user on the site, not just those who go through 2FA. WordPress itself keeps no such record. The timestamp is stored as user meta (`_quick2fa_last_login`) and is there for site owners and integrations to read — nothing in the plugin's own behaviour changes, and there is no new setting. Fix: the in-plugin updater no longer shows a permanent "update available" notice for a version that is already installed — sites running 1.2.2 were seeing this on every admin page load. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.

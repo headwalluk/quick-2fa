@@ -4,6 +4,15 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] — 2026-09-13
+
+### Changed
+
+- **No behaviour changes.** This release tidies code structure and comments only. Site owners and integrations won't notice anything, and no translatable strings changed.
+- Every `if`/`elseif` chain now ends in an explicit `else`, so each remaining case is spelled out instead of falling through. To allow this, `phpcs.xml` accepts `if`/`elseif`/`else` branches that contain only a comment. Empty `catch`, loop and `switch` bodies are still errors.
+- Five docblocks that told the history behind a change now say what the function does, and point to `docs/` or this changelog for the reasoning.
+- The request-flow diagram in `docs/how-it-works.md` now shows the theme/plugin editor loopback bypass, which the bypass table already listed.
+
 ## [1.3.0] — 2026-09-12
 
 ### Added
