@@ -100,7 +100,6 @@ class User_Management {
 		}
 
 		$status = $this->get_user_lockout_status( $user_id );
-		$markup = '<span style="color: #dcdcde;">—</span>';
 
 		if ( 'locked' === $status ) {
 			$locked_until_raw = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
@@ -109,6 +108,9 @@ class User_Management {
 			$markup           = sprintf( '<span class="dashicons dashicons-lock" style="color: #d63638;" title="%s"></span>', esc_attr( $tooltip ) );
 		} elseif ( 'unlocked' === $status ) {
 			$markup = '<span class="dashicons dashicons-yes-alt" style="color: #00a32a;" title="' . esc_attr__( 'Not locked out', 'quick-2fa' ) . '"></span>';
+		} else {
+			// Unrecognised status.
+			$markup = '<span style="color: #dcdcde;">—</span>';
 		}
 
 		return $markup;
@@ -235,6 +237,8 @@ class User_Management {
 					),
 				)
 			);
+		} else {
+			// No filter, or an unrecognised value; the query is left unchanged.
 		}
 	}
 

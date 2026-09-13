@@ -222,6 +222,8 @@ function get_ip_address(): string {
 		$ip        = trim( $ips[0] );
 	} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
 		$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+	} else {
+		// No address available; $ip stays empty.
 	}
 
 	// Validate IP address format.
@@ -366,6 +368,8 @@ function should_skip_check(): bool {
 		$skip_reason = 'editor-loopback';
 	} elseif ( MODE_DISABLED === get_option( OPTION_MODE, DEFAULT_MODE ) ) {
 		$skip_reason = 'mode-disabled';
+	} else {
+		// No skip condition matched; 2FA applies.
 	}
 
 	return '' !== $skip_reason;

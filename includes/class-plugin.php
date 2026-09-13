@@ -138,6 +138,8 @@ class Plugin {
 			add_option( OPTION_VERSION, QUICK_2FA_VERSION, '', 'yes' );
 		} elseif ( get_option( OPTION_VERSION ) !== QUICK_2FA_VERSION ) {
 			update_option( OPTION_VERSION, QUICK_2FA_VERSION );
+		} else {
+			// Stored version is already current.
 		}
 	}
 
@@ -273,6 +275,8 @@ class Plugin {
 			$this->redirect_to_verification();
 		} elseif ( $this->user_needs_password_reminder() ) {
 			$this->redirect_to_password_reminder();
+		} else {
+			// Verified, and no password reminder due.
 		}
 	}
 
@@ -336,13 +340,14 @@ class Plugin {
 		if ( MODE_ALL === $mode ) {
 			$requires = true;
 		} elseif ( MODE_ROLES === $mode ) {
-			// Any other mode (including MODE_DISABLED) leaves $requires false.
 			$protected_roles = get_option( OPTION_PROTECTED_ROLES, array() );
 			$user            = get_userdata( $user_id );
 
 			if ( ! empty( $protected_roles ) && $user instanceof \WP_User ) {
 				$requires = ! empty( array_intersect( (array) $user->roles, $protected_roles ) );
 			}
+		} else {
+			// MODE_DISABLED, or an unrecognised mode; $requires stays false.
 		}
 
 		return $requires;
@@ -514,18 +519,23 @@ class Plugin {
 				$message = __( 'A new verification code has been sent to your email.', 'quick-2fa' );
 			}
 		} elseif ( ! $is_post ) {
-			// Plain page load. Only email a new code when there isn't already a
-			// valid one outstanding, so reloads, duplicate tabs, and back-
-			// navigation reuse the existing code rather than sending another.
-			// The Resend button (handled above) remains the explicit way to
-			// force a fresh code.
+			// Plain page load. Reloads, duplicate tabs and back-navigation reuse an
+			// outstanding code; the Resend button above is what forces a fresh one.
 			$code_handler = new Verification_Code_Handler( $user_id );
-			if ( ! $code_handler->has_valid_code() ) {
+
+			if ( $code_handler->has_valid_code() ) {
+				// Existing code still valid; nothing to send.
+			} else {
 				$result = $code_handler->send_via_email();
+
 				if ( is_wp_error( $result ) ) {
 					$error = $result;
+				} else {
+					// Sent.
 				}
 			}
+		} else {
+			// POST with no recognised submit button; render the form.
 		}
 
 		$trusted_devices_enabled = ! get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES );
@@ -583,6 +593,8 @@ class Plugin {
 
 			wp_safe_redirect( get_return_url( $user_id ) );
 			exit();
+		} else {
+			// Plain page load, or a POST with no recognised submit button; render the page.
 		}
 
 		require QUICK_2FA_PATH . 'views/password-page.php';

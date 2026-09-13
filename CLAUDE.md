@@ -12,6 +12,11 @@ Quick 2FA is a WordPress plugin providing email-based two-factor authentication 
 - **WordPress:** 6.0+
 - **No build system** — no npm, no Composer, no bundler. Assets are plain CSS/JS.
 
+Quick 2FA is also the maintainer's **reference plugin**: new WordPress plugins take their
+structure, conventions and patterns from it. Code should be easy to read and to trace by hand,
+and this file and the code comments must match what the code actually does. A stale rule or
+comment here gets copied into the next project.
+
 This plugin is published publicly on GitHub. Tracked files must contain no client names,
 client URLs, fleet measurements or client data of any kind — in code, comments, docs,
 fixtures or commit messages.
@@ -131,6 +136,23 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 - **Namespace:** `Quick_2FA` for all classes
 - **No `declare(strict_types=1)`** — breaks WordPress interop
 - **Single-Entry Single-Exit (SESE):** Functions should generally have one return at the end. Top-of-function guard clauses (capability checks, disabled-mode short-circuits, missing-input early-exits) are acceptable when they keep the rest of the function flat and readable. What is **not** acceptable: `return` statements scattered mid-function, inside loops, or nested several `if` blocks deep — these make the control flow hard to trace when debugging
+- **Every `if`/`elseif` chain ends in a plain `else`**, never an `elseif`, so every case is handled on purpose instead of falling through. A branch that does nothing is still written out, with a short comment. `phpcs.xml` excludes the `if`/`elseif`/`else` codes of `Generic.CodeAnalysis.EmptyStatement` so these comment-only branches pass; empty `catch`, loop and `switch` bodies are still errors
+- **No assignment inside a condition** — WPCS flags it (`AssignmentInCondition`, `DisallowMultipleAssignments`). Assign on the line before, and nest when the value is only needed by a later branch:
+
+```php
+if ( $code_handler->has_valid_code() ) {
+	// Existing code still valid; nothing to send.
+} else {
+	$result = $code_handler->send_via_email();
+
+	if ( is_wp_error( $result ) ) {
+		$error = $result;
+	} else {
+		// Sent.
+	}
+}
+```
+
 - **No unreachable `return`.** A `return` after a call that always `exit()`s (a redirect helper, `wp_die()`) is dead code, and so is a bare `return;` as the last statement of a `void` function. Both read as control flow that isn't there
 - **Constants for all magic strings/numbers** in `constants.php` — never use raw strings for meta keys, option names, etc.
 - **Type hints and return types** on all functions, and on class properties too (union types, nullsafe operators, named arguments). Check any type syntax newer than 8.2 against the declared floor before using it — nothing here enforces it mechanically

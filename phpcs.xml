@@ -22,6 +22,14 @@
 	<!-- Rules -->
 	<rule ref="WordPress">
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+
+		<!-- Every if/elseif chain ends in an explicit else, with no-op branches holding
+		     only a comment (see CLAUDE.md, PHP Style). This sniff counts a comment as
+		     empty, so only its if/elseif/else codes are excluded; empty catch, loop and
+		     switch bodies are still errors. -->
+		<exclude name="Generic.CodeAnalysis.EmptyStatement.DetectedIf"/>
+		<exclude name="Generic.CodeAnalysis.EmptyStatement.DetectedElseif"/>
+		<exclude name="Generic.CodeAnalysis.EmptyStatement.DetectedElse"/>
 	</rule>
 	
 	<!-- Nonce verification is wrapped in verify_page_nonce() (functions-private.php),

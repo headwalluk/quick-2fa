@@ -137,6 +137,8 @@ class Github_Updater {
 			$this->log( 'get_installed_version: ' . $this->plugin_basename . ' absent from the checked list, falling back to QUICK_2FA_VERSION ' . $installed_version . '.' );
 		} elseif ( QUICK_2FA_VERSION !== $installed_version ) {
 			$this->log_error( 'get_installed_version: version drift — the plugin header reports ' . $installed_version . ' but QUICK_2FA_VERSION is ' . QUICK_2FA_VERSION . '. Both are set in quick-2fa.php and must be bumped together.' );
+		} else {
+			// Header and constant agree.
 		}
 
 		return $installed_version;
