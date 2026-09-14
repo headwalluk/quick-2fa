@@ -131,6 +131,53 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 - `MODE_ROLES` — only configured roles (default: admins)
 - `MODE_DISABLED` — 2FA off
 
+## Public Contracts
+
+Code outside the plugin depends on more than `docs/developers/hooks-and-filters.md` lists. Treat
+everything in this table as a contract, whether or not it is documented as public:
+
+| Contract | Examples | Breaks when |
+|----------|----------|-------------|
+| Filters | `quick2fa_record_last_login`, `quick2fa_password_parameters` | renamed or removed, or an argument is removed or reordered |
+| Stored key strings | `_quick2fa_locked_until`, `_quick2fa_trusted_devices`, `quick2fa_mode` | a constant's **value** changes. Data stored under the old string is ignored, so a new `META_LOCKED_UNTIL` string would unlock every locked account |
+| Script and style handles | `quick-2fa-login`, `quick-2fa-password-page`, `quick-2fa-settings` | renamed. Anything listing the handle as a dependency stops loading |
+| Login page URLs | `wp-login.php?q2fa=verify`, `?q2fa=password` | `QUERY_PARAM` or an `ACTION_*` value changes. Firewall rules and links pointing at them break |
+| WP-CLI commands | `wp quick-2fa lock-all` | a command or argument is renamed. Scripts fail; 1.3.0 renamed five with no aliases |
+
+- **Add, don't change.** New filter arguments go at the end. New behaviour gets a new filter, not a new meaning for an existing one
+- **Deprecate, don't rename.** Fire the old name through `apply_filters_deprecated()` and pass its result into the new filter, as `Github_Updater::is_enabled()` does for `quick_2fa_updater_enabled`. Remove the old name no earlier than the next major version
+- **Filters are prefixed `quick2fa_`.** `quick_2fa_updater_enabled` is the one exception, and it is deprecated
+- **Rename a handle through an alias:** register the old handle with no source and the new handle as its only dependency. Never register the same file under both
+- **Stored data has no migration path.** `Plugin::check_first_run()` only records the version, so changing a stored key or value format is a breaking change: stop and ask
+
+Before changing anything in the table:
+
+1. Name the contract you are touching
+2. Assume there are consumers you can't see
+3. Take the additive path if one exists
+4. Record it in `CHANGELOG.md`, under **Deprecated** or as a breaking change with an upgrade notice in `readme.txt`
+5. If you can't tell whether anything outside the plugin depends on it, stop and ask
+
+### High-Impact Code
+
+These paths decide who gets into an account:
+
+- `Verification_Code_Handler::store()` and `verify()`
+- `Plugin::check_verification()`, `Plugin::user_needs_verification()` and `should_skip_check()`
+- Locking: `Account_Security_Handler::lock_account()` and `is_locked()`, and `Plugin::check_lockout_on_login()`
+- Device trust and session verification: `Account_Security_Handler::trust_device()`, `is_device_trusted()`, `mark_current_session_verified()` and `is_current_session_verified()`
+- `Password_Reminder_Handler::update_password()` and `maintain_session()`
+
+When a change touches one, say so, run every harness in `dev-notes/testing/`, and recommend the
+maintainer read that diff line by line before tagging. A review by an AI agent, your own included,
+does not count as that read.
+
+### Where the Plugin Runs
+
+- **Request context.** Hook callbacks run under WP-CLI, cron, AJAX and REST as well as browser requests, where there may be no current user, login session or admin screen. Check for what the code needs (`is_user_logged_in()`, `did_action()`, `function_exists()`). `should_skip_check()` covers the verification redirect only
+- **Install layout.** Build URLs and paths with `wp_login_url()`, `admin_url()`, `QUICK_2FA_URL` and `QUICK_2FA_PATH`, never by joining strings onto the domain. WordPress may run from a subdirectory, with `wp-content` moved, or behind a reverse proxy
+- **Multisite is untested.** Settings are per-site options, but user meta is network-wide, so a lock or a trusted device applies on every site in the network. A change touching either must say which it assumes
+
 ## Code Conventions
 
 ### PHP Style
@@ -156,8 +203,10 @@ if ( $code_handler->has_valid_code() ) {
 ```
 
 - **No unreachable `return`.** A `return` after a call that always `exit()`s (a redirect helper, `wp_die()`) is dead code, and so is a bare `return;` as the last statement of a `void` function. Both read as control flow that isn't there
-- **Constants for all magic strings/numbers** in `constants.php` — never use raw strings for meta keys, option names, etc.
+- **Constants for all magic strings/numbers** in `constants.php` — never use raw strings for meta keys, option names, etc. A key constant's **value** is stored data and never changes; see **Public Contracts**
 - **Type hints and return types** on all functions, and on class properties too (union types, nullsafe operators, named arguments). Check any type syntax newer than 8.2 against the declared floor before using it — nothing here enforces it mechanically
+- **Callbacks on hooks the plugin doesn't own take `mixed`.** Any callback earlier in the chain can hand over the wrong type, and a typed parameter turns that into a `TypeError` on a page the plugin doesn't control. Declare parameters `mixed`, check each value before use (`instanceof`, `is_array()`, `is_numeric()`), and give a filter callback a `mixed` return that passes a value it can't use through unchanged. `User_Management::render_lockout_column()` is the pattern
+- **Check what a filter returns.** Any callback can return the wrong type. Read a boolean result with `filter_var()` as under **Boolean Options**, and fall back to the default for a malformed array, as `Password_Reminder_Handler::generate_strong_password()` does
 - **Guard object lookups with `instanceof`, not truthiness.** `get_userdata()`, `get_user_by()`, `wc_get_product()` and friends are documented as returning `Object|false` — but `get_userdata()` and `get_user_by()` are *pluggable*, so any plugin loading earlier can replace them wholesale with no contract at all. `if ( ! $user )` and `if ( ! empty( $user ) )` are exactly equivalent (`empty()` is just `! isset() || == false`), and both let truthy junk — a `stdClass`, a non-empty string, a populated array — through to `$user->user_email` and a fatal. `if ( ! $user instanceof \WP_User )` accepts only the contract the code actually relies on. Never pass an unguarded lookup into a view
 - **Cast at the boundary.** WordPress returns loosely-typed data — `get_user_meta()` and `get_option()` hand back strings (or `''`, or `false`). Cast on the way in, at the point of read, so the rest of the function works with a known type: `$locked_until = (int) get_user_meta( $user_id, META_LOCKED_UNTIL, true );`. Don't feed a raw meta value straight into a numeric comparison
 - **Don't duplicate derived values.** Where two hooks need the same message or computation, extract a helper. Two copies of a rule (a lockout message, a threshold) will diverge the first time one is edited
@@ -192,19 +241,33 @@ Login pages (`views/verification-page.php`, `views/password-page.php`) have spec
 - Shared CSS lives in `assets/css/login-pages.css`
 - No inline JavaScript — all JS externalized to files in `assets/` and loaded via `wp_enqueue_script()`
 
+### CSS and JavaScript
+
+- **Logical properties for anything with a left or right.** Use `margin-inline-start`, `padding-inline-end`, `border-inline-start-color`, `inset-inline-end` and `text-align: start`, never `margin-left`, `right` or `text-align: left`. Core's admin and login styles switch sides in right-to-left locales and this plugin's CSS has no mirrored copy, so a physical property styles the wrong side. `.q2fa-message-warning` in `assets/css/login-pages.css` is the pattern. Top and bottom stay physical
+- **Plain JavaScript.** New scripts have no jQuery dependency, like `assets/js/password-page.js`. `assets/admin/settings.js` uses jQuery only because Select2 requires it
+
 ### Logging
 
 Two methods, deliberately split — see `Github_Updater::log()` / `log_error()`:
 
 - `log_error()` — genuine failures (HTTP errors, malformed responses, missing assets). Logs
   **unconditionally**, so a sysadmin diagnosing a broken install sees it without touching config
-- `log()` — routine flow tracing (cache hits, version comparisons, "up to date"). Gated on `WP_DEBUG`
+- `log()` — routine flow tracing (cache hits, version comparisons, "up to date"). Logs only when `WP_DEBUG` is on
 
-An error that only appears under `WP_DEBUG` is a silent failure in production. Never gate an
+An error that only appears under `WP_DEBUG` is a silent failure in production. Never hide an
 error behind a debug flag, and never leave a `catch` that records nothing.
 
 There is no logging dependency. WooCommerce is not a hard dependency here, so `error_log()`
 with a `phpcs:ignore` is correct — do not add a logging library.
+
+### Comments
+
+- One-line docblock summary per function, saying what it does. `@param`, `@return` and `@since` lines don't count
+- Inline comments only where the mechanism isn't obvious: a load-order trap, an API behaving unexpectedly, a guard whose absence would be silently wrong
+- Don't restate what the names already say, and don't label the obvious (`// Loop over users`)
+- Plain words: say "check", "guard" or "only when", not "gate" or "gating"
+- Match the wrap width of the surrounding file; there is no fixed column
+- Reasoning and history go in `docs/`, not in comments; see **Reference Files**
 
 ### Boolean Options
 
@@ -222,8 +285,10 @@ Format: `type: brief description` where type is one of: `feat:`, `fix:`, `chore:
 
 1. `phpcs` — check violations
 2. `phpcbf` — auto-fix
-3. `phpcs` — verify clean
+3. `phpcs` — verify clean: no errors **and no warnings**
 4. Stage and commit
+
+Every `phpcs:ignore` and `phpcs:disable` names the exact sniff and ends with `-- reason`.
 
 ## WP-CLI Commands
 
@@ -240,10 +305,11 @@ wp quick-2fa emergency-disable --yes        # Disable 2FA entirely
 ## Release Workflow
 
 1. Update the version in `quick-2fa.php` — **both** the `Version:` header and the `QUICK_2FA_VERSION` constant
-2. Update `CHANGELOG.md` with changes
+2. Update `CHANGELOG.md`: move the `[Unreleased]` entries under the new version, and give each bug fix the version that introduced it, when known. If the version differs from the one in new `@since` or `@deprecated` tags, update those too
 3. Update `readme.txt` stable tag
 4. Run `phpcs` to verify compliance
-5. Tag release in git
+5. If the release touches **High-Impact Code**, the maintainer reads that diff line by line
+6. Tag release in git
 
 The version lives in **three** places that must agree with the git tag: the header `Version:`
 field, `QUICK_2FA_VERSION`, and the `readme.txt` stable tag. `.github/workflows/release.yml`

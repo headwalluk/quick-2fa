@@ -219,7 +219,7 @@ function are_trusted_devices_enabled(): bool {
  * Get client IP address.
  *
  * Reads client-supplied proxy headers, so the result is spoofable and is for
- * logging only. Since 1.2.0 nothing gates access on it — device trust is
+ * logging only. Since 1.2.0 no access check uses it — device trust is
  * carried by a cookie token. Do not reintroduce it into any access decision.
  *
  * @since 1.0.0
