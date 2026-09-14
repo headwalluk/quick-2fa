@@ -150,27 +150,33 @@ class Plugin {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param string        $user_login The user's login name.
-	 * @param \WP_User|null $user       The user who logged in, when the caller supplies it.
+	 * @param mixed $user_login The user's login name.
+	 * @param mixed $user       The user who logged in, when the caller supplies it.
 	 */
-	public function record_last_login( string $user_login, ?\WP_User $user = null ): void {
+	public function record_last_login( mixed $user_login, mixed $user = null ): void {
 		// Some plugins fire wp_login with only the login name, so $user is optional.
-		if ( ! $user instanceof \WP_User ) {
+		if ( ! $user instanceof \WP_User && is_string( $user_login ) ) {
 			$user = get_user_by( 'login', $user_login );
 		}
 
-		/**
-		 * Filter whether Quick 2FA records a last-login timestamp for this user.
-		 *
-		 * Return false to skip recording — for a service account, or to opt the
-		 * site out of last-login recording entirely.
-		 *
-		 * @since 1.3.0
-		 *
-		 * @param bool     $record Whether to record the login. Default true.
-		 * @param \WP_User $user   The user who logged in.
-		 */
-		if ( $user instanceof \WP_User && apply_filters( 'quick2fa_record_last_login', true, $user ) ) {
+		$record = false;
+
+		if ( $user instanceof \WP_User ) {
+			/**
+			 * Filter whether Quick 2FA records a last-login timestamp for this user.
+			 *
+			 * Return false to skip recording — for a service account, or to opt the
+			 * site out of last-login recording entirely.
+			 *
+			 * @since 1.3.0
+			 *
+			 * @param bool     $record Whether to record the login. Default true.
+			 * @param \WP_User $user   The user who logged in.
+			 */
+			$record = (bool) filter_var( apply_filters( 'quick2fa_record_last_login', true, $user ), FILTER_VALIDATE_BOOLEAN );
+		}
+
+		if ( $record ) {
 			$now = time();
 
 			// The first recorded login stamps the site's recording epoch; add_option()
@@ -187,15 +193,15 @@ class Plugin {
 	 * Blocks locked users from logging in (front-end or admin).
 	 *
 	 * @since 0.6.0
-	 * @param \WP_User|\WP_Error $user     WP_User or WP_Error object if previous filter failed.
-	 * @return \WP_User|\WP_Error WP_User on success, WP_Error if locked.
+	 * @param mixed $user WP_User, or a WP_Error if an earlier filter failed.
+	 * @return mixed WP_Error if the user is locked, otherwise $user unchanged.
 	 */
-	public function check_lockout_on_login( \WP_User|\WP_Error $user ): \WP_User|\WP_Error {
+	public function check_lockout_on_login( mixed $user ): mixed {
 		$result = $user;
 
-		// A WP_Error here means an earlier authentication filter already failed;
-		// pass it through untouched rather than replacing its reason.
-		if ( ! is_wp_error( $user ) ) {
+		// Anything but a WP_User passes through untouched, so an earlier filter's
+		// WP_Error keeps its reason.
+		if ( $user instanceof \WP_User ) {
 			$security = new Account_Security_Handler( $user->ID );
 
 			if ( $security->is_locked() ) {
@@ -551,7 +557,7 @@ class Plugin {
 			$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 		} elseif ( $is_update_submit ) {
 			// Unslashed only: sanitising would strip tags, %XX octets and repeated whitespace from the password.
-			$password = isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$password = isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Saved exactly as typed.
 			$result   = $handler->update_password( $password );
 
 			if ( is_wp_error( $result ) ) {

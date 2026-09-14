@@ -136,4 +136,4 @@ Quick 2FA stores the following data locally on your WordPress site:
 * IP addresses in the event log, for incident investigation
 * Trusted device tokens (user meta, stored hashed; the raw token lives only in a secure cookie in the user's browser)
 
-No data is sent to external services. The in-plugin GitHub updater polls `api.github.com/repos/headwalluk/quick-2fa/releases/latest` on a 12-hour cache to check for updates; disable it via the `quick_2fa_updater_enabled` filter if needed.
+No data is sent to external services. The in-plugin GitHub updater polls `api.github.com/repos/headwalluk/quick-2fa/releases/latest` on a 12-hour cache to check for updates; disable it via the `quick2fa_updater_enabled` filter if needed.

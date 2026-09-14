@@ -129,4 +129,4 @@ wp transient delete update_plugins --network
 
 Then visit **Dashboard → Updates** in the WordPress admin to trigger a fresh check.
 
-If you want to disable auto-updates entirely (e.g. on staging or for a specific site), see the [`quick_2fa_updater_enabled` filter](developers/hooks-and-filters.md#quick_2fa_updater_enabled).
+If you want to disable auto-updates entirely (e.g. on staging or for a specific site), see the [`quick2fa_updater_enabled` filter](developers/hooks-and-filters.md#quick2fa_updater_enabled).

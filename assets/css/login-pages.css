@@ -8,6 +8,11 @@
  * @since 0.9.3
  */
 
+/* Warning variant of core's message box; core draws its border on the left, or the right in RTL */
+.login .message.q2fa-message-warning {
+    border-inline-start-color: #dba617;
+}
+
 /* Verification code input */
 .q2fa-verification-input {
     letter-spacing: 0.2em;

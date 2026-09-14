@@ -2,6 +2,12 @@
 
 This is the **public extension surface** of Quick 2FA. Anything not listed here should be considered internal — it may change without notice between releases. Functions in the `Quick_2FA` namespace are private; the filters and actions below are the supported integration points.
 
+## Compatibility
+
+- A filter's name and arguments don't change within a major version. New arguments are only ever added at the end.
+- A renamed filter keeps working under its old name until at least the next major version. The old name's result is passed on to the new one, and WordPress raises a deprecation notice when `WP_DEBUG` is on. Each filter's entry below lists any deprecated name.
+- Any change that could break an integration is listed in `CHANGELOG.md`.
+
 ## Filters
 
 ### `quick2fa_verify_intro`
@@ -92,7 +98,7 @@ The generator passes the result to `wp_generate_password()`, so any options that
 
 ---
 
-### `quick_2fa_updater_enabled`
+### `quick2fa_updater_enabled`
 
 Disable the in-plugin GitHub auto-updater. Useful for staging environments, local development, or when you want to pin a site to a specific version.
 
@@ -103,7 +109,7 @@ Disable the in-plugin GitHub auto-updater. Useful for staging environments, loca
 
 ```php
 // Disable updates on staging
-add_filter( 'quick_2fa_updater_enabled', function( $enabled ) {
+add_filter( 'quick2fa_updater_enabled', function( $enabled ) {
     if ( defined( 'WP_ENVIRONMENT_TYPE' ) && 'staging' === WP_ENVIRONMENT_TYPE ) {
         return false;
     }
@@ -111,8 +117,10 @@ add_filter( 'quick_2fa_updater_enabled', function( $enabled ) {
 } );
 
 // Pin a production site to its current version
-add_filter( 'quick_2fa_updater_enabled', '__return_false' );
+add_filter( 'quick2fa_updater_enabled', '__return_false' );
 ```
+
+**Deprecated name:** before 1.5.0 this filter was `quick_2fa_updater_enabled`. The old name still works: its result is passed on to `quick2fa_updater_enabled`, and WordPress raises a deprecation notice when `WP_DEBUG` is on. Rename your `add_filter()` call.
 
 ### `quick2fa_record_last_login`
 

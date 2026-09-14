@@ -323,9 +323,9 @@ class Settings {
 	 * Enqueue admin scripts and styles.
 	 *
 	 * @since 1.0.0
-	 * @param string $hook Current admin page hook.
+	 * @param mixed $hook Current admin page hook.
 	 */
-	public function enqueue_scripts( string $hook ): void {
+	public function enqueue_scripts( mixed $hook ): void {
 		if ( 'settings_page_quick-2fa' !== $hook ) {
 			return;
 		}

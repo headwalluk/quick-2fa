@@ -4,6 +4,26 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The `quick2fa_updater_enabled` filter** replaces `quick_2fa_updater_enabled`, so every Quick 2FA filter now uses the same `quick2fa_` prefix.
+
+### Deprecated
+
+- **`quick_2fa_updater_enabled`.** It still works: its result is passed on to `quick2fa_updater_enabled`, and WordPress raises a deprecation notice when `WP_DEBUG` is on. Rename `add_filter()` calls to the new name. The old name will be removed no earlier than 2.0.0.
+
+### Fixed
+
+- **Another plugin returning the wrong type from a WordPress hook could crash the Users screen or the login.** Quick 2FA's callbacks declared strict parameter types, so when a plugin's `manage_users_custom_column` callback returned nothing for a column it didn't own, Quick 2FA received `null` and PHP threw a `TypeError`. The users-table column, sorting, view and row-action callbacks, the profile section, the settings-page script loader and the lockout check at login had the same weakness. Each now accepts any value, acts only on a value it can use, and passes anything else through unchanged. Introduced in 0.7.0.
+- **The password-reminder warning showed a blue border instead of amber in right-to-left languages.** Its colour was set inline with `border-left-color`, but WordPress draws the login message border on the right in RTL locales. It now uses the logical `border-inline-start-color` from the plugin's login stylesheet. Introduced in 0.10.0.
+
+### Changed
+
+- The `quick2fa_record_last_login` and `quick2fa_updater_enabled` results are read as booleans the way the plugin reads boolean options, so a callback returning `'no'`, `'off'` or `'false'` now counts as false.
+- `CLAUDE.md` gains rules on public contracts, hook callback types, filter results, CSS and JavaScript, comments and phpcs suppressions.
+
 ## [1.4.0] — 2026-09-13
 
 ### Added

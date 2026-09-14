@@ -67,7 +67,7 @@ if ( (int) $days_since > 365 ) {
 }
 
 printf(
-	'<div class="message" style="border-left-color: #dba617;">%s</div>',
+	'<div class="message q2fa-message-warning">%s</div>',
 	esc_html( $quick_2fa_age_message )
 );
 

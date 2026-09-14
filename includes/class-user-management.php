@@ -61,10 +61,14 @@ class User_Management {
 	 * Add lock-out status column to users table.
 	 *
 	 * @since 0.6.0
-	 * @param array $columns Existing columns.
-	 * @return array Modified columns.
+	 * @param mixed $columns Existing columns.
+	 * @return mixed Columns with ours added, or $columns unchanged if it is not an array.
 	 */
-	public function add_lockout_column( array $columns ): array {
+	public function add_lockout_column( mixed $columns ): mixed {
+		if ( ! is_array( $columns ) ) {
+			return $columns;
+		}
+
 		$new_columns = array();
 
 		foreach ( $columns as $key => $value ) {
@@ -89,17 +93,18 @@ class User_Management {
 	 * Render lock-out status column content.
 	 *
 	 * @since 0.6.0
-	 * @param string $output      Custom column output (empty by default).
-	 * @param string $column_name Column name.
-	 * @param int    $user_id     User ID.
-	 * @return string Column content.
+	 * @param mixed $output      Custom column output (empty by default).
+	 * @param mixed $column_name Column name.
+	 * @param mixed $user_id     User ID.
+	 * @return mixed Our column's markup, or $output unchanged for any other column.
 	 */
-	public function render_lockout_column( string $output, string $column_name, int $user_id ): string {
-		if ( COLUMN_LOCK_STATUS !== $column_name ) {
+	public function render_lockout_column( mixed $output, mixed $column_name, mixed $user_id ): mixed {
+		if ( COLUMN_LOCK_STATUS !== $column_name || ! is_numeric( $user_id ) ) {
 			return $output;
 		}
 
-		$status = $this->get_user_lockout_status( $user_id );
+		$user_id = (int) $user_id;
+		$status  = $this->get_user_lockout_status( $user_id );
 
 		if ( 'locked' === $status ) {
 			$locked_until_raw = get_user_meta( $user_id, META_LOCKED_UNTIL, true );
@@ -120,10 +125,14 @@ class User_Management {
 	 * Make lock-out column sortable.
 	 *
 	 * @since 0.6.0
-	 * @param array $columns Sortable columns.
-	 * @return array Modified sortable columns.
+	 * @param mixed $columns Sortable columns.
+	 * @return mixed Sortable columns with ours added, or $columns unchanged if it is not an array.
 	 */
-	public function make_column_sortable( array $columns ): array {
+	public function make_column_sortable( mixed $columns ): mixed {
+		if ( ! is_array( $columns ) ) {
+			return $columns;
+		}
+
 		$columns[ COLUMN_LOCK_STATUS ] = SORT_KEY_LOCKED;
 		return $columns;
 	}
@@ -132,10 +141,10 @@ class User_Management {
 	 * Handle column sorting in users query.
 	 *
 	 * @since 0.6.0
-	 * @param \WP_User_Query $query User query object.
+	 * @param mixed $query User query object.
 	 */
-	public function handle_column_sort( \WP_User_Query $query ): void {
-		if ( ! is_admin() || ! $query->is_main_query() ) {
+	public function handle_column_sort( mixed $query ): void {
+		if ( ! $query instanceof \WP_User_Query || ! is_admin() || ! $query->is_main_query() ) {
 			return;
 		}
 
@@ -150,10 +159,14 @@ class User_Management {
 	 * Add lock-out filter links to users table.
 	 *
 	 * @since 0.6.0
-	 * @param array $views Existing view links.
-	 * @return array Modified view links.
+	 * @param mixed $views Existing view links.
+	 * @return mixed View links with ours added, or $views unchanged if it is not an array.
 	 */
-	public function add_lockout_filters( array $views ): array {
+	public function add_lockout_filters( mixed $views ): mixed {
+		if ( ! is_array( $views ) ) {
+			return $views;
+		}
+
 		$locked_count = $this->count_locked_users();
 		$total_count  = count_users();
 		$total_users  = isset( $total_count['total_users'] ) && is_numeric( $total_count['total_users'] ) ? (int) $total_count['total_users'] : 0;
@@ -191,10 +204,10 @@ class User_Management {
 	 * Filter users by lock-out status.
 	 *
 	 * @since 0.6.0
-	 * @param \WP_User_Query $query User query object.
+	 * @param mixed $query User query object.
 	 */
-	public function filter_by_lockout_status( \WP_User_Query $query ): void {
-		if ( ! is_admin() || ! $query->is_main_query() ) {
+	public function filter_by_lockout_status( mixed $query ): void {
+		if ( ! $query instanceof \WP_User_Query || ! is_admin() || ! $query->is_main_query() ) {
 			return;
 		}
 
@@ -246,12 +259,12 @@ class User_Management {
 	 * Add lock/unlock row actions to users table.
 	 *
 	 * @since 0.6.0
-	 * @param array    $actions Existing row actions.
-	 * @param \WP_User $user    User object.
-	 * @return array Modified row actions.
+	 * @param mixed $actions Existing row actions.
+	 * @param mixed $user    User object.
+	 * @return mixed Row actions with ours added, or $actions unchanged.
 	 */
-	public function add_lockout_actions( array $actions, \WP_User $user ): array {
-		if ( ! current_user_can( 'edit_users' ) ) {
+	public function add_lockout_actions( mixed $actions, mixed $user ): mixed {
+		if ( ! is_array( $actions ) || ! $user instanceof \WP_User || ! current_user_can( 'edit_users' ) ) {
 			return $actions;
 		}
 
@@ -513,10 +526,10 @@ class User_Management {
 	 * Render 2FA profile section on user edit pages.
 	 *
 	 * @since 0.6.1
-	 * @param \WP_User $user User object.
+	 * @param mixed $user User object.
 	 */
-	public function render_profile_section( \WP_User $user ): void {
-		if ( ! are_trusted_devices_enabled() ) {
+	public function render_profile_section( mixed $user ): void {
+		if ( ! $user instanceof \WP_User || ! are_trusted_devices_enabled() ) {
 			return;
 		}
 

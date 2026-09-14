@@ -62,15 +62,25 @@ class Github_Updater {
 		/**
 		 * Filter whether GitHub auto-updates are enabled for Quick 2FA.
 		 *
+		 * @since 1.0.0
+		 * @deprecated 1.5.0 Use quick2fa_updater_enabled.
+		 *
+		 * @param bool $enabled Whether auto-updates are enabled. Default true.
+		 */
+		$enabled = apply_filters_deprecated( 'quick_2fa_updater_enabled', array( true ), '1.5.0', 'quick2fa_updater_enabled' );
+
+		/**
+		 * Filter whether GitHub auto-updates are enabled for Quick 2FA.
+		 *
 		 * Return false to disable update checks. Useful for staging
 		 * environments, local development, or temporarily pinning the
 		 * plugin to its current version.
 		 *
-		 * @since 1.0.0
+		 * @since 1.5.0
 		 *
-		 * @param bool $enabled Whether auto-updates are enabled. Default true.
+		 * @param bool $enabled Whether auto-updates are enabled. Default true, or the deprecated filter's result.
 		 */
-		return (bool) apply_filters( 'quick_2fa_updater_enabled', true );
+		return (bool) filter_var( apply_filters( 'quick2fa_updater_enabled', $enabled ), FILTER_VALIDATE_BOOLEAN );
 	}
 
 	/**
@@ -82,7 +92,7 @@ class Github_Updater {
 	 *                          has built it, but false or empty on early passes.
 	 * @return mixed The transient, unchanged unless an update was injected.
 	 */
-	public function check_for_update( $transient ) {
+	public function check_for_update( mixed $transient ): mixed {
 		$checked = is_object( $transient ) && property_exists( $transient, 'checked' ) ? $transient->checked : false;
 
 		if ( empty( $checked ) ) {
@@ -143,12 +153,12 @@ class Github_Updater {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param false|object|array $result The result object or array. Default false.
-	 * @param string             $action The API action being performed.
-	 * @param object             $args   Plugin API arguments.
-	 * @return false|object
+	 * @param mixed $result The result object or array. Default false.
+	 * @param mixed $action The API action being performed.
+	 * @param mixed $args   Plugin API arguments.
+	 * @return mixed Our plugin information, or $result unchanged for any other request.
 	 */
-	public function plugin_info( $result, $action, $args ) {
+	public function plugin_info( mixed $result, mixed $action, mixed $args ): mixed {
 		$requested_slug = is_object( $args ) ? ( $args->slug ?? '' ) : '';
 
 		if ( 'plugin_information' !== $action || $requested_slug !== $this->plugin_slug || ! $this->is_enabled() ) {
@@ -191,11 +201,12 @@ class Github_Updater {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param \WP_Upgrader $upgrader The upgrader instance.
-	 * @param array        $options  Update details.
+	 * @param mixed $upgrader The upgrader instance.
+	 * @param mixed $options  Update details.
 	 */
-	public function clear_cache( $upgrader, $options ): void {
+	public function clear_cache( mixed $upgrader, mixed $options ): void {
 		if (
+			is_array( $options ) &&
 			'update' === ( $options['action'] ?? '' ) &&
 			'plugin' === ( $options['type'] ?? '' ) &&
 			! empty( $options['plugins'] ) &&

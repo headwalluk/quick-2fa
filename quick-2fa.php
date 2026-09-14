@@ -76,7 +76,7 @@ register_activation_hook( __FILE__, 'quick_2fa_activate' );
 function quick_2fa_deactivate(): void {
 	global $wpdb;
 
-    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- No API deletes transients by name pattern.
 	$wpdb->query(
 		"DELETE FROM {$wpdb->options} 
 		 WHERE option_name LIKE '_transient_q2fa_%' 
