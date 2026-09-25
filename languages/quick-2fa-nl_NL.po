@@ -586,7 +586,7 @@ msgstr "Hoe lang een verificatie het apparaat vertrouwt wanneer het vakje ‘Dit
 msgid "Regular password changes help keep your account secure. We recommend updating your password every %d day."
 msgid_plural "Regular password changes help keep your account secure. We recommend updating your password every %d days."
 msgstr[0] "Het regelmatig wijzigen van uw wachtwoord helpt uw account veilig te houden. We raden u aan uw wachtwoord elke %d dag te wijzigen."
-msgstr[1] "Het regelmatig wijzigen van uw wachtwoord helpt uw account veilig te houden. We raden u aan uw wachtwoord elke %d dagen te wijzigen."
+msgstr[1] "Het regelmatig wijzigen van uw wachtwoord helpt uw account veilig te houden. We raden u aan uw wachtwoord om de %d dagen te wijzigen."
 
 #: views/settings-page.php:222
 msgctxt "settings section heading"

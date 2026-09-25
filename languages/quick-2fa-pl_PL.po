@@ -229,9 +229,9 @@ msgstr "Zbyt wiele nieudanych prób weryfikacji. Twoje konto zostało tymczasowo
 #, php-format
 msgid "Invalid verification code. You have %d attempt remaining."
 msgid_plural "Invalid verification code. You have %d attempts remaining."
-msgstr[0] "Nieprawidłowy kod weryfikacyjny. Pozostało Ci %d prób."
-msgstr[1] "Nieprawidłowy kod weryfikacyjny. Pozostało Ci %d prób."
-msgstr[2] "Invalid verification code. You have %d attempts remaining."
+msgstr[0] "Nieprawidłowy kod weryfikacyjny. Pozostała Ci %d próba."
+msgstr[1] "Nieprawidłowy kod weryfikacyjny. Pozostały Ci %d próby."
+msgstr[2] "Nieprawidłowy kod weryfikacyjny. Pozostało Ci %d prób."
 
 #: views/password-page.php:31
 msgid "Update Your Password"
@@ -289,7 +289,7 @@ msgid "You have %d trusted device."
 msgid_plural "You have %d trusted devices."
 msgstr[0] "Masz %d zaufane urządzenie."
 msgstr[1] "Masz %d zaufane urządzenia."
-msgstr[2] "You have %d trusted devices."
+msgstr[2] "Masz %d zaufanych urządzeń."
 
 #: views/profile-trusted-devices.php:30
 msgctxt "table column header"
@@ -323,7 +323,7 @@ msgid "In %d day"
 msgid_plural "In %d days"
 msgstr[0] "Za %d dzień"
 msgstr[1] "Za %d dni"
-msgstr[2] "In %d days"
+msgstr[2] "Za %d dni"
 
 #: views/profile-trusted-devices.php:66
 msgctxt "device trust expires today"
@@ -516,7 +516,7 @@ msgid "Trust this device for %d day"
 msgid_plural "Trust this device for %d days"
 msgstr[0] "Zaufaj temu urządzeniu przez %d dzień"
 msgstr[1] "Zaufaj temu urządzeniu przez %d dni"
-msgstr[2] "Trust this device for %d days"
+msgstr[2] "Zaufaj temu urządzeniu przez %d dni"
 
 #: views/verification-page.php:81
 msgctxt "verb; submit button label"
@@ -533,17 +533,17 @@ msgstr "Wyślij kod ponownie"
 msgid "This code will expire in %d minute."
 msgid_plural "This code will expire in %d minutes."
 msgstr[0] "Ten kod wygaśnie za %d minutę."
-msgstr[1] "Ten kod wygaśnie za %d minut."
-msgstr[2] "This code will expire in %d minutes."
+msgstr[1] "Ten kod wygaśnie za %d minuty."
+msgstr[2] "Ten kod wygaśnie za %d minut."
 
 #. translators: %d: minimum number of characters required in a password
 #: includes/class-password-reminder-handler.php:141
 #, php-format
 msgid "Password must be at least %d character long."
 msgid_plural "Password must be at least %d characters long."
-msgstr[0] "Hasło musi mieć co najmniej %d znaków."
-msgstr[1] "Hasło musi mieć co najmniej %d znaków."
-msgstr[2] "Password must be at least %d characters long."
+msgstr[0] "Hasło musi mieć co najmniej %d znak."
+msgstr[1] "Hasło musi mieć co najmniej %d znaki."
+msgstr[2] "Hasło musi mieć co najmniej %d znaków."
 
 #: includes/class-plugin.php:516
 #: includes/class-plugin.php:599
@@ -555,9 +555,9 @@ msgstr "Nie udało się załadować Twojego konta użytkownika. Zaloguj się pon
 #, php-format
 msgid "Too many verification codes requested. Please wait %d minute before requesting another code."
 msgid_plural "Too many verification codes requested. Please wait %d minutes before requesting another code."
-msgstr[0] "Zgłoszono zbyt wiele kodów weryfikacyjnych. Proszę odczekać %d minuty przed zgłoszeniem kolejnego kodu."
-msgstr[1] "Wysłano zbyt wiele kodów weryfikacyjnych. Proszę odczekać %d minut przed wysłaniem kolejnego kodu."
-msgstr[2] "Too many verification codes requested. Please wait %d minutes before requesting another code."
+msgstr[0] "Wysłano zbyt wiele żądań kodów weryfikacyjnych. Proszę odczekać %d minutę przed wysłaniem kolejnego żądania."
+msgstr[1] "Wysłano zbyt wiele żądań kodów weryfikacyjnych. Proszę odczekać %d minuty przed wysłaniem kolejnego żądania."
+msgstr[2] "Wysłano zbyt wiele żądań kodów weryfikacyjnych. Proszę odczekać %d minut przed wysłaniem kolejnego żądania."
 
 #. translators: %d: number of minutes until unlock
 #: includes/class-verification-code-handler.php:280
@@ -565,17 +565,17 @@ msgstr[2] "Too many verification codes requested. Please wait %d minutes before 
 msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minute."
 msgid_plural "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
 msgstr[0] "Twoje konto zostało tymczasowo zablokowane z powodu zbyt dużej liczby nieudanych prób. Spróbuj ponownie za %d minutę."
-msgstr[1] "Twoje konto zostało tymczasowo zablokowane z powodu zbyt dużej liczby nieudanych prób. Spróbuj ponownie za %d minut."
-msgstr[2] "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
+msgstr[1] "Twoje konto zostało tymczasowo zablokowane z powodu zbyt wielu nieudanych prób. Spróbuj ponownie za %d minuty."
+msgstr[2] "Twoje konto zostało tymczasowo zablokowane z powodu zbyt dużej liczby nieudanych prób. Spróbuj ponownie za %d minut."
 
 #. translators: %d: number of minutes until expiry
 #: includes/class-verification-code-handler.php:306
 #, php-format
 msgid "Your verification code has expired. Codes are valid for %d minute. Please request a new code."
 msgid_plural "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
-msgstr[0] "Twój kod weryfikacyjny stracił ważność. Kody są ważne przez %d minuty. Poproś o nowy kod."
-msgstr[1] "Twój kod weryfikacyjny stracił ważność. Kody są ważne przez %d minut. Poproś o nowy kod."
-msgstr[2] "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
+msgstr[0] "Twój kod weryfikacyjny stracił ważność. Kody są ważne przez %d minutę. Poproś o nowy kod."
+msgstr[1] "Twój kod weryfikacyjny stracił ważność. Kody są ważne przez %d minuty. Poproś o nowy kod."
+msgstr[2] "Twój kod weryfikacyjny stracił ważność. Kody są ważne przez %d minut. Poproś o nowy kod."
 
 #. translators: %d: number of days since last password change
 #: views/password-page.php:59
@@ -583,8 +583,8 @@ msgstr[2] "Your verification code has expired. Codes are valid for %d minutes. P
 msgid "It's been %d day since you last changed your password. For your security, we recommend updating it regularly."
 msgid_plural "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
 msgstr[0] "Minął %d dzień od ostatniej zmiany hasła. Dla własnego bezpieczeństwa zalecamy regularną aktualizację hasła."
-msgstr[1] "Minęło %d dni od ostatniej zmiany hasła. Dla własnego bezpieczeństwa zalecamy regularną aktualizację hasła."
-msgstr[2] "It's been %d days since you last changed your password. For your security, we recommend updating it regularly."
+msgstr[1] "Minęły %d dni od ostatniej zmiany hasła. Dla własnego bezpieczeństwa zalecamy regularną aktualizację hasła."
+msgstr[2] "Minęło %d dni od ostatniej zmiany hasła. Dla własnego bezpieczeństwa zalecamy regularną aktualizację hasła."
 
 #: views/settings-page.php:117
 msgid "How long a verification trusts the device when \"Trust this device\" is left unticked (1-365 days). Not used when trusted devices are disabled."
@@ -595,9 +595,9 @@ msgstr "Okres, przez jaki weryfikacja uznaje urządzenie za zaufane, gdy opcja �
 #, php-format
 msgid "Regular password changes help keep your account secure. We recommend updating your password every %d day."
 msgid_plural "Regular password changes help keep your account secure. We recommend updating your password every %d days."
-msgstr[0] "Regularna zmiana hasła pomaga zapewnić bezpieczeństwo konta. Zalecamy aktualizowanie hasła co %d dzień."
-msgstr[1] "Regularna zmiana hasła pomaga zapewnić bezpieczeństwo Twojego konta. Zalecamy aktualizowanie hasła co %d dni."
-msgstr[2] "Regularna zmiana hasła pomaga zapewnić bezpieczeństwo Twojego konta. Zalecamy aktualizowanie hasła co %d dni."
+msgstr[0] "Regularna zmiana hasła pomaga zapewnić bezpieczeństwo konta. Zalecamy aktualizację hasła co %d dzień."
+msgstr[1] "Regularna zmiana hasła pomaga zapewnić bezpieczeństwo konta. Zalecamy zmianę hasła co %d dni."
+msgstr[2] "Regularna zmiana hasła pomaga zapewnić bezpieczeństwo konta. Zalecamy aktualizowanie hasła co %d dni."
 
 #: views/settings-page.php:222
 msgctxt "settings section heading"

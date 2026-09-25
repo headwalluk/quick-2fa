@@ -585,7 +585,7 @@ msgstr "Wie lange eine Verifizierung dem Gerät vertraut, wenn das Kontrollkäst
 #, php-format
 msgid "Regular password changes help keep your account secure. We recommend updating your password every %d day."
 msgid_plural "Regular password changes help keep your account secure. We recommend updating your password every %d days."
-msgstr[0] "Regelmäßige Passwortänderungen tragen zur Sicherheit Ihres Kontos bei. Wir empfehlen, Ihr Passwort alle %d Tage zu ändern."
+msgstr[0] "Regelmäßige Passwortänderungen tragen zur Sicherheit Ihres Kontos bei. Wir empfehlen, Ihr Passwort alle %d Tag zu ändern."
 msgstr[1] "Regelmäßige Passwortwechsel tragen zur Sicherheit Ihres Kontos bei. Wir empfehlen, Ihr Passwort alle %d Tage zu ändern."
 
 #: views/settings-page.php:222
