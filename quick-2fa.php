@@ -41,8 +41,8 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	WP_CLI::add_command( 'quick-2fa', 'Quick_2FA\CLI_Commands' );
 }
 
-// GitHub auto-updates (admin + cron only — no need to load on front-end requests).
-if ( is_admin() || ( defined( 'DOING_CRON' ) && DOING_CRON ) ) {
+// GitHub auto-updates (admin, cron and WP-CLI only — no need to load on front-end requests).
+if ( is_admin() || ( defined( 'DOING_CRON' ) && DOING_CRON ) || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
 	require_once QUICK_2FA_PATH . 'includes/class-github-updater.php';
 	new Quick_2FA\Github_Updater();
 }

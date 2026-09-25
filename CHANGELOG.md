@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - **Another plugin returning the wrong type from a WordPress hook could crash the Users screen or the login.** Quick 2FA's callbacks declared strict parameter types, so when a plugin's `manage_users_custom_column` callback returned nothing for a column it didn't own, Quick 2FA received `null` and PHP threw a `TypeError`. The users-table column, sorting, view and row-action callbacks, the profile section, the settings-page script loader and the lockout check at login had the same weakness. Each now accepts any value, acts only on a value it can use, and passes anything else through unchanged. Introduced in 0.7.0.
+- **`wp plugin list` and `wp plugin update` never saw a new release.** The GitHub updater loaded only in admin and cron requests, so WP-CLI reported no update and could not install one. It now loads under WP-CLI too. Introduced in 1.0.0.
 - **The password-reminder warning showed a blue border instead of amber in right-to-left languages.** Its colour was set inline with `border-left-color`, but WordPress draws the login message border on the right in RTL locales. It now uses the logical `border-inline-start-color` from the plugin's login stylesheet. Introduced in 0.10.0.
 
 ### Changed
