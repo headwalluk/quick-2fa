@@ -4,6 +4,13 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **No behaviour changes.** `unlock-all`, `list-locked` and `emergency-disable` no longer return partway through: the "nothing to do" case is now an `else` branch, so each command has a single exit. `emergency-disable` leaves the `--yes` check to `WP_CLI::confirm()`, which already skips the prompt when it is given. Output is unchanged.
+- The `wp help` examples for `lock`, `unlock-all`, `status` and `emergency-disable` now show what the commands actually print. Two docblocks in the WP-CLI commands that explained history and reasoning now say what the function does; the reasoning for when the failed-attempt counter is reset is in `docs/account-locking.md`.
+
 ## [1.5.0] — 2026-09-25
 
 ### Added

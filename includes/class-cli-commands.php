@@ -32,11 +32,11 @@ class CLI_Commands {
 	 *
 	 *     # Lock user by ID
 	 *     $ wp quick-2fa lock 123
-	 *     Success: User 'john_doe' has been locked out.
+	 *     Success: User 'john_doe' has been locked out and all sessions terminated.
 	 *
 	 *     # Lock user by login
 	 *     $ wp quick-2fa lock john_doe
-	 *     Success: User 'john_doe' has been locked out.
+	 *     Success: User 'john_doe' has been locked out and all sessions terminated.
 	 *
 	 * @since 0.6.0
 	 * @param array $args       Positional arguments.
@@ -174,6 +174,7 @@ class CLI_Commands {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp quick-2fa unlock-all
+	 *     Are you sure you want to unlock 23 users? [y/n] y
 	 *     Success: Unlocked 23 users.
 	 *
 	 * @subcommand unlock-all
@@ -205,19 +206,18 @@ class CLI_Commands {
 
 		if ( empty( $user_ids ) ) {
 			\WP_CLI::warning( 'No locked users found.' );
-			return;
+		} else {
+			\WP_CLI::confirm( sprintf( 'Are you sure you want to unlock %d users?', count( $user_ids ) ), $assoc_args );
+
+			$unlocked_count = 0;
+
+			foreach ( $user_ids as $user_id ) {
+				$this->unlock_user( (int) $user_id, 'bulk_unlock' );
+				++$unlocked_count;
+			}
+
+			\WP_CLI::success( sprintf( 'Unlocked %d users.', $unlocked_count ) );
 		}
-
-		\WP_CLI::confirm( sprintf( 'Are you sure you want to unlock %d users?', count( $user_ids ) ), $assoc_args );
-
-		$unlocked_count = 0;
-
-		foreach ( $user_ids as $user_id ) {
-			$this->unlock_user( (int) $user_id, 'bulk_unlock' );
-			++$unlocked_count;
-		}
-
-		\WP_CLI::success( sprintf( 'Unlocked %d users.', $unlocked_count ) );
 	}
 
 	/**
@@ -241,14 +241,16 @@ class CLI_Commands {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp quick-2fa status admin
-	 *     +-----------------+-------------+
-	 *     | Field           | Value       |
-	 *     +-----------------+-------------+
-	 *     | User            | admin       |
-	 *     | Lock Status     | Unlocked    |
-	 *     | Last Verified   | 2 hours ago |
-	 *     | Trusted Devices | 1           |
-	 *     +-----------------+-------------+
+	 *     +-----------------+-------------------+
+	 *     | Field           | Value             |
+	 *     +-----------------+-------------------+
+	 *     | User            | admin             |
+	 *     | Email           | admin@example.com |
+	 *     | Lock Status     | Unlocked          |
+	 *     | Last Verified   | 2 hours ago       |
+	 *     | Failed Attempts | 0                 |
+	 *     | Trusted Devices | 1                 |
+	 *     +-----------------+-------------------+
 	 *
 	 * @since 0.6.0
 	 * @param array $args       Positional arguments.
@@ -368,29 +370,28 @@ class CLI_Commands {
 
 		if ( empty( $users ) ) {
 			\WP_CLI::warning( 'No locked users found.' );
-			return;
-		}
+		} else {
+			$locked_users = array();
+			foreach ( $users as $user ) {
+				$locked_until = (int) get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
 
-		$locked_users = array();
-		foreach ( $users as $user ) {
-			$locked_until = (int) get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
+				if ( $locked_until > time() + PERMANENT_LOCK_THRESHOLD ) {
+					$locked_until_display = 'Permanent';
+				} else {
+					$locked_until_display = wp_date( 'Y-m-d H:i:s', $locked_until );
+				}
 
-			if ( $locked_until > time() + PERMANENT_LOCK_THRESHOLD ) {
-				$locked_until_display = 'Permanent';
-			} else {
-				$locked_until_display = wp_date( 'Y-m-d H:i:s', $locked_until );
+				$locked_users[] = array(
+					'User ID'      => $user->ID,
+					'Login'        => $user->user_login,
+					'Email'        => $user->user_email,
+					'Locked Until' => $locked_until_display,
+				);
 			}
 
-			$locked_users[] = array(
-				'User ID'      => $user->ID,
-				'Login'        => $user->user_login,
-				'Email'        => $user->user_email,
-				'Locked Until' => $locked_until_display,
-			);
+			$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
+			\WP_CLI\Utils\format_items( $format, $locked_users, array( 'User ID', 'Login', 'Email', 'Locked Until' ) );
 		}
-
-		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
-		\WP_CLI\Utils\format_items( $format, $locked_users, array( 'User ID', 'Login', 'Email', 'Locked Until' ) );
 	}
 
 	/**
@@ -463,8 +464,6 @@ class CLI_Commands {
 	/**
 	 * Lock one account, end its sessions, and record why.
 	 *
-	 * Shared by lock and lock-all, which carried identical bodies.
-	 *
 	 * @since 1.3.0
 	 * @param int    $user_id User to lock.
 	 * @param string $reason  Reason recorded in the event log.
@@ -485,12 +484,9 @@ class CLI_Commands {
 	}
 
 	/**
-	 * Unlock one account and record why.
+	 * Unlock one account, reset its failed-attempt counter, and record why.
 	 *
-	 * Shared by unlock and unlock-all. The failed-attempt counter is reset here
-	 * because a human is deliberately restoring access; it is deliberately NOT
-	 * reset when a timed lock simply elapses, so a brute-force attempt does not
-	 * earn a fresh set of attempts by waiting.
+	 * See docs/account-locking.md for when the counter is and isn't reset.
 	 *
 	 * @since 1.3.0
 	 * @param int    $user_id User to unlock.
@@ -525,9 +521,8 @@ class CLI_Commands {
 	/**
 	 * Emergency disable Quick 2FA across all users.
 	 *
-	 * This command sets Quick 2FA to disabled mode, bypassing all 2FA checks.
-	 * Use this only in emergency situations where administrators are locked out.
-	 * Requires --yes flag to confirm the action.
+	 * Sets Quick 2FA to disabled mode, bypassing all 2FA checks. Use this only
+	 * when administrators are locked out and have no other way back in.
 	 *
 	 * ## OPTIONS
 	 *
@@ -537,10 +532,16 @@ class CLI_Commands {
 	 * ## EXAMPLES
 	 *
 	 *     # Emergency disable with confirmation
-	 *     wp quick-2fa emergency-disable
+	 *     $ wp quick-2fa emergency-disable
+	 *     This will disable Quick 2FA for all users. Continue? [y/n] y
+	 *     Success: Quick 2FA has been emergency disabled.
 	 *
 	 *     # Emergency disable without confirmation
-	 *     wp quick-2fa emergency-disable --yes
+	 *     $ wp quick-2fa emergency-disable --yes
+	 *     Success: Quick 2FA has been emergency disabled.
+	 *
+	 *     IMPORTANT: Quick 2FA is now bypassed for all users.
+	 *     To re-enable, visit Settings > Quick 2FA in WordPress admin.
 	 *
 	 * @subcommand emergency-disable
 	 *
@@ -550,27 +551,25 @@ class CLI_Commands {
 	 */
 	public function emergency_disable( array $args, array $assoc_args ): void {
 		$current_mode = (string) get_option( OPTION_MODE, DEFAULT_MODE );
+
 		if ( MODE_DISABLED === $current_mode ) {
 			\WP_CLI::warning( 'Quick 2FA is already in disabled mode.' );
-			return;
-		}
-
-		if ( ! isset( $assoc_args['yes'] ) ) {
+		} else {
 			\WP_CLI::confirm( 'This will disable Quick 2FA for all users. Continue?', $assoc_args );
+
+			update_option( OPTION_MODE, MODE_DISABLED );
+
+			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional: emergency action must be logged to server error log.
+				sprintf(
+					'[Quick 2FA] Emergency disable activated via WP-CLI at %s',
+					gmdate( 'Y-m-d H:i:s' )
+				)
+			);
+
+			\WP_CLI::success( 'Quick 2FA has been emergency disabled.' );
+			\WP_CLI::line( '' );
+			\WP_CLI::line( 'IMPORTANT: Quick 2FA is now bypassed for all users.' );
+			\WP_CLI::line( 'To re-enable, visit Settings > Quick 2FA in WordPress admin.' );
 		}
-
-		update_option( OPTION_MODE, MODE_DISABLED );
-
-		error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional: emergency action must be logged to server error log.
-			sprintf(
-				'[Quick 2FA] Emergency disable activated via WP-CLI at %s',
-				gmdate( 'Y-m-d H:i:s' )
-			)
-		);
-
-		\WP_CLI::success( 'Quick 2FA has been emergency disabled.' );
-		\WP_CLI::line( '' );
-		\WP_CLI::line( 'IMPORTANT: Quick 2FA is now bypassed for all users.' );
-		\WP_CLI::line( 'To re-enable, visit Settings > Quick 2FA in WordPress admin.' );
 	}
 }

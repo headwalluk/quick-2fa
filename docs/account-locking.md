@@ -23,6 +23,8 @@ Site administrators can manually lock or unlock any user:
 - **From the admin UI:** Users → All Users → row actions ("Lock Out" / "Unlock")
 - **From WP-CLI:** `wp quick-2fa lock <user>` and `wp quick-2fa unlock <user>`
 
+Unlocking by hand, from either place, also resets the account's failed-attempt counter, because someone is deliberately restoring access. A timed lock that simply runs out leaves the counter where it was, so an attacker who waits out the lock gets no fresh set of guesses against the same code. Sending a new code resets the counter.
+
 Manual locks are **permanent** — they have no expiry timestamp and persist until an admin unlocks the account explicitly. The "Lock Status" column on the Users table shows whether each lock is automatic (with an unlock time) or manual (permanent).
 
 The admin UI won't let you lock your own account, as a guardrail against self-lockout. WP-CLI runs as no particular user, so it has no such guard: `wp quick-2fa lock` will lock whichever account you name, including your own.
