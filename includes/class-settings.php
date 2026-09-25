@@ -186,6 +186,17 @@ class Settings {
 				'default'           => DEFAULT_LOCKOUT_DURATION,
 			)
 		);
+
+		// Delete all plugin data on uninstall.
+		register_setting(
+			'quick2fa_settings',
+			OPTION_DELETE_DATA_ON_UNINSTALL,
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => DEFAULT_DELETE_DATA_ON_UNINSTALL,
+			)
+		);
 	}
 
 	/**
@@ -374,6 +385,7 @@ class Settings {
 		$password_reminder_cooldown = (int) get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN );
 		$trusted_device_expiry      = (int) get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
 		$lockout_duration           = (int) get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION );
+		$delete_data_on_uninstall   = (bool) filter_var( get_option( OPTION_DELETE_DATA_ON_UNINSTALL, DEFAULT_DELETE_DATA_ON_UNINSTALL ), FILTER_VALIDATE_BOOLEAN );
 
 		$wp_roles  = wp_roles();
 		$all_roles = $wp_roles->get_names();
@@ -392,6 +404,7 @@ class Settings {
 		$const_option_password_reminder_cooldown = OPTION_PASSWORD_REMINDER_COOLDOWN;
 		$const_option_trusted_device_expiry      = OPTION_TRUSTED_DEVICE_EXPIRY;
 		$const_option_lockout_duration           = OPTION_LOCKOUT_DURATION;
+		$const_option_delete_data_on_uninstall   = OPTION_DELETE_DATA_ON_UNINSTALL;
 		$const_mode_all                          = MODE_ALL;
 		$const_mode_roles                        = MODE_ROLES;
 		$const_mode_disabled                     = MODE_DISABLED;

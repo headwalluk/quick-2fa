@@ -65,6 +65,8 @@ class Plugin {
 		add_action( 'admin_init', array( $this, 'check_verification' ), 1 );
 		add_filter( 'wp_authenticate_user', array( $this, 'check_lockout_on_login' ), 10, 1 );
 		add_action( 'wp_login', array( $this, 'record_last_login' ), 10, 2 );
+		add_action( 'wp_set_password', array( $this, 'revoke_devices_on_password_set' ), 10, 2 );
+		add_action( 'profile_update', array( $this, 'revoke_devices_on_profile_update' ), 10, 2 );
 		add_action( 'login_init', array( $this, 'handle_login_actions' ) );
 		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_login_assets' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
@@ -188,6 +190,58 @@ class Plugin {
 	}
 
 	/**
+	 * Revoke a user's trusted devices after wp_set_password() changes their password.
+	 *
+	 * Covers password resets and the password reminder page.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param mixed $password The new plaintext password (unused).
+	 * @param mixed $user_id  The user whose password was set.
+	 */
+	public function revoke_devices_on_password_set( mixed $password, mixed $user_id ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- Required by the wp_set_password signature.
+		if ( is_numeric( $user_id ) && (int) $user_id > 0 ) {
+			$this->revoke_devices_after_password_change( (int) $user_id );
+		}
+	}
+
+	/**
+	 * Revoke a user's trusted devices when a profile update changed their password.
+	 *
+	 * Core's wp_update_user() stores the new hash itself rather than calling wp_set_password(),
+	 * so the profile page and `wp user update --user_pass` only reach this hook.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param mixed $user_id       The updated user.
+	 * @param mixed $old_user_data The user as it was before the update.
+	 */
+	public function revoke_devices_on_profile_update( mixed $user_id, mixed $old_user_data ): void {
+		$user = is_numeric( $user_id ) ? get_userdata( (int) $user_id ) : false;
+
+		if ( $user instanceof \WP_User && $old_user_data instanceof \WP_User && $user->user_pass !== $old_user_data->user_pass ) {
+			$this->revoke_devices_after_password_change( $user->ID );
+		}
+	}
+
+	/**
+	 * Revoke every trusted device for a user whose password has changed.
+	 *
+	 * @since 1.6.0
+	 *
+	 * @param int $user_id The user whose password changed.
+	 */
+	private function revoke_devices_after_password_change( int $user_id ): void {
+		$security = new Account_Security_Handler( $user_id );
+		$security->clear_trusted_devices(
+			array(
+				'source' => 'password_change',
+				'reason' => 'password_changed',
+			)
+		);
+	}
+
+	/**
 	 * Check if user is locked out during login.
 	 *
 	 * Blocks locked users from logging in (front-end or admin).
@@ -295,15 +349,19 @@ class Plugin {
 		$needs_verification = true;
 
 		if ( $last_verified > 0 ) {
-			$security_handler = new Account_Security_Handler( $user_id );
+			$security_handler      = new Account_Security_Handler( $user_id );
+			$session_verified_time = $security_handler->get_current_session_verified_time();
 
 			if ( are_trusted_devices_enabled() ) {
-				// Each trusted device entry carries its own expiry, so no time-based
-				// period applies here. Unknown devices fail the check and are challenged.
-				$needs_verification = ! $security_handler->is_device_trusted();
+				// A session that verified within the verification period stays verified, so
+				// revoking devices (a password change, for one) doesn't re-challenge it.
+				// Otherwise the device must be trusted; each entry carries its own expiry.
+				$verification_period = (int) get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD ) * DAY_IN_SECONDS;
+				$session_is_current  = $session_verified_time > 0 && ( time() - $session_verified_time ) < $verification_period;
+				$needs_verification  = ! $session_is_current && ! $security_handler->is_device_trusted();
 			} else {
 				// Trusted devices disabled: every login session must verify once.
-				$needs_verification = ! $security_handler->is_current_session_verified();
+				$needs_verification = 0 === $session_verified_time;
 			}
 		}
 

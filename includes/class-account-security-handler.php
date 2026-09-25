@@ -55,8 +55,9 @@ class Account_Security_Handler {
 
 		if ( $locked_until > 0 ) {
 			if ( time() >= $locked_until ) {
-				// Lock has elapsed — clear it, so the check is self-healing.
-				$this->unlock_account();
+				// Lock has elapsed — clear it, so the check is self-healing. The
+				// failed-attempt count is left as it was; see docs/account-locking.md.
+				$this->clear_lock();
 			} else {
 				$is_locked = true;
 			}
@@ -66,37 +67,71 @@ class Account_Security_Handler {
 	}
 
 	/**
-	 * Lock user account.
+	 * Lock the account, log one event, and fire quick2fa_account_locked.
 	 *
 	 * @since 0.4.0
+	 * @since 1.6.0 Added $context, which is logged and passed to the action.
 	 * @param int|null $duration Lock duration in seconds, or null to use the OPTION_LOCKOUT_DURATION setting.
+	 * @param array    $context  Who or what caused the lock: 'source' and 'reason', plus 'admin_id' from the admin UI.
 	 */
-	public function lock_account( ?int $duration = null ): void {
+	public function lock_account( ?int $duration = null, array $context = array() ): void {
 		if ( null === $duration ) {
 			$duration = (int) get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION ) * MINUTE_IN_SECONDS;
 		}
 
-		$lock_until = time() + $duration;
+		$locked_until = time() + $duration;
 
-		update_user_meta( $this->user_id, META_LOCKED_UNTIL, $lock_until );
+		update_user_meta( $this->user_id, META_LOCKED_UNTIL, $locked_until );
 		delete_transient( TRANSIENT_LOCKED_COUNT );
 
-		$this->log_event(
-			LOG_ACCOUNT_LOCKED,
-			array(
-				'timestamp'    => time(),
-				'locked_until' => $lock_until,
-				'ip'           => get_ip_address(),
-			)
-		);
+		$this->log_event( LOG_ACCOUNT_LOCKED, array_merge( $context, array( 'locked_until' => $locked_until ) ) );
+
+		/**
+		 * Fires after an account is locked, automatically or by hand.
+		 *
+		 * @since 1.6.0
+		 *
+		 * @param int   $user_id      The locked user.
+		 * @param int   $locked_until Unix timestamp the lock ends. A manual lock is set about 200 years ahead.
+		 * @param array $context      Who or what caused the lock: 'source' and 'reason', plus 'admin_id' from the admin UI.
+		 */
+		do_action( 'quick2fa_account_locked', $this->user_id, $locked_until, $context );
 	}
 
 	/**
-	 * Unlock user account.
+	 * Unlock the account by hand, reset its failed-attempt count, log it, and fire quick2fa_account_unlocked.
+	 *
+	 * A lock that simply runs out is cleared by is_locked() instead, without this.
 	 *
 	 * @since 0.4.0
+	 * @since 1.6.0 Added $context; now also resets the failed-attempt count, logs the event and fires the action.
+	 * @param array $context Who unlocked it: 'source' and 'reason', plus 'admin_id' from the admin UI.
 	 */
-	public function unlock_account(): void {
+	public function unlock_account( array $context = array() ): void {
+		$this->clear_lock();
+		update_user_meta( $this->user_id, META_CODE_ATTEMPTS, 0 );
+
+		$this->log_event( LOG_ACCOUNT_UNLOCKED, $context );
+
+		/**
+		 * Fires after an account is unlocked by hand, from the admin UI or WP-CLI.
+		 *
+		 * Doesn't fire when a timed lock runs out.
+		 *
+		 * @since 1.6.0
+		 *
+		 * @param int   $user_id The unlocked user.
+		 * @param array $context Who unlocked it: 'source' and 'reason', plus 'admin_id' from the admin UI.
+		 */
+		do_action( 'quick2fa_account_unlocked', $this->user_id, $context );
+	}
+
+	/**
+	 * Remove the lock timestamp and the cached locked-user count.
+	 *
+	 * @since 1.6.0
+	 */
+	private function clear_lock(): void {
 		delete_user_meta( $this->user_id, META_LOCKED_UNTIL );
 		delete_transient( TRANSIENT_LOCKED_COUNT );
 	}
@@ -341,13 +376,24 @@ class Account_Security_Handler {
 	}
 
 	/**
-	 * Remove all trusted devices for this user.
+	 * Remove all trusted devices for this user, logging the revocation when there were any.
 	 *
 	 * @since 0.6.0
-	 * @return bool True on success.
+	 * @since 1.6.0 Added $context, logs the event itself, and returns the number of devices removed.
+	 * @param array $context Who or what revoked them: 'source' and 'reason', plus 'admin_id' from the admin UI.
+	 * @return int Number of devices removed.
 	 */
-	public function clear_trusted_devices(): bool {
-		return delete_user_meta( $this->user_id, META_TRUSTED_DEVICES );
+	public function clear_trusted_devices( array $context = array() ): int {
+		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
+		$device_count    = is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
+
+		delete_user_meta( $this->user_id, META_TRUSTED_DEVICES );
+
+		if ( $device_count > 0 ) {
+			$this->log_event( LOG_ALL_DEVICES_REVOKED, array_merge( $context, array( 'device_count' => $device_count ) ) );
+		}
+
+		return $device_count;
 	}
 
 	/**
@@ -377,14 +423,27 @@ class Account_Security_Handler {
 	 * @return bool True when the session carries a verification timestamp.
 	 */
 	public function is_current_session_verified(): bool {
-		$token    = wp_get_session_token();
-		$verified = false;
+		return $this->get_current_session_verified_time() > 0;
+	}
+
+	/**
+	 * Get when the current login session passed verification.
+	 *
+	 * @since 1.6.0
+	 * @return int Unix timestamp, or 0 if the session hasn't verified or there is no session.
+	 */
+	public function get_current_session_verified_time(): int {
+		$token         = wp_get_session_token();
+		$verified_time = 0;
 
 		if ( '' !== $token ) {
-			$session  = \WP_Session_Tokens::get_instance( $this->user_id )->get( $token );
-			$verified = is_array( $session ) && (int) ( $session[ SESSION_KEY_VERIFIED ] ?? 0 ) > 0;
+			$session = \WP_Session_Tokens::get_instance( $this->user_id )->get( $token );
+
+			if ( is_array( $session ) ) {
+				$verified_time = (int) ( $session[ SESSION_KEY_VERIFIED ] ?? 0 );
+			}
 		}
 
-		return $verified;
+		return $verified_time;
 	}
 }

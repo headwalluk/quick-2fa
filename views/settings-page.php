@@ -33,6 +33,8 @@
  * @var string $const_option_password_reminder_cooldown    OPTION_PASSWORD_REMINDER_COOLDOWN constant value
  * @var string $const_option_trusted_device_expiry         OPTION_TRUSTED_DEVICE_EXPIRY constant value
  * @var string $const_option_lockout_duration              OPTION_LOCKOUT_DURATION constant value
+ * @var bool   $delete_data_on_uninstall                   Whether uninstalling deletes all plugin data
+ * @var string $const_option_delete_data_on_uninstall      OPTION_DELETE_DATA_ON_UNINSTALL constant value
  * @var string $const_mode_all                      MODE_ALL constant value
  * @var string $const_mode_roles                    MODE_ROLES constant value
  * @var string $const_mode_disabled                 MODE_DISABLED constant value
@@ -212,6 +214,21 @@ printf(
 	esc_attr( $password_reminder_cooldown ),
 	esc_html_x( 'days', 'unit suffix after a number input', 'quick-2fa' ),
 	esc_html__( 'Wait this many days before showing the reminder again if dismissed (1-90 days).', 'quick-2fa' )
+);
+
+echo '</tbody></table>';
+
+// Uninstall Section.
+printf( '<h2>%s</h2>', esc_html_x( 'Uninstall', 'settings section heading', 'quick-2fa' ) );
+echo '<table class="form-table" role="presentation"><tbody>';
+
+printf(
+	'<tr><th scope="row"><label for="quick2fa_delete_data_on_uninstall">%s</label></th><td><label><input type="checkbox" name="%s" id="quick2fa_delete_data_on_uninstall" value="1" %s> %s</label><p class="description">%s</p></td></tr>',
+	esc_html__( 'Plugin Data', 'quick-2fa' ),
+	esc_attr( $const_option_delete_data_on_uninstall ),
+	checked( $delete_data_on_uninstall, true, false ),
+	esc_html__( 'Delete all plugin data when uninstalled', 'quick-2fa' ),
+	esc_html__( 'When the plugin is deleted from the Plugins screen, also delete its settings, account locks, trusted devices, event logs and last-login records. Deactivating the plugin never deletes anything.', 'quick-2fa' )
 );
 
 echo '</tbody></table>';

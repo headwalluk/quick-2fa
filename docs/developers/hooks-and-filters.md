@@ -159,9 +159,49 @@ See [Reading last-login data](extending.md#reading-last-login-data) for the data
 
 ## Actions
 
-Quick 2FA does not currently define any plugin-specific action hooks. The only `do_action()` calls in the codebase are to WordPress core hooks (`login_head`, `login_footer`, `login_enqueue_scripts`) and to the Query Monitor hook (`qm/cease`) for security on auth pages.
+Both lock actions pass a `$context` array saying who or what acted:
 
-If you need an action hook to integrate with — e.g. a `quick2fa_after_verification` hook — open a feature request on GitHub describing the use case.
+| Key | Present | Value |
+|-----|---------|-------|
+| `source` | Always | `verification` (too many wrong codes), `admin_ui` or `wp_cli` |
+| `reason` | Always | `failed_attempts`, `manual_lock` or `emergency_lockdown` for a lock; `manual_unlock` or `bulk_unlock` for an unlock |
+| `admin_id` | From the admin UI | ID of the user who clicked the row action |
+
+The same context is written to the account's event log.
+
+### `quick2fa_account_locked`
+
+Fires after an account is locked, automatically or by hand.
+
+**Parameters:**
+- `int $user_id` — The locked user
+- `int $locked_until` — Unix timestamp the lock ends. A manual lock is set about 200 years ahead
+- `array $context` — See above
+
+```php
+// Email the site admin whenever an account is locked
+add_action( 'quick2fa_account_locked', function( $user_id, $locked_until, $context ) {
+    $user = get_userdata( $user_id );
+
+    if ( $user instanceof WP_User ) {
+        wp_mail(
+            get_option( 'admin_email' ),
+            'Quick 2FA locked an account',
+            sprintf( '%s was locked (%s).', $user->user_login, $context['reason'] ?? 'unknown reason' )
+        );
+    }
+}, 10, 3 );
+```
+
+---
+
+### `quick2fa_account_unlocked`
+
+Fires after an account is unlocked by hand, from the admin UI or WP-CLI. It doesn't fire when a timed lock simply runs out.
+
+**Parameters:**
+- `int $user_id` — The unlocked user
+- `array $context` — See above
 
 ## What about constants and namespaced functions?
 
@@ -169,15 +209,15 @@ Constants and namespaced functions in `Quick_2FA\*` are **private**. Don't refer
 
 If you find yourself wanting to call into the plugin, that's a sign we need a public hook for your use case. Open an issue with details and we'll consider exposing one.
 
-## Stored data you can read
+## Stored data
 
-These stored values are stable and safe to read directly with `get_user_meta()` and `get_option()`. Use the literal strings shown; the PHP constants that hold them are private.
+Quick 2FA's options and user meta are internal. Their names and formats may change, so integrate through the filters and actions above rather than reading them.
+
+The one exception is last-login data, which is published for reading because WordPress keeps no equivalent:
 
 | Key | Where | Value |
 |-----|-------|-------|
 | `_quick2fa_last_login` | User meta | Unix timestamp of the user's most recent login. See [reading last-login data](extending.md#reading-last-login-data) before relying on it |
 | `quick2fa_last_login_since` | Option | Unix timestamp of the first login this site recorded |
-| `_quick2fa_locked_until` | User meta | Unix timestamp the account's lock ends. The account is locked while it is in the future. A manual lock is set about 200 years ahead |
-| `quick2fa_mode` | Option | `all`, `roles` or `disabled`; see [configuration](../configuration.md#2fa-mode) |
 
-Treat them as read-only from code. Writing to them skips the plugin's own checks and event logging, so lock and unlock accounts with the [WP-CLI commands](../wp-cli.md) instead. The database edits in [troubleshooting](../troubleshooting.md#4-direct-database-edit) are for recovery only.
+Read these with `get_user_meta()` and `get_option()`, using the literal strings; the PHP constants that hold them are private. Don't write to them.

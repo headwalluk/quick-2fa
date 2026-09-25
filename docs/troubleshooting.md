@@ -96,7 +96,7 @@ Check the account's [event log](account-locking.md#event-logging) to see where t
 - Someone locked the account by hand, from the Users screen or with `wp quick-2fa lock`. The `account_locked` event's data says which
 - Someone else entered 5 wrong codes. Check the `verification_failed` events for IP addresses that aren't yours
 
-Only someone who knows the password can reach the verification page, so the second case means the password is compromised. Change it and [revoke the account's trusted devices](trusted-devices.md#revoking-devices).
+Only someone who knows the password can reach the verification page, so the second case means the password is compromised. Change it, which also [revokes the account's trusted devices](trusted-devices.md#revoking-devices).
 
 ## "Too many verification codes requested" — but I only requested one
 

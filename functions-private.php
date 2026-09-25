@@ -39,6 +39,7 @@ function get_default_settings(): array {
 			OPTION_DISABLE_TRUSTED_DEVICES    => DEFAULT_DISABLE_TRUSTED_DEVICES,
 			OPTION_TRUSTED_DEVICE_EXPIRY      => DEFAULT_TRUSTED_DEVICE_EXPIRY,
 			OPTION_LOCKOUT_DURATION           => DEFAULT_LOCKOUT_DURATION,
+			OPTION_DELETE_DATA_ON_UNINSTALL   => DEFAULT_DELETE_DATA_ON_UNINSTALL,
 			OPTION_EMAIL_FROM_NAME            => get_bloginfo( 'name' ),
 			OPTION_EMAIL_FROM_ADDRESS         => get_option( 'admin_email' ),
 			OPTION_EMAIL_SUBJECT              => __( 'Your verification code', 'quick-2fa' ),
@@ -148,7 +149,18 @@ function get_verify_intro(): string {
  *                see `get_intro_allowed_html()`. Render with `wp_kses()`.
  */
 function get_password_intro(): string {
-	$intro = __( 'Regular password changes help keep your account secure. We recommend updating your password every 60 days.', 'quick-2fa' );
+	$reminder_period = (int) get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
+
+	$intro = sprintf(
+		/* translators: %d: number of days between password changes, from the Reminder Period setting */
+		_n(
+			'Regular password changes help keep your account secure. We recommend updating your password every %d day.',
+			'Regular password changes help keep your account secure. We recommend updating your password every %d days.',
+			$reminder_period,
+			'quick-2fa'
+		),
+		$reminder_period
+	);
 
 	/**
 	 * Filter the intro text shown on the password reminder page.

@@ -5,9 +5,10 @@
 When trusted devices are **enabled** (default), the request flow is:
 
 1. User logs in
-2. Quick 2FA looks for a valid device-trust **cookie** on the request
-3. If the cookie's token matches an entry in the user's trusted-devices list **and** that entry hasn't expired → skip verification
-4. Otherwise → require verification
+2. If this login session already verified within the **Verification Period** → no challenge
+3. Otherwise Quick 2FA looks for a valid device-trust **cookie** on the request
+4. If the cookie's token matches an entry in the user's trusted-devices list **and** that entry hasn't expired → skip verification
+5. Otherwise → require verification
 
 After a successful verification, the user can tick "trust this device". Quick 2FA then mints a random token, sends it to the browser as a secure cookie, and records the token's hash against an expiry (by default 30 days). Leaving the box unticked still grants *short-term* trust — a cookie that lasts for the verification period (3 days by default) — so the user isn't challenged on every single login within that window.
 
@@ -37,7 +38,7 @@ Each trusted-device entry stores its own expiry timestamp, set when the device w
 - If the cookie token matches an entry **and** it hasn't expired → trusted, skip verification
 - If it matches **but** has expired → the entry is silently removed and verification is required
 
-There's no separate "verification period" check overlaid on top of trusted devices — the per-device expiry is the only timer. (When trusted devices are *disabled*, there is no timer at all: each login session verifies once.)
+Each device's expiry is its own timer. Separately, a login session that has verified counts as verified for the Verification Period, so revoking devices doesn't interrupt it. (When trusted devices are *disabled*, the session is verified until it ends: each login session verifies once.)
 
 ## Revoking devices
 
@@ -49,12 +50,13 @@ Anyone who can edit another user's profile can revoke that user's devices in the
 wp quick-2fa clear-devices <user>
 ```
 
-Deleting the plugin from the Plugins screen clears every user's device list. Nothing else clears it:
+**Changing a password revokes all of the user's trusted devices**, whichever way it's changed: the password reminder page, the profile page, a password reset, or `wp user update --user_pass`. The session that made the change carries on, but every device, including that one, needs a code at its next login.
 
-- **Changing password does not revoke trusted devices.** Changing it from the password reminder page ends the user's other login sessions, but a device that is still trusted can start a new session without a code.
-- **Locking an account does not revoke them either.** When the account is unlocked, its trusted devices work again.
+Revoking devices doesn't end sessions that are already open. A session that verified recently stays verified until the Verification Period runs out or the user logs out. To force everyone out straight away, see [WP-CLI → force everyone to verify again](wp-cli.md#force-everyone-to-verify-again-after-a-security-incident).
 
-If you suspect an account is compromised, change its password **and** revoke its devices.
+**Locking an account doesn't revoke its devices.** When the account is unlocked, its trusted devices work again.
+
+If you suspect an account is compromised, change its password. That revokes its devices; end its sessions too if an attacker might have one open.
 
 ## Disabling the feature
 

@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/headwalluk/quick-2fa
  * Description: Lightweight email-based two-factor authentication for WordPress admin access.
  * Version: 1.5.0
- * Requires at least: 6.0
+ * Requires at least: 6.2
  * Requires PHP: 8.2
  * Author: Paul Faulkner
  * Author URI: https://headwall-hosting.com

@@ -20,7 +20,7 @@ While the mode is **Disabled**, every admin screen shows users who can manage op
 
 | Setting page label | Option | Default | What it does |
 |--------------------|--------|---------|--------------|
-| Verification Period | `quick2fa_verification_period` | `3` days | How long a verification trusts the device when "Trust this device" is left unticked. Not used when trusted devices are disabled; see [trusted devices](trusted-devices.md) |
+| Verification Period | `quick2fa_verification_period` | `3` days | How long a verification trusts the device when "Trust this device" is left unticked, and how long a verified login session stays verified after its device is revoked. Not used when trusted devices are disabled; see [trusted devices](trusted-devices.md) |
 | Code Length | `quick2fa_code_length` | `6` digits | Length of the emailed numeric code |
 | Code Expiry | `quick2fa_code_expiry` | `15` minutes | How long an emailed code remains valid before the user must request a new one |
 
@@ -59,6 +59,14 @@ Quick 2FA can periodically nudge users to change their password. This is separat
 | Email Subject | `quick2fa_email_subject` | "Your verification code" | Subject line |
 
 Email is sent with `wp_mail()`, so it goes out however your site sends mail: an SMTP plugin, a transactional email service or the server's own mail system. If users aren't receiving codes, check your `wp_mail()` setup first; see [troubleshooting](troubleshooting.md#users-arent-receiving-verification-codes).
+
+The reminder page tells the user how often to change their password, using the Reminder Period.
+
+## Uninstall
+
+| Setting page label | Option | Default | What it does |
+|--------------------|--------|---------|--------------|
+| Plugin Data: Delete all plugin data when uninstalled | `quick2fa_delete_data_on_uninstall` | Off | When the plugin is deleted from the Plugins screen, also delete all of its data. See [how it works → deactivating and deleting the plugin](how-it-works.md#deactivating-and-deleting-the-plugin) |
 
 ## Customising the verification and password reminder text
 

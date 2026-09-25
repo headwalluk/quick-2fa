@@ -421,11 +421,13 @@ class CLI_Commands {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		$trusted_devices = get_user_meta( $user->ID, META_TRUSTED_DEVICES, true );
-		$device_count    = is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
-
-		$security = new Account_Security_Handler( $user->ID );
-		$security->clear_trusted_devices();
+		$security     = new Account_Security_Handler( $user->ID );
+		$device_count = $security->clear_trusted_devices(
+			array(
+				'source' => 'wp_cli',
+				'reason' => 'clear_devices',
+			)
+		);
 
 		\WP_CLI::success( sprintf( "Cleared %d trusted devices for user '%s'.", $device_count, $user->user_login ) );
 	}
@@ -470,23 +472,19 @@ class CLI_Commands {
 	 */
 	private function lock_user( int $user_id, string $reason ): void {
 		$security = new Account_Security_Handler( $user_id );
-		$security->lock_account( PERMANENT_LOCK_DURATION );
-
-		$this->destroy_all_sessions( $user_id );
-
-		$security->log_event(
-			LOG_ACCOUNT_LOCKED,
+		$security->lock_account(
+			PERMANENT_LOCK_DURATION,
 			array(
 				'source' => 'wp_cli',
 				'reason' => $reason,
 			)
 		);
+
+		$this->destroy_all_sessions( $user_id );
 	}
 
 	/**
-	 * Unlock one account, reset its failed-attempt counter, and record why.
-	 *
-	 * See docs/account-locking.md for when the counter is and isn't reset.
+	 * Unlock one account and record why.
 	 *
 	 * @since 1.3.0
 	 * @param int    $user_id User to unlock.
@@ -494,12 +492,7 @@ class CLI_Commands {
 	 */
 	private function unlock_user( int $user_id, string $reason ): void {
 		$security = new Account_Security_Handler( $user_id );
-		$security->unlock_account();
-
-		update_user_meta( $user_id, META_CODE_ATTEMPTS, 0 );
-
-		$security->log_event(
-			LOG_ACCOUNT_UNLOCKED,
+		$security->unlock_account(
 			array(
 				'source' => 'wp_cli',
 				'reason' => $reason,

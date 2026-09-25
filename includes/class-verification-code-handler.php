@@ -242,7 +242,13 @@ class Verification_Code_Handler {
 	 * @return \WP_Error
 	 */
 	private function lock_and_build_error( Account_Security_Handler $security ): \WP_Error {
-		$security->lock_account();
+		$security->lock_account(
+			null,
+			array(
+				'source' => 'verification',
+				'reason' => 'failed_attempts',
+			)
+		);
 
 		return new \WP_Error(
 			'too_many_attempts',

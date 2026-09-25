@@ -9,7 +9,7 @@ Quick 2FA is a WordPress plugin providing email-based two-factor authentication 
 - **Namespace:** `Quick_2FA` for all classes
 - **Text Domain:** `quick-2fa`
 - **PHP:** 8.2+ (do NOT use `declare(strict_types=1)` — breaks WordPress interop). The floor is 8.2 because four handlers return `true|\WP_Error`, and the `true` type landed in 8.2; on 8.0/8.1 that is a compile-time fatal, not a graceful failure
-- **WordPress:** 6.0+
+- **WordPress:** 6.2+. The floor is 6.2 because revoking trusted devices on a password change hooks `wp_set_password`, which fires from 6.2
 - **No build system** — no npm, no Composer, no bundler. Assets are plain CSS/JS.
 
 Quick 2FA is also the maintainer's **reference plugin**: new WordPress plugins take their
@@ -114,6 +114,8 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 - **User meta** for per-user state (code hashes, lock status, trusted devices, logs)
 - **`wp_options`** for plugin settings (mode, code length, lock duration, etc.)
 - **Transients** for temporary data (return URLs, rate limits)
+- **Every stored key carries the plugin prefix:** `OPTION_PREFIX` for options, `META_PREFIX` for user meta. `uninstall.php` finds keys by prefix, so a key without one survives an uninstall. `META_PASSWORD_LAST_CHANGED` predates the rule and is listed there by name
+- **Uninstall deletes nothing by default.** Only with the *Delete all plugin data when uninstalled* setting on (`OPTION_DELETE_DATA_ON_UNINSTALL`) does `uninstall.php` remove the plugin's options, user meta and transients. Deactivation never deletes data
 
 ### Security Implementation
 
@@ -122,8 +124,9 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 - **Rate limiting:** at most 3 codes per user per 15 minutes (`RATE_LIMIT_CODE_GENERATION_MAX` / `_WINDOW`)
 - **Account locking:** the 5th failed attempt against a code locks the account (`RATE_LIMIT_VERIFICATION_MAX`); storing a new code resets the count. The lock lasts for the *Lockout duration* setting (`OPTION_LOCKOUT_DURATION`, 60 minutes by default)
 - **Device trust:** a random token set as a secure cookie (`HttpOnly`, `SameSite=Lax`, `Secure` on HTTPS); only the token's SHA-256 is stored in user meta, expiring after a configurable TTL. Identity is the cookie, **not** IP/User-Agent (those churn on real connections and are log-only). See `dev-notes/00-project-tracker.md` (v1.2.0) and `docs/trusted-devices.md`
-- **Per-session verification:** a successful `verify()` stamps `SESSION_KEY_VERIFIED` into the current WordPress login session (`WP_Session_Tokens`). With trusted devices disabled that stamp is the check, so each new login session is challenged once. `Password_Reminder_Handler::maintain_session()` reissues the auth cookie for the same token, so a password change keeps the stamp
-- **Session management:** on password change, destroy other sessions via `WP_Session_Tokens::destroy_others()` while keeping current session alive
+- **Per-session verification:** a successful `verify()` stamps `SESSION_KEY_VERIFIED` into the current WordPress login session (`WP_Session_Tokens`). With trusted devices disabled that stamp is the check, so each new login session is challenged once. With them enabled, a stamp younger than the verification period also passes, so revoking devices doesn't re-challenge a session that has just verified. `Password_Reminder_Handler::maintain_session()` reissues the auth cookie for the same token, so a password change keeps the stamp
+- **A password change revokes every trusted device**, by any route: `wp_set_password` covers resets and the reminder page, `profile_update` covers the profile page and `wp user update`. The session that made the change stays verified; every device needs a code at its next login
+- **Session management:** on a password change from the reminder page, destroy other sessions via `WP_Session_Tokens::destroy_others()` while keeping current session alive
 
 ### 2FA Modes
 
@@ -138,12 +141,13 @@ everything in this table as a contract, whether or not it is documented as publi
 
 | Contract | Examples | Breaks when |
 |----------|----------|-------------|
-| Filters | `quick2fa_record_last_login`, `quick2fa_password_parameters` | renamed or removed, or an argument is removed or reordered |
+| Filters and actions | `quick2fa_record_last_login`, `quick2fa_account_locked` | renamed or removed, or an argument is removed or reordered |
 | Stored key strings | `_quick2fa_locked_until`, `_quick2fa_trusted_devices`, `quick2fa_mode` | a constant's **value** changes. Data stored under the old string is ignored, so a new `META_LOCKED_UNTIL` string would unlock every locked account |
 | Script and style handles | `quick-2fa-login`, `quick-2fa-password-page`, `quick-2fa-settings` | renamed. Anything listing the handle as a dependency stops loading |
 | Login page URLs | `wp-login.php?q2fa=verify`, `?q2fa=password` | `QUERY_PARAM` or an `ACTION_*` value changes. Firewall rules and links pointing at them break |
 | WP-CLI commands | `wp quick-2fa lock-all` | a command or argument is renamed. Scripts fail; 1.3.0 renamed five with no aliases |
 
+- **Expose behaviour, not storage.** Give integrations functions and hooks (`quick2fa_account_locked`, a getter) rather than meta keys or option names to read. A key that outside code reads directly can never move or change format: WooCommerce could only move orders to custom tables (HPOS) because code went through `WC_Order` getters. Document a stored key as readable only where a hook or getter would genuinely cost more, and then read-only; `_quick2fa_last_login` is the one such key
 - **Add, don't change.** New filter arguments go at the end. New behaviour gets a new filter, not a new meaning for an existing one
 - **Deprecate, don't rename.** Fire the old name through `apply_filters_deprecated()` and pass its result into the new filter, as `Github_Updater::is_enabled()` does for `quick_2fa_updater_enabled`. Remove the old name no earlier than the next major version
 - **Filters are prefixed `quick2fa_`.** `quick_2fa_updater_enabled` is the one exception, and it is deprecated
@@ -165,7 +169,7 @@ These paths decide who gets into an account:
 - `Verification_Code_Handler::store()` and `verify()`
 - `Plugin::check_verification()`, `Plugin::user_needs_verification()` and `should_skip_check()`
 - Locking: `Account_Security_Handler::lock_account()` and `is_locked()`, and `Plugin::check_lockout_on_login()`
-- Device trust and session verification: `Account_Security_Handler::trust_device()`, `is_device_trusted()`, `mark_current_session_verified()` and `is_current_session_verified()`
+- Device trust and session verification: `Account_Security_Handler::trust_device()`, `is_device_trusted()`, `clear_trusted_devices()`, `mark_current_session_verified()` and `get_current_session_verified_time()`, and the password-change revocation in `Plugin::revoke_devices_on_password_set()` and `revoke_devices_on_profile_update()`
 - `Password_Reminder_Handler::update_password()` and `maintain_session()`
 
 When a change touches one, say so, run every harness in `dev-notes/testing/`, and recommend the

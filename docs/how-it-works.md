@@ -105,17 +105,13 @@ Codes are **never stored in plaintext** — they're hashed with `wp_hash_passwor
 
 ## Deactivating and deleting the plugin
 
-Deactivating Quick 2FA leaves all of its data in place, so reactivating it picks up where it left off.
+Deactivating Quick 2FA never deletes anything, so reactivating it picks up where it left off.
 
-Deleting the plugin from the Plugins screen removes **only the trusted-device lists**. Settings, account locks, event logs, last-login timestamps and any outstanding code hashes stay in the database. A locked account is therefore still locked if the plugin is installed again. Last-login timestamps are kept on purpose, because they can't be recreated (see [reading last-login data](developers/extending.md#retention)).
+Deleting the plugin from the Plugins screen also keeps everything, unless **Delete all plugin data when uninstalled** is ticked under **Settings → Quick 2FA → Uninstall**. With it ticked, deleting the plugin removes its settings, account locks, trusted devices, event logs, last-login records and outstanding codes. Left unticked, the default, a reinstall finds the site as it was, locked accounts included.
 
-To remove everything after deleting the plugin:
+Last-login records can't be recreated once they're gone (see [reading last-login data](developers/extending.md#retention)), so export them first if you might want them later.
 
-```bash
-wp eval 'global $wpdb; $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE %s", $wpdb->esc_like( "_quick2fa_" ) . "%" ) );'
-wp option list --search='quick2fa_*' --field=option_name | xargs -n1 wp option delete
-wp cache flush
-```
+On a site with a persistent object cache, a few short-lived per-user entries (return URLs and the code-sending limit) stay in the cache after deletion and expire within 15 minutes.
 
 ## See also
 

@@ -75,39 +75,27 @@ add_filter( 'quick2fa_updater_enabled', '__return_false' );
 
 Set **Settings → Quick 2FA → 2FA Mode** to **Enabled for specific roles**, and leave the role out of **Protected Roles**. There's no filter for this; the setting is the right tool.
 
-## Email a daily report of locked accounts
-
-There's no action hook for lock events yet, but a daily cron job can read the [lock timestamp](hooks-and-filters.md#stored-data-you-can-read) and report the accounts that are locked right now:
+## Email the site admin when an account is locked
 
 ```php
-add_action( 'init', function() {
-    if ( ! wp_next_scheduled( 'my_quick2fa_lockout_report' ) ) {
-        wp_schedule_event( time(), 'daily', 'my_quick2fa_lockout_report' );
+add_action( 'quick2fa_account_locked', function( $user_id, $locked_until, $context ) {
+    $user = get_userdata( $user_id );
+
+    if ( $user instanceof WP_User ) {
+        $body = sprintf(
+            "%s was locked until %s.\nSource: %s\nReason: %s",
+            $user->user_login,
+            wp_date( 'Y-m-d H:i', $locked_until ),
+            $context['source'] ?? 'unknown',
+            $context['reason'] ?? 'unknown'
+        );
+
+        wp_mail( get_option( 'admin_email' ), 'Quick 2FA locked an account', $body );
     }
-} );
-
-add_action( 'my_quick2fa_lockout_report', function() {
-    // A lock whose end time has passed is over, even while the meta is still there.
-    $users = get_users( array(
-        'meta_key'     => '_quick2fa_locked_until',
-        'meta_value'   => time(),
-        'meta_compare' => '>',
-        'meta_type'    => 'NUMERIC',
-        'fields'       => array( 'ID', 'user_email', 'user_login' ),
-    ) );
-
-    if ( ! empty( $users ) ) {
-        $body = "Accounts currently locked by Quick 2FA:\n\n";
-        foreach ( $users as $user ) {
-            $body .= sprintf( "- %s (%s)\n", $user->user_login, $user->user_email );
-        }
-
-        wp_mail( get_option( 'admin_email' ), 'Quick 2FA daily lockout report', $body );
-    }
-} );
+}, 10, 3 );
 ```
 
-If you need a real-time hook (`quick2fa_account_locked`, etc.), open a feature request on GitHub.
+`$context` says who or what caused the lock; see [`quick2fa_account_locked`](hooks-and-filters.md#quick2fa_account_locked). Pair it with `quick2fa_account_unlocked` to keep your own record of locks.
 
 ## Reading last-login data
 
@@ -170,14 +158,10 @@ operation.
 
 ### Retention
 
-Last-login timestamps survive plugin deletion — `uninstall.php` deliberately keeps them,
-because they cannot be backfilled and delete-and-reinstall is a routine troubleshooting step.
-Sites that need them gone can clear the key directly:
-
-```php
-delete_metadata( 'user', 0, '_quick2fa_last_login', '', true );
-delete_option( 'quick2fa_last_login_since' );
-```
+Last-login timestamps survive plugin deletion unless the site has ticked **Delete all plugin
+data when uninstalled**; see [how it works](../how-it-works.md#deactivating-and-deleting-the-plugin).
+They can't be backfilled, so a site that deletes and reinstalls the plugin to troubleshoot it
+keeps its record by default.
 
 ## Building a custom integration
 

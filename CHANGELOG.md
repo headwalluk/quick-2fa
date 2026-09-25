@@ -6,11 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **Changing a password now revokes all of the user's trusted devices**, whichever way it is changed: the password reminder page, the profile page, a password reset or `wp user update --user_pass`. Every device, including the one used, needs a code at its next login. The session that made the change carries on without a new challenge: with trusted devices enabled, a login session that verified within the Verification Period now stays verified even if its device is revoked.
+- **A "Delete all plugin data when uninstalled" setting**, under **Settings → Quick 2FA → Uninstall**, off by default. When ticked, deleting the plugin removes its settings, account locks, trusted devices, event logs, last-login records and outstanding codes.
+- **`quick2fa_account_locked` and `quick2fa_account_unlocked` actions**, with a context saying who or what locked or unlocked the account. See `docs/developers/hooks-and-filters.md`.
+
 ### Changed
 
+- **Requires WordPress 6.2 or later**, up from 6.0, for the `wp_set_password` hook that password-change revocation relies on.
+- **Deleting the plugin no longer clears trusted devices unless the new setting is ticked.** With it unticked, deleting keeps all data, the same as deactivating.
+- A lock or unlock writes one event-log entry holding who did it, why and, for a lock, when it ends. Revoking all devices from WP-CLI is now logged too, as it already was from the admin screen.
+- **Documentation reviewed against the code.** Corrections: only a wrong code counts towards a lock, not an expired or missing one; the event log is read with `wp user meta get`, not `wp quick-2fa status`; the must-use install steps in `README.md` described a loader that would not have worked. `docs/configuration.md` now uses the settings page's own labels. `docs/developers/hooks-and-filters.md` now says the plugin's options and user meta are internal, apart from the last-login keys, and the public docs no longer point at private project notes.
 - **No behaviour changes.** `unlock-all`, `list-locked` and `emergency-disable` no longer return partway through: the "nothing to do" case is now an `else` branch, so each command has a single exit. `emergency-disable` leaves the `--yes` check to `WP_CLI::confirm()`, which already skips the prompt when it is given. Output is unchanged.
-- **Documentation reviewed against the code.** Corrections that matter to site owners: changing a password does **not** revoke trusted devices, so after a suspected compromise do both; only a wrong code counts towards a lock, not an expired or missing one; deleting the plugin removes only trusted-device lists, and `docs/how-it-works.md` now says how to remove the rest; the event log is read with `wp user meta get`, not `wp quick-2fa status`. The must-use install steps in `README.md` described a loader that would not have worked. `docs/configuration.md` now uses the settings page's own labels, `docs/developers/hooks-and-filters.md` lists the stored values that are safe to read, and the public docs no longer point at private project notes.
 - The `wp help` examples for `lock`, `unlock-all`, `status` and `emergency-disable` now show what the commands actually print. Two docblocks in the WP-CLI commands that explained history and reasoning now say what the function does; the reasoning for when the failed-attempt counter is reset is in `docs/account-locking.md`.
+- `CLAUDE.md` adds the "expose behaviour, not storage" design rule, the stored-key prefix rule and the uninstall convention.
+
+### Fixed
+
+- **The password reminder page always recommended changing the password "every 60 days"**, whatever the Reminder Period setting said. It now uses the setting. Introduced in 1.0.0.
+- **A manual lock wrote `account_locked` to the event log twice**, once without saying who locked the account. Introduced in 0.6.0.
 
 ## [1.5.0] — 2026-09-25
 

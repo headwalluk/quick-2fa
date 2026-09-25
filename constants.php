@@ -51,6 +51,17 @@ const OPTION_TRUSTED_DEVICE_EXPIRY      = 'quick2fa_trusted_device_expiry';
 const OPTION_LOCKOUT_DURATION           = 'quick2fa_lockout_duration';
 const OPTION_LAST_LOGIN_SINCE           = 'quick2fa_last_login_since';
 const OPTION_VERSION                    = 'quick2fa_version';
+const OPTION_DELETE_DATA_ON_UNINSTALL   = 'quick2fa_delete_data_on_uninstall';
+
+/**
+ * Prefixes shared by every option and user meta key the plugin stores.
+ *
+ * The uninstaller deletes by prefix, so a new key is covered as long as it uses one.
+ *
+ * @since 1.6.0
+ */
+const OPTION_PREFIX = 'quick2fa_';
+const META_PREFIX   = '_quick2fa_';
 
 /**
  * 2FA modes.
@@ -292,8 +303,9 @@ const DEFAULT_PASSWORD_EXTRA_SPECIAL     = false;
  *
  * @since 1.3.0
  */
-const PASSWORD_MIN_LENGTH             = 8;
-const PASSWORD_MAX_LENGTH             = 64;
-const DEFAULT_DISABLE_TRUSTED_DEVICES = false;
-const DEFAULT_TRUSTED_DEVICE_EXPIRY   = 30;
-const DEFAULT_LOCKOUT_DURATION        = 60;
+const PASSWORD_MIN_LENGTH              = 8;
+const PASSWORD_MAX_LENGTH              = 64;
+const DEFAULT_DISABLE_TRUSTED_DEVICES  = false;
+const DEFAULT_TRUSTED_DEVICE_EXPIRY    = 30;
+const DEFAULT_LOCKOUT_DURATION         = 60;
+const DEFAULT_DELETE_DATA_ON_UNINSTALL = false;

@@ -330,18 +330,17 @@ class User_Management {
 		}
 
 		$security = new Account_Security_Handler( $user_id );
-		$security->lock_account( PERMANENT_LOCK_DURATION );
+		$security->lock_account(
+			PERMANENT_LOCK_DURATION,
+			array(
+				'source'   => 'admin_ui',
+				'reason'   => 'manual_lock',
+				'admin_id' => get_current_user_id(),
+			)
+		);
 
 		$sessions = \WP_Session_Tokens::get_instance( $user_id );
 		$sessions->destroy_all();
-
-		$security->log_event(
-			LOG_ACCOUNT_LOCKED,
-			array(
-				'admin_id' => get_current_user_id(),
-				'reason'   => 'manual_lock',
-			)
-		);
 
 		add_settings_error(
 			'quick2fa_user_management',
@@ -382,16 +381,13 @@ class User_Management {
 		}
 
 		$security = new Account_Security_Handler( $user_id );
-		$security->unlock_account();
-		$security->log_event(
-			LOG_ACCOUNT_UNLOCKED,
+		$security->unlock_account(
 			array(
-				'admin_id' => get_current_user_id(),
+				'source'   => 'admin_ui',
 				'reason'   => 'manual_unlock',
+				'admin_id' => get_current_user_id(),
 			)
 		);
-
-		update_user_meta( $user_id, META_CODE_ATTEMPTS, 0 );
 
 		add_settings_error(
 			'quick2fa_user_management',
@@ -625,17 +621,12 @@ class User_Management {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
-		$trusted_devices = get_user_meta( $user_id, META_TRUSTED_DEVICES, true );
-		$device_count    = is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
-
 		$security = new Account_Security_Handler( $user_id );
-		$security->clear_trusted_devices();
-
-		$security->log_event(
-			LOG_ALL_DEVICES_REVOKED,
+		$security->clear_trusted_devices(
 			array(
-				'admin_id'     => get_current_user_id(),
-				'device_count' => $device_count,
+				'source'   => 'admin_ui',
+				'reason'   => 'revoke_all',
+				'admin_id' => get_current_user_id(),
 			)
 		);
 
