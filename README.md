@@ -31,9 +31,17 @@ After install, the plugin will receive future updates automatically via the bund
 ### Must-Use plugin
 
 1. Extract the `quick-2fa` folder into `wp-content/mu-plugins/`
-2. Copy `quick-2fa/quick-2fa.php` up one level into `wp-content/mu-plugins/quick-2fa-loader.php` (or use a loader of your own)
+2. WordPress doesn't load plugins from subfolders of `mu-plugins/`, so create `wp-content/mu-plugins/quick-2fa-loader.php` to load it:
+
+   ```php
+   <?php
+   require_once __DIR__ . '/quick-2fa/quick-2fa.php';
+   ```
+
 3. Defaults are initialised on first admin page load — no activation hook required
 4. Settings → Quick 2FA to configure
+
+WordPress doesn't update must-use plugins, so the bundled updater doesn't apply. Update by replacing the `quick-2fa` folder with the one from a newer release.
 
 ### Requirements
 

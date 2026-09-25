@@ -2,91 +2,87 @@
 
 ## When does an account get locked?
 
-An account is locked automatically when a user fails verification too many times. The current thresholds:
+An account is locked automatically when someone enters too many wrong codes:
 
-- **5 failed verification attempts** within a single verification session
-- Lockout duration: **60 minutes** by default (configurable via the "Lockout duration" setting)
+- The **5th wrong code** entered against the same emailed code locks the account
+- The lock lasts for the **Auto-Lock Duration** setting, 60 minutes by default
 
-A failed attempt counts whether the code was wrong, expired, or never requested. A successful verification resets the counter.
+Only a wrong code counts as a failed attempt. Submitting after the code has expired, or when no code was sent, shows an error but doesn't count. Sending a new code resets the count, and so does a successful verification.
 
-Locked users:
+Reaching the verification page takes the account's password, so an automatic lock means someone who knows the password has been guessing codes. Unless the user simply mistyped, treat the password as compromised.
 
-- Are blocked at `wp_authenticate_user` — they can't even reach the verification page
-- Receive a clear error message stating how long the lock will last
-- Are automatically logged out of any active sessions on the next admin page load
-- Have a `LOG_ACCOUNT_LOCKED` event recorded in their security event log
+While an account is locked:
+
+- It can't log in. The login form shows how long an automatic lock has left, or for a manual lock, asks the user to contact the site administrator
+- Any of its sessions that loads an admin page is logged out
+- An `account_locked` event is recorded in its [event log](#event-logging)
 
 ## Manual lockout (admin action)
 
-Site administrators can manually lock or unlock any user:
+Anyone who can edit users can lock or unlock an account:
 
-- **From the admin UI:** Users → All Users → row actions ("Lock Out" / "Unlock")
+- **From the admin UI:** Users → All Users → the **Lock Out** and **Unlock** row actions
 - **From WP-CLI:** `wp quick-2fa lock <user>` and `wp quick-2fa unlock <user>`
 
-Unlocking by hand, from either place, also resets the account's failed-attempt counter, because someone is deliberately restoring access. A timed lock that simply runs out leaves the counter where it was, so an attacker who waits out the lock gets no fresh set of guesses against the same code. Sending a new code resets the counter.
+A manual lock ends all of the account's sessions straight away. It is effectively **permanent**: it is set to expire 200 years ahead, and it lasts until someone unlocks the account. The **Lock Status** column on the Users screen shows "Locked out until …" for an automatic lock and "Locked out (manual)" for a manual one.
 
-Manual locks are **permanent** — they have no expiry timestamp and persist until an admin unlocks the account explicitly. The "Lock Status" column on the Users table shows whether each lock is automatic (with an unlock time) or manual (permanent).
+Unlocking by hand, from either place, also resets the account's failed-attempt count, because someone is deliberately restoring access. A timed lock that simply runs out leaves the count where it was, so an attacker who waits out the lock gets no fresh set of guesses against the same code. Sending a new code resets the count.
 
 The admin UI won't let you lock your own account, as a guardrail against self-lockout. WP-CLI runs as no particular user, so it has no such guard: `wp quick-2fa lock` will lock whichever account you name, including your own.
+
+Locking an account doesn't revoke its [trusted devices](trusted-devices.md#revoking-devices).
 
 ## Emergency lockdown
 
 If you need to lock every user account at once (incident response, suspected credential leak), use:
 
 ```bash
-wp quick-2fa lock-all --exclude=admin
+wp quick-2fa lock-all --exclude=your_login
 ```
 
-The `--exclude` argument is critical — without it, you'll lock yourself out too. The command requires confirmation unless you pass `--yes`.
+Always pass `--exclude` with your own login, or you'll lock yourself out too. The command asks for confirmation unless you pass `--yes`.
 
-To recover, use:
+To undo it:
 
 ```bash
 wp quick-2fa unlock-all
 ```
 
-This unlocks **all** locked users — both automatic and manual locks. If you want to be more selective, list locked users with `wp quick-2fa list-locked` and unlock them individually.
+This unlocks **every** locked account, whether the lock was automatic or manual. To be more selective, list locked accounts with `wp quick-2fa list-locked` and unlock them one at a time.
 
-## Recovering from a lockout you can't WP-CLI out of
+## If you've locked yourself out
 
-If you don't have shell access and you've locked yourself out:
+See [troubleshooting → I am locked out of my own site](troubleshooting.md#i-am-locked-out-of-my-own-site) for the recovery options, from waiting it out to renaming the plugin folder.
 
-```bash
-wp quick-2fa emergency-disable --yes
-```
+## Rate limit on sending codes
 
-This sets `OPTION_MODE` to `disabled`, bypassing 2FA entirely. After you log back in, **re-enable 2FA immediately** and investigate why the lockout happened.
+Separately from wrong codes, each user can be sent at most **3 codes per 15-minute window**, counted from the first code sent. This stops anyone, attacker or confused user, from flooding the user's inbox. Reloading the verification page reuses the current code and doesn't count; the **Resend Code** button always sends a new one and does.
 
-If you don't have *any* shell access at all, you can do the same thing directly via the database:
-
-```sql
-UPDATE wp_options SET option_value = 'disabled' WHERE option_name = 'quick2fa_mode';
-```
-
-(Adjust the table prefix to match your installation.)
-
-## Rate limit on code generation
-
-Separately from verification attempts, there's a rate limit on **code generation**: a user can request at most **3 codes per 15-minute window**. This prevents an attacker (or a confused user) from spamming the user's inbox.
-
-The limit is per-user across all sessions — not per-session. If an attacker has a hijacked session, they can exhaust a legitimate user's code-generation budget. This is a known trade-off (see the project tracker's open review items).
+The limit is per user, not per session, so someone with the password can use up the legitimate user's allowance. That is an accepted trade-off.
 
 ## Event logging
 
-Every lock-relevant event is recorded in the per-user security event log:
+Each user has a security event log. These events are recorded:
 
 | Event | When |
 |-------|------|
 | `code_generated` | A new verification code was created |
-| `code_sent` | The code email was dispatched (success or failure) |
+| `code_sent` | The code email was handed to `wp_mail()`, with `success` recording the result |
 | `verification_success` | The user entered a valid code |
-| `verification_failed` | The user entered an invalid code |
-| `account_locked` | Account was locked (automatic or manual) |
-| `account_unlocked` | Account was unlocked |
-| `password_changed` | User changed their password via the reminder flow |
+| `verification_failed` | The user entered a wrong code |
+| `account_locked` | The account was locked, automatically or manually |
+| `account_unlocked` | The account was unlocked |
+| `password_changed` | The user changed their password from the password reminder page |
+| `password_reminder_dismissed` | The user dismissed the password reminder |
 | `device_revoked` | A trusted device was revoked |
-| `all_devices_revoked` | All trusted devices were revoked for the user |
+| `all_devices_revoked` | All of the user's trusted devices were revoked |
 
-The log is capped at **50 entries per user** and stored in `wp_usermeta`. View it via `wp quick-2fa status <user>` (shows summary) or directly via `get_user_meta( $user_id, '_quick2fa_logs', true )`.
+Each entry records the time, IP address and user agent. The log keeps the **50 most recent entries** per user, newest first, in the `_quick2fa_logs` user meta. There is no screen for it; read it with WP-CLI:
 
-The event log is **preserved on plugin uninstall** by default (it may be useful for incident review even after Quick 2FA is removed). See the project tracker for the open review item on uninstall data retention.
+```bash
+wp user meta get <user> _quick2fa_logs --format=json
+```
+
+`wp quick-2fa status <user>` shows the current failed-attempt count and lock state, but not the log itself.
+
+The log is kept when the plugin is deleted, so it is still there for an incident review. See [how it works → deactivating and deleting the plugin](how-it-works.md#deactivating-and-deleting-the-plugin) to remove it.

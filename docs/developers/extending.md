@@ -6,7 +6,7 @@ For the full list of available filters, see [hooks and filters](hooks-and-filter
 
 ## Customise the verification page intro text
 
-Replace the default "For your security, we need to verify your identity" message:
+Replace the default "For your security, we need to verify your identity before you can access the admin area." message:
 
 ```php
 add_filter( 'quick2fa_verify_intro', function( $intro ) {
@@ -73,36 +73,37 @@ add_filter( 'quick2fa_updater_enabled', '__return_false' );
 
 ## Exempt a specific user role from 2FA
 
-Use the built-in **Settings → Quick 2FA → Mode → Specific Roles** option and exclude the role from the protected list. There's no filter for this — the setting is the right tool.
+Set **Settings → Quick 2FA → 2FA Mode** to **Enabled for specific roles**, and leave the role out of **Protected Roles**. There's no filter for this; the setting is the right tool.
 
-## Email all admins on lock-out events (custom integration)
+## Email a daily report of locked accounts
 
-There's no built-in action hook for this yet, but you can listen to the WordPress core hooks Quick 2FA uses indirectly. The cleanest path: tail the user event log via a daily cron job.
+There's no action hook for lock events yet, but a daily cron job can read the [lock timestamp](hooks-and-filters.md#stored-data-you-can-read) and report the accounts that are locked right now:
 
 ```php
 add_action( 'init', function() {
-    if ( ! wp_next_scheduled( 'my_quick2fa_lockout_audit' ) ) {
-        wp_schedule_event( time(), 'daily', 'my_quick2fa_lockout_audit' );
+    if ( ! wp_next_scheduled( 'my_quick2fa_lockout_report' ) ) {
+        wp_schedule_event( time(), 'daily', 'my_quick2fa_lockout_report' );
     }
 } );
 
-add_action( 'my_quick2fa_lockout_audit', function() {
+add_action( 'my_quick2fa_lockout_report', function() {
+    // A lock whose end time has passed is over, even while the meta is still there.
     $users = get_users( array(
         'meta_key'     => '_quick2fa_locked_until',
-        'meta_compare' => 'EXISTS',
+        'meta_value'   => time(),
+        'meta_compare' => '>',
+        'meta_type'    => 'NUMERIC',
         'fields'       => array( 'ID', 'user_email', 'user_login' ),
     ) );
 
-    if ( empty( $users ) ) {
-        return;
-    }
+    if ( ! empty( $users ) ) {
+        $body = "Accounts currently locked by Quick 2FA:\n\n";
+        foreach ( $users as $user ) {
+            $body .= sprintf( "- %s (%s)\n", $user->user_login, $user->user_email );
+        }
 
-    $body = "Currently locked Quick 2FA users:\n\n";
-    foreach ( $users as $user ) {
-        $body .= sprintf( "- %s (%s)\n", $user->user_login, $user->user_email );
+        wp_mail( get_option( 'admin_email' ), 'Quick 2FA daily lockout report', $body );
     }
-
-    wp_mail( get_option( 'admin_email' ), 'Quick 2FA daily lockout report', $body );
 } );
 ```
 

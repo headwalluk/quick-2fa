@@ -2,7 +2,7 @@
 
 ## Users aren't receiving verification codes
 
-99% of the time this is an email delivery problem, not a Quick 2FA problem. Quick 2FA hands the email to `wp_mail()` and trusts WordPress to deliver it.
+This is almost always an email delivery problem rather than a Quick 2FA one. Quick 2FA hands the email to `wp_mail()` and relies on WordPress to deliver it.
 
 **Diagnose:**
 
@@ -10,7 +10,7 @@
 2. Check your spam folder. Verification codes are short transactional emails — some filters flag them.
 3. If you use an SMTP plugin, check its log for delivery errors.
 4. Check the PHP error log for lines starting `Quick_2FA Email_Handler [error]:`. Quick 2FA logs every failed send there, whether or not `WP_DEBUG` is on, with the reason WordPress reported when it gave one.
-5. Check the user's security event log for `code_sent` events with `success: false`. That indicates `wp_mail()` returned a failure.
+5. Check the user's [event log](account-locking.md#event-logging) for `code_sent` events with `success: false`. That means `wp_mail()` reported a failure.
 
 A code whose email failed is discarded, so reloading the verification page tries to send a fresh one. Each attempt counts towards the limit of 3 codes per 15 minutes.
 
@@ -35,11 +35,9 @@ If trusted devices are *enabled* and you're still being challenged constantly, t
 
 To confirm: after verifying with "Trust this device" ticked, check your browser's cookies for the current site and look for a `quick2fa_device_…` entry. If it isn't there after a successful verification, something on the client side is discarding it.
 
-> **Note for upgrades from before v1.2.0:** trust used to be keyed on your IP + browser. If your office connection changed public IP through the day (common with multi-WAN/failover routers, mobile tethering, CGNAT, or IPv6), you'd be re-challenged repeatedly. v1.2.0 moves trust onto the cookie above, which is independent of the IP — this is the fix for that exact symptom.
-
 ## My office is behind a reverse proxy or shared NAT
 
-Not a problem since v1.2.0. Device trust is keyed on a per-browser [secure cookie token](trusted-devices.md#what-identifies-a-device), not on the client IP, so it makes no difference whether everyone shares one external IP. (Before v1.2.0, trust was `SHA-256(client_ip + '|' + user_agent)`, which could collide on shared infrastructure and broke whenever the shared IP changed — both issues are now gone.)
+That makes no difference. Device trust is carried by a per-browser [secure cookie token](trusted-devices.md#what-identifies-a-device), not the client IP, so it doesn't matter whether everyone shares one external IP or the IP changes during the day.
 
 ## I am locked out of my own site
 
@@ -47,25 +45,25 @@ Try these in order:
 
 ### 1. Wait it out
 
-If you triggered an *automatic* lockout (failed verification too many times), it lifts after the configured lockout duration (default 60 minutes). Make a coffee, come back.
+An *automatic* lock, from entering too many wrong codes, lifts after the **Auto-Lock Duration** (60 minutes by default). A manual lock doesn't lift by itself.
 
-### 2. WP-CLI emergency disable
+### 2. Unlock yourself with WP-CLI
 
-If you have shell access:
+If you have shell access, this works for automatic and manual locks alike:
+
+```bash
+wp quick-2fa unlock <your_login>
+```
+
+### 3. Disable 2FA with WP-CLI
+
+If you are not locked but can't complete verification, for example because codes aren't arriving:
 
 ```bash
 wp quick-2fa emergency-disable --yes
 ```
 
-This sets the plugin to `disabled` mode. Log in normally, then go to **Settings → Quick 2FA** and re-enable 2FA.
-
-### 3. WP-CLI unlock yourself
-
-If your account was manually locked but the plugin is otherwise working:
-
-```bash
-wp quick-2fa unlock <your_login>
-```
+This sets the plugin to `disabled` mode. Log in normally, fix the underlying problem, then go to **Settings → Quick 2FA** and turn 2FA back on.
 
 ### 4. Direct database edit
 
@@ -93,30 +91,30 @@ Once you're back in, rename it back and reconfigure. Your settings, lock status,
 
 ## I see "Account Locked" but I never failed any attempts
 
-Check the user's event log for the source. Either:
+Check the account's [event log](account-locking.md#event-logging) to see where the lock came from. Either:
 
-- An admin manually locked the account from the Users table or via `wp quick-2fa lock`
-- Someone *else* tried to log in as you and tripped the rate limit. Check `verification_failed` events for IP addresses that aren't yours
+- Someone locked the account by hand, from the Users screen or with `wp quick-2fa lock`. The `account_locked` event's data says which
+- Someone else entered 5 wrong codes. Check the `verification_failed` events for IP addresses that aren't yours
 
-If you see suspicious lock activity, treat it as a possible credential compromise and rotate the password.
+Only someone who knows the password can reach the verification page, so the second case means the password is compromised. Change it and [revoke the account's trusted devices](trusted-devices.md#revoking-devices).
 
 ## "Too many verification codes requested" — but I only requested one
 
-This is the per-user code generation rate limit (3 codes per 15 minutes). Since v1.2.0 a plain reload of the verification page reuses the existing valid code instead of sending a new one, so ordinary reloads and multiple tabs no longer eat into the quota. If you're still seeing this without having deliberately requested several codes, possible causes:
+This is the per-user limit on sending codes: 3 per 15-minute window, counted from the first code sent. The message says how long is left. Reloading the verification page, or opening it in several tabs, reuses the current code and doesn't count. Possible causes:
 
-- Repeatedly clicking **Resend Code**, which always forces a fresh code by design
-- A previous session left a partially-completed verification, then you started a fresh login
-- Someone else attempting to log in as you, eating into your quota
+- Clicking **Resend Code** several times, which always sends a fresh code
+- Codes sent in an earlier login attempt within the same window
+- Someone else logging in as you. That needs your password, so if you rule out the first two, change it
 
-Wait 15 minutes for the rate-limit window to reset, or have an admin clear the transient:
+Wait for the window to end, or have an admin clear it:
 
 ```bash
 wp transient delete q2fa_rate_limit_code_gen_<user_id>
 ```
 
-## I changed the lockout duration but locked-out users aren't unlocked
+## I changed the Auto-Lock Duration but locked accounts aren't unlocked
 
-Lock durations are baked in at the moment of lockout. Existing locked accounts will use the duration that was active when they were locked. Either wait it out or manually unlock with `wp quick-2fa unlock <user>`.
+A lock's end time is fixed when the lock starts, so changing the setting only affects new locks. Wait for the existing lock to end, or unlock the account with `wp quick-2fa unlock <user>`.
 
 ## The plugin updater isn't picking up new releases
 

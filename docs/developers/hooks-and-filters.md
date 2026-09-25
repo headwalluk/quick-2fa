@@ -78,9 +78,9 @@ Filter the parameters used by the built-in strong-password generator on the pass
 
 **Parameters:**
 - `array $defaults` — An array with keys:
-  - `length` (`int`) — Password length
-  - `special_chars` (`bool`) — Include common special characters (`!@#$%^&*`)
-  - `extra_special_chars` (`bool`) — Include rare special characters (less compatible with some systems)
+  - `length` (`int`) — Password length. Default: a random length from 12 to 20
+  - `special_chars` (`bool`) — Include common special characters (`!@#$%^&*()`). Default `true`
+  - `extra_special_chars` (`bool`) — Include rarer special characters (`` -_ []{}<>~`+=,.;:/?| ``), which some systems reject. Default `false`
 
 **Returns:** `array` — Same structure.
 
@@ -94,7 +94,11 @@ add_filter( 'quick2fa_password_parameters', function( $params ) {
 } );
 ```
 
-The generator passes the result to `wp_generate_password()`, so any options that function supports are honoured.
+Each value is checked before use. The result goes to `wp_generate_password()` as its three arguments, so other keys are ignored:
+
+- `length` must be an `int`, and is clamped to 8–64
+- `special_chars` and `extra_special_chars` must be `bool`
+- A value of the wrong type falls back to its default, and a return that isn't a non-empty array falls back to all three defaults
 
 ---
 
@@ -120,7 +124,11 @@ add_filter( 'quick2fa_updater_enabled', function( $enabled ) {
 add_filter( 'quick2fa_updater_enabled', '__return_false' );
 ```
 
+The result is read as a boolean the way WordPress reads option values, so `'no'`, `'off'` and `'false'` also disable updates.
+
 **Deprecated name:** before 1.5.0 this filter was `quick_2fa_updater_enabled`. The old name still works: its result is passed on to `quick2fa_updater_enabled`, and WordPress raises a deprecation notice when `WP_DEBUG` is on. Rename your `add_filter()` call.
+
+---
 
 ### `quick2fa_record_last_login`
 
@@ -130,7 +138,7 @@ Control whether Quick 2FA records a last-login timestamp for a given user. Appli
 - `bool $record` — `true` by default
 - `WP_User $user` — the user who just logged in
 
-**Returns:** `bool` — Return `false` to skip recording for this user.
+**Returns:** `bool` — Return `false` to skip recording for this user. Read as a boolean the same way as `quick2fa_updater_enabled`.
 
 ```php
 // Don't record logins for a service account
@@ -161,4 +169,15 @@ Constants and namespaced functions in `Quick_2FA\*` are **private**. Don't refer
 
 If you find yourself wanting to call into the plugin, that's a sign we need a public hook for your use case. Open an issue with details and we'll consider exposing one.
 
-**One exception:** the last-login data described in [Reading last-login data](extending.md#reading-last-login-data) is a deliberate public data contract. The *key strings* `_quick2fa_last_login` and `quick2fa_last_login_since` are stable and safe to read directly with `get_user_meta()` / `get_option()`. The PHP constants that hold them (`Quick_2FA\META_LAST_LOGIN`, `Quick_2FA\OPTION_LAST_LOGIN_SINCE`) remain private — use the literal strings, not the constants.
+## Stored data you can read
+
+These stored values are stable and safe to read directly with `get_user_meta()` and `get_option()`. Use the literal strings shown; the PHP constants that hold them are private.
+
+| Key | Where | Value |
+|-----|-------|-------|
+| `_quick2fa_last_login` | User meta | Unix timestamp of the user's most recent login. See [reading last-login data](extending.md#reading-last-login-data) before relying on it |
+| `quick2fa_last_login_since` | Option | Unix timestamp of the first login this site recorded |
+| `_quick2fa_locked_until` | User meta | Unix timestamp the account's lock ends. The account is locked while it is in the future. A manual lock is set about 200 years ahead |
+| `quick2fa_mode` | Option | `all`, `roles` or `disabled`; see [configuration](../configuration.md#2fa-mode) |
+
+Treat them as read-only from code. Writing to them skips the plugin's own checks and event logging, so lock and unlock accounts with the [WP-CLI commands](../wp-cli.md) instead. The database edits in [troubleshooting](../troubleshooting.md#4-direct-database-edit) are for recovery only.

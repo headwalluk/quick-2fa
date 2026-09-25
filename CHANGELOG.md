@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - **No behaviour changes.** `unlock-all`, `list-locked` and `emergency-disable` no longer return partway through: the "nothing to do" case is now an `else` branch, so each command has a single exit. `emergency-disable` leaves the `--yes` check to `WP_CLI::confirm()`, which already skips the prompt when it is given. Output is unchanged.
+- **Documentation reviewed against the code.** Corrections that matter to site owners: changing a password does **not** revoke trusted devices, so after a suspected compromise do both; only a wrong code counts towards a lock, not an expired or missing one; deleting the plugin removes only trusted-device lists, and `docs/how-it-works.md` now says how to remove the rest; the event log is read with `wp user meta get`, not `wp quick-2fa status`. The must-use install steps in `README.md` described a loader that would not have worked. `docs/configuration.md` now uses the settings page's own labels, `docs/developers/hooks-and-filters.md` lists the stored values that are safe to read, and the public docs no longer point at private project notes.
 - The `wp help` examples for `lock`, `unlock-all`, `status` and `emergency-disable` now show what the commands actually print. Two docblocks in the WP-CLI commands that explained history and reasoning now say what the function does; the reasoning for when the failed-attempt counter is reset is in `docs/account-locking.md`.
 
 ## [1.5.0] — 2026-09-25

@@ -21,12 +21,12 @@ Device-based trust closes that hole. A device that doesn't present a valid trust
 
 ## What identifies a device
 
-Since v1.2.0, a trusted device is identified by a **secure cookie token**, not by network attributes:
+A trusted device is identified by a **secure cookie token**, not by network attributes:
 
 - When a device is trusted, Quick 2FA generates a cryptographically random token (`bin2hex( random_bytes( 32 ) )`) and sets it as a cookie. The cookie is `HttpOnly` (not readable from JavaScript), `SameSite=Lax`, `Secure` whenever the request is over HTTPS, scoped to `SITECOOKIEPATH`, and named with `COOKIEHASH` so it's tied to this specific install — the same hardening WordPress applies to its own auth cookies.
 - The **raw token never leaves the browser**. Server-side we store only its SHA-256 hash, keyed into the `_quick2fa_trusted_devices` user meta. A database leak therefore can't be used to forge a trusted device.
 
-**Why not IP + User-Agent?** Earlier versions hashed `IP + User-Agent`. On real-world connections the client IP is not stable — multi-WAN/failover routers send different sessions out via different uplinks, mobile tethering and CGNAT rotate the public IP, and IPv6 privacy addressing rotates it on a timer. Every IP change looked like a brand-new device, so users were re-challenged for 2FA repeatedly throughout the day even though nothing about their machine had changed. Binding trust to a cookie the device carries makes it independent of the network path, and as a bonus removes the old shared-NAT fingerprint-collision caveat entirely. The IP and User-Agent are still recorded in the [event log](account-locking.md) for incident investigation — they just no longer decide access.
+**Why not IP + User-Agent?** Versions before 1.2.0 hashed `IP + User-Agent`. On real-world connections the client IP is not stable — multi-WAN/failover routers send different sessions out via different uplinks, mobile tethering and CGNAT rotate the public IP, and IPv6 privacy addressing rotates it on a timer. Every IP change looked like a brand-new device, so users were re-challenged for 2FA repeatedly throughout the day even though nothing about their machine had changed. Binding trust to a cookie the device carries makes it independent of the network path, and as a bonus removes the old shared-NAT fingerprint-collision caveat entirely. The IP and User-Agent are still recorded in the [event log](account-locking.md) for incident investigation — they just no longer decide access.
 
 A consequence of cookie-based trust: if the user clears their cookies, uses a different browser, or browses in a private/incognito window, that counts as an untrusted device and they'll be asked to verify.
 
@@ -41,29 +41,29 @@ There's no separate "verification period" check overlaid on top of trusted devic
 
 ## Revoking devices
 
-Users can manage their own trusted devices on their **Profile** page. Each device is listed with its expiry, and the browser viewing the page is highlighted as "This Device" (detected via its own trust cookie).
+Users can manage their own trusted devices in the **Two-Factor Authentication** section of their **Profile** page. Each device is listed with its expiry, and the browser viewing the page is marked "This Device". Each device has a **Revoke** button, and **Revoke All Devices** clears the whole list.
 
-Site administrators can revoke devices for any user from the same profile page (when editing another user). They can also clear *all* trusted devices for a user via WP-CLI:
+Anyone who can edit another user's profile can revoke that user's devices in the same place. From WP-CLI:
 
 ```bash
 wp quick-2fa clear-devices <user>
 ```
 
-A device list is also wiped automatically when:
+Deleting the plugin from the Plugins screen clears every user's device list. Nothing else clears it:
 
-- The user changes their password (via the built-in reminder flow)
-- The plugin is uninstalled (see `uninstall.php`)
+- **Changing password does not revoke trusted devices.** Changing it from the password reminder page ends the user's other login sessions, but a device that is still trusted can start a new session without a code.
+- **Locking an account does not revoke them either.** When the account is unlocked, its trusted devices work again.
 
-Lock-outs **do not** wipe trusted devices automatically — when an admin unlocks the account, the original trusted devices come back. If you want a clean slate after a lock-out, run `clear-devices` after `unlock`.
+If you suspect an account is compromised, change its password **and** revoke its devices.
 
-## Disabling the feature entirely
+## Disabling the feature
 
-The disable-trusted-devices toggle is **CLI-only** for now — there's no settings UI checkbox. To require verification once per login session:
+Trusted devices can be switched off so that every login session verifies once, whatever the device. There is no field for this on the settings page; set the `quick2fa_disable_trusted_devices` option instead:
 
 ```bash
 wp option update quick2fa_disable_trusted_devices 1
 ```
 
-Re-enable with `wp option update quick2fa_disable_trusted_devices 0`.
+`1`, `true`, `yes` and `on` switch device trust off. Set it back to `0` to switch it on again.
 
-Existing trusted-device entries in user meta will be ignored but not deleted. Re-enabling the feature restores the previous trust list (subject to per-device expiry). See [WP-CLI → configuration via CLI](wp-cli.md#configuration-via-cli) for the full CLI-only settings list.
+While the feature is off, the device lists are ignored but kept. Switching it back on restores them, apart from any entries that have expired in the meantime.

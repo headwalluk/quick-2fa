@@ -87,25 +87,9 @@ The action is recorded to the PHP error log so it leaves a paper trail. **Re-ena
 
 ## Configuration via CLI
 
-A small number of plugin settings have **no UI** in the settings page and must be set from the CLI (or via direct database edit). They use the standard WordPress `wp option` commands.
+Every setting is a WordPress option, so `wp option get` and `wp option update` work on all of them. [Configuration](configuration.md) lists each option name.
 
-### Disable trusted devices
-
-Require verification once per login session, regardless of any previously-trusted devices:
-
-```bash
-wp option update quick2fa_disable_trusted_devices 1
-```
-
-Re-enable the feature:
-
-```bash
-wp option update quick2fa_disable_trusted_devices 0
-```
-
-When set to `1`, the trusted-devices feature is bypassed entirely — existing trusted-device entries in user meta are ignored but not deleted, so re-enabling restores the previous state (subject to per-device expiry).
-
-This is intentional CLI-only — there's no settings UI checkbox. If you want to add one, see the project tracker.
+One setting has no field on the settings page and can only be changed this way: `quick2fa_disable_trusted_devices`, which makes every login session verify. See [trusted devices → disabling the feature](trusted-devices.md#disabling-the-feature).
 
 ## Plugin updates
 
@@ -139,9 +123,13 @@ wp quick-2fa status john_doe   # confirm
 wp quick-2fa lock-all --exclude=your_login
 ```
 
-### Force everyone to re-verify on next login (after a security incident)
+### Force everyone to verify again (after a security incident)
+
+Clearing trusted devices stops them skipping verification, but a session that has already verified carries on until it ends. To challenge everyone straight away, end their sessions too:
 
 ```bash
-# Wipe all trusted devices, plugin-wide
 wp user list --field=ID | xargs -I {} wp quick-2fa clear-devices {}
+wp user list --field=ID | xargs -I {} wp user session destroy {} --all
 ```
+
+The second command logs out every user, including you.

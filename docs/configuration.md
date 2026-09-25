@@ -1,71 +1,65 @@
 # Configuration
 
-All settings live under **Settings → Quick 2FA** in the WordPress admin. Defaults are deliberately conservative — most sites can leave them alone.
+All settings live under **Settings → Quick 2FA** in the WordPress admin. The defaults are deliberately conservative, and most sites can leave them alone. Each setting below is listed under the label the settings page shows, with its `wp_options` name for use with `wp option`.
 
-## Mode
+## 2FA Mode
 
-Three options control which users are required to verify:
+`quick2fa_mode` controls which users are required to verify:
 
-| Mode | Behaviour |
-|------|-----------|
-| `all` *(default)* | Every user with admin access must verify |
-| `roles` | Only users in the configured "protected roles" list must verify |
-| `disabled` | 2FA is off — useful as a temporary recovery state |
+| Setting page label | Value | Behaviour |
+|--------------------|-------|-----------|
+| Enabled for all users *(default)* | `all` | Every user who reaches the admin area must verify, including subscribers |
+| Enabled for specific roles | `roles` | Only users with one of the **Protected Roles** must verify |
+| Disabled | `disabled` | 2FA is off. Useful as a temporary recovery state |
 
-When **roles** mode is selected, the default protected roles are any role with the `install_plugins` or `manage_options` capability (typically `administrator` and `editor` if your site has elevated editor permissions). You can edit the list in the settings page.
+**Protected Roles** (`quick2fa_protected_roles`) defaults to every role with the `install_plugins` or `manage_options` capability. On a standard site that is just Administrator.
 
-When **disabled** mode is selected, an admin notice is shown on every admin screen warning that 2FA is off. Use the WP-CLI command `wp quick-2fa emergency-disable` if you need to flip to disabled from the command line.
+While the mode is **Disabled**, every admin screen shows users who can manage options an error notice saying that 2FA is off. To switch to disabled from the command line, use [`wp quick-2fa emergency-disable`](wp-cli.md#emergency-disable---yes).
 
 ## Verification
 
-| Setting | Default | What it does |
-|---------|---------|--------------|
-| Verification period | `3` days | How long a verification trusts the device when "Trust this device" is left unticked. Not used when trusted devices are disabled — see [trusted devices](trusted-devices.md) |
-| Code length | `6` digits | Length of the emailed numeric code |
-| Code expiry | `15` minutes | How long an emailed code remains valid before the user must request a new one |
-
-## Password reminders
-
-Quick 2FA can periodically nudge users to change their password. This is independent from the 2FA flow and runs after a successful verification.
-
-| Setting | Default | What it does |
-|---------|---------|--------------|
-| Password reminders enabled | `true` | Master switch for the reminder feature |
-| Password reminder period | `60` days | Maximum allowed password age before a reminder is shown |
-| Password reminder cooldown | `1` day | Minimum time between consecutive reminders for the same user (so they aren't nagged on every page load if they dismiss) |
+| Setting page label | Option | Default | What it does |
+|--------------------|--------|---------|--------------|
+| Verification Period | `quick2fa_verification_period` | `3` days | How long a verification trusts the device when "Trust this device" is left unticked. Not used when trusted devices are disabled; see [trusted devices](trusted-devices.md) |
+| Code Length | `quick2fa_code_length` | `6` digits | Length of the emailed numeric code |
+| Code Expiry | `quick2fa_code_expiry` | `15` minutes | How long an emailed code remains valid before the user must request a new one |
 
 ## Trusted devices
 
-| Setting | Default | What it does |
-|---------|---------|--------------|
-| Trusted device expiry | `30` days | How long a "trust this device" tick survives before re-verification is required |
+| Setting page label | Option | Default | What it does |
+|--------------------|--------|---------|--------------|
+| Trust Device Duration | `quick2fa_trusted_device_expiry` | `30` days | How long a device stays trusted after the user ticks "Trust this device" |
 
-The **disable trusted devices** master switch is currently CLI/database-only — there is no checkbox in the settings UI. To require verification once per login session, whatever the device, run:
-
-```bash
-wp option update quick2fa_disable_trusted_devices 1
-```
-
-Set it back to `0` to re-enable the feature. See [trusted devices](trusted-devices.md) for the full security model and [WP-CLI → configuration via CLI](wp-cli.md#configuration-via-cli) for other CLI-only toggles.
+Trusted devices can be switched off entirely, so that every login session verifies. That switch has no field on the settings page; see [trusted devices → disabling the feature](trusted-devices.md#disabling-the-feature).
 
 ## Account locking
 
-| Setting | Default | What it does |
-|---------|---------|--------------|
-| Lockout duration | `60` minutes | How long an account stays locked after exceeding the failed-attempt threshold |
+| Setting page label | Option | Default | What it does |
+|--------------------|--------|---------|--------------|
+| Auto-Lock Duration | `quick2fa_lockout_duration` | `60` minutes | How long an account stays locked after too many wrong codes |
 
-The threshold itself (5 verification attempts before lockout) is currently a constant rather than a setting. See [account locking](account-locking.md) for the full mechanics.
+The threshold itself, 5 wrong codes, is fixed rather than a setting. See [account locking](account-locking.md) for the full mechanics.
 
-## Email
+## Password reminders
 
-| Setting | Default | What it does |
-|---------|---------|--------------|
-| From name | Site name | Sender name on the verification email |
-| From address | Site admin email | Sender address |
-| Subject | "Your verification code" | Email subject line |
+Quick 2FA can periodically nudge users to change their password. This is separate from the 2FA check: the reminder is shown on an admin page load once the user has no verification outstanding.
 
-Email delivery uses `wp_mail()`, so whatever your site is configured to use (SMTP plugin, transactional service, system mail) is what gets used. If users aren't receiving codes, troubleshoot your `wp_mail()` setup first — see [troubleshooting](troubleshooting.md).
+| Setting page label | Option | Default | What it does |
+|--------------------|--------|---------|--------------|
+| Password Reminders | `quick2fa_password_reminders_enabled` | On | Turns the reminder feature on or off |
+| Reminder Period | `quick2fa_password_reminder_period` | `60` days | Password age at which the reminder is shown |
+| Reminder Cooldown | `quick2fa_password_reminder_cooldown` | `1` day | How long to wait before showing the reminder again after the user dismisses it |
+
+## Email Settings
+
+| Setting page label | Option | Default | What it does |
+|--------------------|--------|---------|--------------|
+| From Name | `quick2fa_email_from_name` | Site title | Sender name on the verification email |
+| From Address | `quick2fa_email_from_address` | Site admin email | Sender address |
+| Email Subject | `quick2fa_email_subject` | "Your verification code" | Subject line |
+
+Email is sent with `wp_mail()`, so it goes out however your site sends mail: an SMTP plugin, a transactional email service or the server's own mail system. If users aren't receiving codes, check your `wp_mail()` setup first; see [troubleshooting](troubleshooting.md#users-arent-receiving-verification-codes).
 
 ## Customising the verification and password reminder text
 
-The intro text shown on the verification page and the password reminder page is **not** editable from the settings page. It's customisable via the [`quick2fa_verify_intro`](developers/hooks-and-filters.md#quick2fa_verify_intro) and [`quick2fa_password_intro`](developers/hooks-and-filters.md#quick2fa_password_intro) filters — drop a snippet into your theme's `functions.php` or a site-specific plugin. See [extending Quick 2FA](developers/extending.md) for ready-to-paste examples.
+The intro text on the verification page and the password reminder page can't be edited on the settings page. Change it with the [`quick2fa_verify_intro`](developers/hooks-and-filters.md#quick2fa_verify_intro) and [`quick2fa_password_intro`](developers/hooks-and-filters.md#quick2fa_password_intro) filters, from your theme's `functions.php` or a site-specific plugin. See [extending Quick 2FA](developers/extending.md) for examples to copy.
