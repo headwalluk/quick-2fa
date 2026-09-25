@@ -4,7 +4,7 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.5.0] — 2026-09-25
 
 ### Added
 
@@ -17,12 +17,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - **Another plugin returning the wrong type from a WordPress hook could crash the Users screen or the login.** Quick 2FA's callbacks declared strict parameter types, so when a plugin's `manage_users_custom_column` callback returned nothing for a column it didn't own, Quick 2FA received `null` and PHP threw a `TypeError`. The users-table column, sorting, view and row-action callbacks, the profile section, the settings-page script loader and the lockout check at login had the same weakness. Each now accepts any value, acts only on a value it can use, and passes anything else through unchanged. Introduced in 0.7.0.
-- **`wp plugin list` and `wp plugin update` never saw a new release.** The GitHub updater loaded only in admin and cron requests, so WP-CLI reported no update and could not install one. It now loads under WP-CLI too. Introduced in 1.0.0.
+- **WP-CLI often missed new releases, and could hide them from the admin too.** The GitHub updater loaded only in admin and cron requests, so when `wp plugin list` or `wp plugin update` refreshed the update list, Quick 2FA's release was left out, and the refreshed list replaced the one the admin screen had built. It now loads under WP-CLI too. Introduced in 1.0.0.
 - **The password-reminder warning showed a blue border instead of amber in right-to-left languages.** Its colour was set inline with `border-left-color`, but WordPress draws the login message border on the right in RTL locales. It now uses the logical `border-inline-start-color` from the plugin's login stylesheet. Introduced in 0.10.0.
 
 ### Changed
 
 - The `quick2fa_record_last_login` and `quick2fa_updater_enabled` results are read as booleans the way the plugin reads boolean options, so a callback returning `'no'`, `'off'` or `'false'` now counts as false.
+- The WP-CLI reference is corrected: `emergency-disable` was headed with its old underscore name, the CLI does not stop you locking your own account, and the lockdown example excluded the shell user instead of a WordPress login. It also gains a section on plugin updates, and the updater troubleshooting steps now clear the failed-lookup cache.
 - `CLAUDE.md` gains rules on public contracts, hook callback types, filter results, CSS and JavaScript, comments and phpcs suppressions.
 
 ## [1.4.0] — 2026-09-13

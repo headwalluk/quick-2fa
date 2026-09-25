@@ -124,9 +124,11 @@ Quick 2FA polls GitHub for new releases on a 12-hour cache TTL. To force an imme
 
 ```bash
 wp transient delete quick_2fa_github_release
+wp transient delete quick_2fa_github_failed
 wp transient delete update_plugins --network
+wp plugin list --name=quick-2fa --fields=name,version,update,update_version
 ```
 
-Then visit **Dashboard → Updates** in the WordPress admin to trigger a fresh check.
+`quick_2fa_github_failed` is set for an hour after a failed lookup, and the updater makes no new request while it exists. The last command runs the fresh check; visiting **Dashboard → Updates** in the WordPress admin does the same.
 
 If you want to disable auto-updates entirely (e.g. on staging or for a specific site), see the [`quick2fa_updater_enabled` filter](developers/hooks-and-filters.md#quick2fa_updater_enabled).

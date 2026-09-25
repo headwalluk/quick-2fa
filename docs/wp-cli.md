@@ -8,7 +8,7 @@ All commands are namespaced under `wp quick-2fa`. Run `wp help quick-2fa <comman
 
 ### `lock <user>`
 
-Lock a user account permanently and terminate all their active sessions.
+Lock a user account permanently and end all of its active sessions.
 
 ```bash
 wp quick-2fa lock 123
@@ -16,7 +16,7 @@ wp quick-2fa lock john_doe
 wp quick-2fa lock john@example.com
 ```
 
-You cannot lock your own account.
+WP-CLI runs as no particular user, so nothing stops this locking your own account. The admin UI refuses to; the CLI does not.
 
 ### `unlock <user>`
 
@@ -37,15 +37,16 @@ wp quick-2fa lock-all --exclude=admin --yes    # skip confirmation prompt
 
 ### `unlock-all [--yes]`
 
-Unlock every currently-locked user.
+Unlock every currently-locked user and reset their failed-attempt counters. Asks for confirmation unless `--yes` is given.
 
 ```bash
 wp quick-2fa unlock-all
+wp quick-2fa unlock-all --yes    # skip confirmation prompt
 ```
 
 ### `status <user> [--format=table|json|yaml]`
 
-Show 2FA status, lock state, last verification time, failed attempt count, and trusted device count for a user.
+Show a user's login, email, lock state, last verification time, failed attempt count and trusted device count.
 
 ```bash
 wp quick-2fa status admin
@@ -54,7 +55,7 @@ wp quick-2fa status john_doe --format=json
 
 ### `list-locked [--format=table|csv|json|yaml]`
 
-List every currently-locked user with their lock-until timestamps.
+List every currently-locked user with their lock-until time, or `Permanent` for a manual lock.
 
 ```bash
 wp quick-2fa list-locked
@@ -73,11 +74,12 @@ wp quick-2fa clear-devices admin
 
 ## Emergency
 
-### `emergency_disable [--yes]`
+### `emergency-disable [--yes]`
 
 Set Quick 2FA to `disabled` mode, bypassing all 2FA checks. Use this only if you've genuinely locked yourself out and you have no other recovery path.
 
 ```bash
+wp quick-2fa emergency-disable          # asks for confirmation
 wp quick-2fa emergency-disable --yes
 ```
 
@@ -105,6 +107,17 @@ When set to `1`, the trusted-devices feature is bypassed entirely — existing t
 
 This is intentional CLI-only — there's no settings UI checkbox. If you want to add one, see the project tracker.
 
+## Plugin updates
+
+The in-plugin GitHub updater also runs under WP-CLI (from 1.5.0), so the standard plugin commands see and install new releases:
+
+```bash
+wp plugin list --name=quick-2fa --fields=name,version,update,update_version
+wp plugin update quick-2fa
+```
+
+See [troubleshooting](troubleshooting.md#the-plugin-updater-isnt-picking-up-new-releases) if a release isn't showing up.
+
 ## Examples — common operational tasks
 
 ### Audit who's locked
@@ -123,7 +136,7 @@ wp quick-2fa status john_doe   # confirm
 ### Suspected credential leak — lock everyone except yourself
 
 ```bash
-wp quick-2fa lock-all --exclude=$(whoami)
+wp quick-2fa lock-all --exclude=your_login
 ```
 
 ### Force everyone to re-verify on next login (after a security incident)

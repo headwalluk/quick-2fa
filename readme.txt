@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,9 @@ On GitHub: [headwalluk/quick-2fa](https://github.com/headwalluk/quick-2fa). The 
 See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY.md) in the repository for the responsible-disclosure process.
 
 == Changelog ==
+
+= 1.5.0 =
+Fixes: another plugin returning the wrong type from a WordPress hook no longer crashes the Users screen or the login, WP-CLI now sees and installs new releases, and the password-reminder warning border is amber in right-to-left languages. Deprecated: the `quick_2fa_updater_enabled` filter is renamed `quick2fa_updater_enabled`; the old name still works. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 = 1.4.0 =
 New: with trusted devices disabled, every login session must verify. Previously a recent verification let a user log in again from any device until the verification period ran out. On sites with trusted devices disabled, existing sessions are challenged once after upgrading. Fixes: storing `false` in `quick2fa_disable_trusted_devices` no longer disables trusted devices, and a failed verification email no longer leaves an undelivered code behind, and is now logged. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
@@ -91,6 +94,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+Fixes crashes on the Users screen and at login caused by other plugins, and lets WP-CLI install updates. If you disable updates with the `quick_2fa_updater_enabled` filter, rename it to `quick2fa_updater_enabled`; the old name still works until 2.0.0.
 
 = 1.4.0 =
 Sites with trusted devices disabled now require verification once per login session, and existing sessions are challenged once after upgrading. Also fixes failed code emails and a boolean option bug. No change for sites using trusted devices.
