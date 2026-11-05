@@ -4,7 +4,7 @@ Tags: security, two-factor, 2fa, authentication, email
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 8.2
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,9 @@ On GitHub: [headwalluk/quick-2fa](https://github.com/headwalluk/quick-2fa). The 
 See [`SECURITY.md`](https://github.com/headwalluk/quick-2fa/blob/master/SECURITY.md) in the repository for the responsible-disclosure process.
 
 == Changelog ==
+
+= 1.6.1 =
+No behaviour change. The GitHub updater is restructured so other plugins can reuse it; updates and the `quick2fa_updater_enabled` filter work as before. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 = 1.6.0 =
 New: changing a password revokes all of the user's trusted devices, however it is changed, so every device needs a code at its next login. New "Delete all plugin data when uninstalled" setting, off by default; with it off, deleting the plugin now keeps all data, trusted devices included. New `quick2fa_account_locked` and `quick2fa_account_unlocked` actions. Fixes: the password reminder page shows the configured reminder period instead of always saying 60 days, and a manual lock is logged once instead of twice. Polish plural forms retranslated. Requires WordPress 6.2. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
@@ -97,6 +100,9 @@ Fix: restore compatibility with WordPress's theme/plugin file editor — "Update
 Initial public release. See [CHANGELOG.md](https://github.com/headwalluk/quick-2fa/blob/master/CHANGELOG.md) on GitHub.
 
 == Upgrade Notice ==
+
+= 1.6.1 =
+Internal changes only. No action needed.
 
 = 1.6.0 =
 Requires WordPress 6.2 or later. A password change now revokes the user's trusted devices. Deleting the plugin no longer clears trusted devices unless the new "Delete all plugin data when uninstalled" setting is ticked.
