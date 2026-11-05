@@ -44,7 +44,8 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 // GitHub auto-updates (admin, cron and WP-CLI only — no need to load on front-end requests).
 if ( is_admin() || ( defined( 'DOING_CRON' ) && DOING_CRON ) || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
 	require_once QUICK_2FA_PATH . 'includes/class-github-updater.php';
-	new Quick_2FA\Github_Updater();
+	add_filter( 'quick2fa_updater_enabled', 'Quick_2FA\apply_deprecated_updater_filter', PHP_INT_MIN );
+	new Quick_2FA\Github_Updater( QUICK_2FA_FILE, Quick_2FA\UPDATER_GITHUB_REPO, QUICK_2FA_VERSION, 'quick2fa_updater_enabled' );
 }
 
 /**

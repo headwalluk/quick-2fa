@@ -15,6 +15,7 @@ namespace Quick_2FA;
 defined( 'WP_UNINSTALL_PLUGIN' ) || die();
 
 require_once __DIR__ . '/constants.php';
+require_once __DIR__ . '/includes/class-github-updater.php';
 
 $quick_2fa_delete_data = (bool) filter_var(
 	get_option( OPTION_DELETE_DATA_ON_UNINSTALL, DEFAULT_DELETE_DATA_ON_UNINSTALL ),
@@ -77,6 +78,5 @@ if ( $quick_2fa_delete_data ) {
 	}
 
 	delete_transient( TRANSIENT_LOCKED_COUNT );
-	delete_transient( UPDATER_CACHE_KEY );
-	delete_transient( UPDATER_FAILURE_CACHE_KEY );
+	Github_Updater::delete_cache( basename( __DIR__ ) );
 }

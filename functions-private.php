@@ -475,3 +475,24 @@ function verify_admin_action_nonce( string $action ): bool {
 
 	return '' !== $nonce && false !== wp_verify_nonce( $nonce, $action );
 }
+
+/**
+ * Pass the deprecated quick_2fa_updater_enabled filter's result into quick2fa_updater_enabled.
+ *
+ * Hooked onto quick2fa_updater_enabled at PHP_INT_MIN so it runs first.
+ *
+ * @since 1.6.1
+ * @param mixed $enabled Whether auto-updates are enabled. Default true.
+ * @return mixed The deprecated filter's result.
+ */
+function apply_deprecated_updater_filter( mixed $enabled ): mixed {
+	/**
+	 * Filter whether GitHub auto-updates are enabled for Quick 2FA.
+	 *
+	 * @since 1.0.0
+	 * @deprecated 1.5.0 Use quick2fa_updater_enabled.
+	 *
+	 * @param bool $enabled Whether auto-updates are enabled. Default true.
+	 */
+	return apply_filters_deprecated( 'quick_2fa_updater_enabled', array( $enabled ), '1.5.0', 'quick2fa_updater_enabled' );
+}

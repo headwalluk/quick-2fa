@@ -4,6 +4,14 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **The GitHub updater is now portable to other plugins.** `Github_Updater` takes the plugin file, repository, version and filter name as constructor arguments, and derives its cache names from the plugin slug, so the file can be copied into another plugin by changing only its namespace. `CLAUDE.md` describes how. No behaviour change: `quick2fa_updater_enabled` and the deprecated `quick_2fa_updater_enabled` work as before, and the cache transients keep their names.
+- `docs/troubleshooting.md` now says where the updater logs a failed release lookup.
+- Every document in `docs/` checked against the code again; nothing else needed correcting.
+
 ## [1.6.0] — 2026-09-25
 
 ### Added

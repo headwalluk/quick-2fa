@@ -107,7 +107,7 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 | `includes/class-password-reminder-handler.php` | Password age tracking, reminder cooldowns |
 | `includes/class-user-management.php` | Users table UI customization, lock/unlock row actions |
 | `includes/class-cli-commands.php` | WP-CLI commands for lock/unlock/status/emergency-disable |
-| `includes/class-github-updater.php` | In-plugin updater: checks GitHub Releases and feeds the WordPress update transient. Holds the `log()` / `log_error()` split described under **Logging** |
+| `includes/class-github-updater.php` | In-plugin updater: checks GitHub Releases and feeds the WordPress update transient. Portable to other plugins; see **Porting the GitHub updater**. Holds the `log()` / `log_error()` split described under **Logging** |
 
 ### Data Storage
 
@@ -149,7 +149,7 @@ everything in this table as a contract, whether or not it is documented as publi
 
 - **Expose behaviour, not storage.** Give integrations functions and hooks (`quick2fa_account_locked`, a getter) rather than meta keys or option names to read. A key that outside code reads directly can never move or change format: WooCommerce could only move orders to custom tables (HPOS) because code went through `WC_Order` getters. Document a stored key as readable only where a hook or getter would genuinely cost more, and then read-only; `_quick2fa_last_login` is the one such key
 - **Add, don't change.** New filter arguments go at the end. New behaviour gets a new filter, not a new meaning for an existing one
-- **Deprecate, don't rename.** Fire the old name through `apply_filters_deprecated()` and pass its result into the new filter, as `Github_Updater::is_enabled()` does for `quick_2fa_updater_enabled`. Remove the old name no earlier than the next major version
+- **Deprecate, don't rename.** Fire the old name through `apply_filters_deprecated()` and pass its result into the new filter, as `apply_deprecated_updater_filter()` in `functions-private.php` does for `quick_2fa_updater_enabled`. Remove the old name no earlier than the next major version
 - **Filters are prefixed `quick2fa_`.** `quick_2fa_updater_enabled` is the one exception, and it is deprecated
 - **Rename a handle through an alias:** register the old handle with no source and the new handle as its only dependency. Never register the same file under both
 - **Stored data has no migration path.** `Plugin::check_first_run()` only records the version, so changing a stored key or value format is a breaking change: stop and ask
@@ -293,6 +293,44 @@ Format: `type: brief description` where type is one of: `feat:`, `fix:`, `chore:
 4. Stage and commit
 
 Every `phpcs:ignore` and `phpcs:disable` names the exact sniff and ends with `-- reason`.
+
+## Porting the GitHub updater
+
+`includes/class-github-updater.php` is the GitHub updater for every Headwall plugin. Other
+plugins copy the file rather than share a class. Each copy sits in its own plugin's namespace,
+so several plugins on one site never interfere, whatever version each one ships.
+
+1. Copy the file to `includes/class-github-updater.php` in the target plugin
+2. Change the `namespace` and `@package` lines, and nothing else. No other line names Quick 2FA,
+   and `dev-notes/testing/test-github-updater.php` fails if one does, so keep it that way when
+   editing the file here
+3. Load it from the main plugin file, only where updates are checked:
+
+```php
+if ( is_admin() || ( defined( 'DOING_CRON' ) && DOING_CRON ) || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+	require_once MY_PLUGIN_PATH . 'includes/class-github-updater.php';
+	new My_Plugin\Github_Updater( MY_PLUGIN_FILE, 'headwalluk/my-plugin', MY_PLUGIN_VERSION, 'my_plugin_updater_enabled' );
+}
+```
+
+4. Document the filter named in the last argument as a public contract. Returning false
+   disables updates for that plugin only
+5. Attach `<slug>.zip` (or `<slug>-<version>.zip`) to every GitHub Release. GitHub's source
+   archives are never used
+6. If `uninstall.php` deletes data, call `Github_Updater::delete_cache( basename( __DIR__ ) )`.
+   Cache transients are named from the slug: `my_plugin_github_release` and `_github_failed`
+
+Fixes go into Quick 2FA first and are tested here, then copied out. To check a copy for drift:
+
+```bash
+diff <(grep -v '^namespace \|@package ' includes/class-github-updater.php) \
+     <(grep -v '^namespace \|@package ' ../my-plugin/includes/class-github-updater.php)
+```
+
+**Replacing the old `Headwall_GitHub_Plugin_Updater` drop-in:** delete
+`includes/class-headwall-github-plugin-updater.php` and its `new` call. That drop-in fired
+`headwall_github_updater_enabled`. Where a plugin documented it, keep it working through a
+deprecated bridge onto the plugin's own filter, as `apply_deprecated_updater_filter()` does here.
 
 ## WP-CLI Commands
 

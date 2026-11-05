@@ -129,4 +129,6 @@ wp plugin list --name=quick-2fa --fields=name,version,update,update_version
 
 `quick_2fa_github_failed` is set for an hour after a failed lookup, and the updater makes no new request while it exists. The last command runs the fresh check; visiting **Dashboard → Updates** in the WordPress admin does the same.
 
+If the check still finds nothing, look in the PHP error log for lines starting `Quick_2FA Github_Updater [error]:`. A failed lookup is always logged there, whether or not `WP_DEBUG` is on, with the HTTP error or the reason the release was rejected.
+
 If you want to disable auto-updates entirely (e.g. on staging or for a specific site), see the [`quick2fa_updater_enabled` filter](developers/hooks-and-filters.md#quick2fa_updater_enabled).
