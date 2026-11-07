@@ -8,6 +8,9 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
+# Claude Code per-machine settings
+.claude/settings.local.json
+
 # Node modules (if needed later)
 node_modules/
 
