@@ -28,3 +28,6 @@ wp-config.php
 # client site names and unredacted diagnostics. Backed up with the dev site,
 # and blocked from remote access by dev-notes/.htaccess.
 dev-notes/
+
+# Emacs Projectile project marker
+.projectile
