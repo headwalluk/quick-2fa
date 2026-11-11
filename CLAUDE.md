@@ -2,68 +2,30 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Repository: public
+
+Follows the **headwall-wp-plugin** skill, which holds the shared conventions: PHP style,
+templates, logging, comments, public-contract rules, testing, release and the GitHub updater.
+Load it before working on this plugin. This file holds only what is specific to Quick 2FA.
+
 ## Project Overview
 
 Quick 2FA is a WordPress plugin providing email-based two-factor authentication for admin access. It intercepts login via `admin_init` (priority 1) and redirects unverified users to `wp-login.php?q2fa=verify`. It is designed to be non-breaking — REST API, WP-CLI, AJAX, cron, and XML-RPC requests bypass 2FA checks.
 
-- **Namespace:** `Quick_2FA` for all classes
-- **Text Domain:** `quick-2fa`
-- **PHP:** 8.2+ (do NOT use `declare(strict_types=1)` — breaks WordPress interop). The floor is 8.2 because four handlers return `true|\WP_Error`, and the `true` type landed in 8.2; on 8.0/8.1 that is a compile-time fatal, not a graceful failure
+- **Namespace:** `Quick_2FA` · **Text Domain:** `quick-2fa` · **Prefixes:** `quick2fa_` (options, filters), `_quick2fa_` (user meta), `q2fa_` (transients), `QUICK_2FA_` (constants)
+- **PHP:** 8.2+. The floor is 8.2 because four handlers return `true|\WP_Error`, and the `true` type landed in 8.2; on 8.0/8.1 that is a compile-time fatal, not a graceful failure
 - **WordPress:** 6.2+. The floor is 6.2 because revoking trusted devices on a password change hooks `wp_set_password`, which fires from 6.2
 - **No build system** — no npm, no Composer, no bundler. Assets are plain CSS/JS.
 
-Quick 2FA is also the maintainer's **reference plugin**: new WordPress plugins take their
-structure, conventions and patterns from it. Code should be easy to read and to trace by hand,
-and this file and the code comments must match what the code actually does. A stale rule or
-comment here gets copied into the next project.
-
-This plugin is published publicly on GitHub. Tracked files must contain no client names,
-client URLs, fleet measurements or client data of any kind — in code, comments, docs,
-fixtures or commit messages.
-
-`dev-notes/` is **private and untracked** (`.gitignore`), backed up with the dev site, and
-blocked from the web by `dev-notes/.htaccess`. It is the right home for client-identifying
-material. Never copy content from `dev-notes/` into a tracked file without scrubbing it, and
-never reference a `dev-notes/` path from a file that ships in the release zip.
-
-## Commands
-
-```bash
-phpcs                          # Check WordPress Coding Standards (configured in phpcs.xml)
-phpcbf                         # Auto-fix coding standards violations
-phpcs includes/class-plugin.php  # Check a specific file
-```
-
-```bash
-wp-translate . --check-instructions   # Is the block at the end of this file still current?
-wp-translate . --sync-instructions    # Update it; review the diff afterwards
-wp-translate . --dry-run              # Preview; no DeepL calls, no writes
-```
-
-Run `--check-instructions` after a `wp-translate` upgrade; if it reports drift, run
-`--sync-instructions` and review the diff. Never hand-edit inside the
-`wp-translate:begin`/`end` markers — the block is hash-validated and edits break it.
-
-No build step or package.json. Code quality is enforced via phpcs; see **Testing** below for
-how behaviour is exercised.
+Quick 2FA is the **reference implementation** for the headwall-wp-plugin skill: the skill sends
+other plugins here to copy named files and functions. When changing one of those, keep it
+plugin-neutral where it already is, and if the pattern itself changes, update the skill too.
 
 ## Testing
 
-There is no unit-test framework and none is wanted. Behaviour is exercised against the live
-dev site through WP-CLI, which is enough for a plugin this size:
-
-```bash
-# Fire a hook and inspect what it wrote
-wp eval '$user = get_user_by( "id", 1 ); do_action( "wp_login", $user->user_login, $user );'
-wp user meta get 1 _quick2fa_last_login
-
-# Exercise a filter path
-wp eval 'add_filter( "quick2fa_record_last_login", "__return_false" ); ...'
-```
-
-Two rules: reset the state you touch afterwards (`wp user meta delete`, `wp option delete`),
-and test the **defensive** path as well as the happy one — firing `wp_login` with a single
-argument is what proves a hook callback tolerates a sloppy third-party caller.
+Eight harnesses live in `dev-notes/testing/`, one per class or helper file. Run each with
+`wp eval-file wp-content/plugins/quick-2fa/dev-notes/testing/<file>.php`. All of them must pass
+before a release and after any change to high-impact code.
 
 ## Architecture
 
@@ -107,15 +69,16 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 | `includes/class-password-reminder-handler.php` | Password age tracking, reminder cooldowns |
 | `includes/class-user-management.php` | Users table UI customization, lock/unlock row actions |
 | `includes/class-cli-commands.php` | WP-CLI commands for lock/unlock/status/emergency-disable |
-| `includes/class-github-updater.php` | In-plugin updater: checks GitHub Releases and feeds the WordPress update transient. Portable to other plugins; see **Porting the GitHub updater**. Holds the `log()` / `log_error()` split described under **Logging** |
+| `includes/class-github-updater.php` | In-plugin updater, and the canonical copy every public Headwall plugin ports. Fixes go here first. Must not name Quick 2FA outside its `namespace` and `@package` lines; `dev-notes/testing/test-github-updater.php` fails if it does |
 
 ### Data Storage
 
 - **User meta** for per-user state (code hashes, lock status, trusted devices, logs)
 - **`wp_options`** for plugin settings (mode, code length, lock duration, etc.)
 - **Transients** for temporary data (return URLs, rate limits)
-- **Every stored key carries the plugin prefix:** `OPTION_PREFIX` for options, `META_PREFIX` for user meta. `uninstall.php` finds keys by prefix, so a key without one survives an uninstall. `META_PASSWORD_LAST_CHANGED` predates the rule and is listed there by name
+- **Every stored key carries the plugin prefix.** `META_PASSWORD_LAST_CHANGED` predates the rule and is listed in `uninstall.php` by name
 - **Uninstall deletes nothing by default.** Only with the *Delete all plugin data when uninstalled* setting on (`OPTION_DELETE_DATA_ON_UNINSTALL`) does `uninstall.php` remove the plugin's options, user meta and transients. Deactivation never deletes data
+- **User meta is network-wide**, so on multisite a lock or a trusted device would apply on every site. Multisite is untested
 
 ### Security Implementation
 
@@ -136,31 +99,19 @@ argument is what proves a hook callback tolerates a sloppy third-party caller.
 
 ## Public Contracts
 
-Code outside the plugin depends on more than `docs/developers/hooks-and-filters.md` lists. Treat
-everything in this table as a contract, whether or not it is documented as public:
+The skill's `public-contracts.md` has the rules. Quick 2FA's contracts:
 
-| Contract | Examples | Breaks when |
-|----------|----------|-------------|
-| Filters and actions | `quick2fa_record_last_login`, `quick2fa_account_locked` | renamed or removed, or an argument is removed or reordered |
-| Stored key strings | `_quick2fa_locked_until`, `_quick2fa_trusted_devices`, `quick2fa_mode` | a constant's **value** changes. Data stored under the old string is ignored, so a new `META_LOCKED_UNTIL` string would unlock every locked account |
-| Script and style handles | `quick-2fa-login`, `quick-2fa-password-page`, `quick-2fa-settings` | renamed. Anything listing the handle as a dependency stops loading |
-| Login page URLs | `wp-login.php?q2fa=verify`, `?q2fa=password` | `QUERY_PARAM` or an `ACTION_*` value changes. Firewall rules and links pointing at them break |
-| WP-CLI commands | `wp quick-2fa lock-all` | a command or argument is renamed. Scripts fail; 1.3.0 renamed five with no aliases |
+| Contract | Examples |
+|----------|----------|
+| Filters and actions | `quick2fa_record_last_login`, `quick2fa_account_locked`, `quick2fa_updater_enabled` |
+| Stored key strings | `_quick2fa_locked_until`, `_quick2fa_trusted_devices`, `quick2fa_mode`. A new `META_LOCKED_UNTIL` string would unlock every locked account |
+| Script and style handles | `quick-2fa-login`, `quick-2fa-password-page`, `quick-2fa-settings` |
+| Login page URLs | `wp-login.php?q2fa=verify`, `?q2fa=password` (`QUERY_PARAM`, `ACTION_*`) |
+| WP-CLI commands | `wp quick-2fa lock-all`. 1.3.0 renamed five with no aliases |
 
-- **Expose behaviour, not storage.** Give integrations functions and hooks (`quick2fa_account_locked`, a getter) rather than meta keys or option names to read. A key that outside code reads directly can never move or change format: WooCommerce could only move orders to custom tables (HPOS) because code went through `WC_Order` getters. Document a stored key as readable only where a hook or getter would genuinely cost more, and then read-only; `_quick2fa_last_login` is the one such key
-- **Add, don't change.** New filter arguments go at the end. New behaviour gets a new filter, not a new meaning for an existing one
-- **Deprecate, don't rename.** Fire the old name through `apply_filters_deprecated()` and pass its result into the new filter, as `apply_deprecated_updater_filter()` in `functions-private.php` does for `quick_2fa_updater_enabled`. Remove the old name no earlier than the next major version
-- **Filters are prefixed `quick2fa_`.** `quick_2fa_updater_enabled` is the one exception, and it is deprecated
-- **Rename a handle through an alias:** register the old handle with no source and the new handle as its only dependency. Never register the same file under both
-- **Stored data has no migration path.** `Plugin::check_first_run()` only records the version, so changing a stored key or value format is a breaking change: stop and ask
-
-Before changing anything in the table:
-
-1. Name the contract you are touching
-2. Assume there are consumers you can't see
-3. Take the additive path if one exists
-4. Record it in `CHANGELOG.md`, under **Deprecated** or as a breaking change with an upgrade notice in `readme.txt`
-5. If you can't tell whether anything outside the plugin depends on it, stop and ask
+- `_quick2fa_last_login` is the one stored key documented as readable by outside code
+- `quick_2fa_updater_enabled` is the one filter without the `quick2fa_` prefix, and it is deprecated in favour of `quick2fa_updater_enabled`, bridged by `apply_deprecated_updater_filter()`
+- `Plugin::check_first_run()` only records the version; there is no migration path for stored data
 
 ### High-Impact Code
 
@@ -172,165 +123,7 @@ These paths decide who gets into an account:
 - Device trust and session verification: `Account_Security_Handler::trust_device()`, `is_device_trusted()`, `clear_trusted_devices()`, `mark_current_session_verified()` and `get_current_session_verified_time()`, and the password-change revocation in `Plugin::revoke_devices_on_password_set()` and `revoke_devices_on_profile_update()`
 - `Password_Reminder_Handler::update_password()` and `maintain_session()`
 
-When a change touches one, say so, run every harness in `dev-notes/testing/`, and recommend the
-maintainer read that diff line by line before tagging. A review by an AI agent, your own included,
-does not count as that read.
-
-### Where the Plugin Runs
-
-- **Request context.** Hook callbacks run under WP-CLI, cron, AJAX and REST as well as browser requests, where there may be no current user, login session or admin screen. Check for what the code needs (`is_user_logged_in()`, `did_action()`, `function_exists()`). `should_skip_check()` covers the verification redirect only
-- **Install layout.** Build URLs and paths with `wp_login_url()`, `admin_url()`, `QUICK_2FA_URL` and `QUICK_2FA_PATH`, never by joining strings onto the domain. WordPress may run from a subdirectory, with `wp-content` moved, or behind a reverse proxy
-- **Multisite is untested.** Settings are per-site options, but user meta is network-wide, so a lock or a trusted device applies on every site in the network. A change touching either must say which it assumes
-
-## Code Conventions
-
-### PHP Style
-
-- **Namespace:** `Quick_2FA` for all classes
-- **No `declare(strict_types=1)`** — breaks WordPress interop
-- **Single-Entry Single-Exit (SESE):** Functions should generally have one return at the end. Top-of-function guard clauses (capability checks, disabled-mode short-circuits, missing-input early-exits) are acceptable when they keep the rest of the function flat and readable. What is **not** acceptable: `return` statements scattered mid-function, inside loops, or nested several `if` blocks deep — these make the control flow hard to trace when debugging
-- **An `if` with one or more `elseif` branches ends in a plain `else`**, never an `elseif`, so every case is handled on purpose instead of falling through. A branch that does nothing is still written out, with a short comment. A lone `if` needs no `else`. `phpcs.xml` excludes the `if`/`elseif`/`else` codes of `Generic.CodeAnalysis.EmptyStatement` so these comment-only branches pass; empty `catch`, loop and `switch` bodies are still errors
-- **No assignment inside a condition** — WPCS flags it (`AssignmentInCondition`, `DisallowMultipleAssignments`). Assign on the line before, and nest when the value is only needed by a later branch:
-
-```php
-if ( $code_handler->has_valid_code() ) {
-	// Existing code still valid; nothing to send.
-} else {
-	$result = $code_handler->send_via_email();
-
-	if ( is_wp_error( $result ) ) {
-		$error = $result;
-	} else {
-		// Sent.
-	}
-}
-```
-
-- **No unreachable `return`.** A `return` after a call that always `exit()`s (a redirect helper, `wp_die()`) is dead code, and so is a bare `return;` as the last statement of a `void` function. Both read as control flow that isn't there
-- **Constants for all magic strings/numbers** in `constants.php` — never use raw strings for meta keys, option names, etc. A key constant's **value** is stored data and never changes; see **Public Contracts**
-- **Type hints and return types** on all functions, and on class properties too (union types, nullsafe operators, named arguments). Check any type syntax newer than 8.2 against the declared floor before using it — nothing here enforces it mechanically
-- **Callbacks on hooks the plugin doesn't own take `mixed`.** Any callback earlier in the chain can hand over the wrong type, and a typed parameter turns that into a `TypeError` on a page the plugin doesn't control. Declare parameters `mixed`, check each value before use (`instanceof`, `is_array()`, `is_numeric()`), and give a filter callback a `mixed` return that passes a value it can't use through unchanged. `User_Management::render_lockout_column()` is the pattern
-- **Check what a filter returns.** Any callback can return the wrong type. Read a boolean result with `filter_var()` as under **Boolean Options**, and fall back to the default for a malformed array, as `Password_Reminder_Handler::generate_strong_password()` does
-- **Guard object lookups with `instanceof`, not truthiness.** `get_userdata()`, `get_user_by()`, `wc_get_product()` and friends are documented as returning `Object|false` — but `get_userdata()` and `get_user_by()` are *pluggable*, so any plugin loading earlier can replace them wholesale with no contract at all. `if ( ! $user )` and `if ( ! empty( $user ) )` are exactly equivalent (`empty()` is just `! isset() || == false`), and both let truthy junk — a `stdClass`, a non-empty string, a populated array — through to `$user->user_email` and a fatal. `if ( ! $user instanceof \WP_User )` accepts only the contract the code actually relies on. Never pass an unguarded lookup into a view
-- **Cast at the boundary.** WordPress returns loosely-typed data — `get_user_meta()` and `get_option()` hand back strings (or `''`, or `false`). Cast on the way in, at the point of read, so the rest of the function works with a known type: `$locked_until = (int) get_user_meta( $user_id, META_LOCKED_UNTIL, true );`. Don't feed a raw meta value straight into a numeric comparison
-- **Don't duplicate derived values.** Where two hooks need the same message or computation, extract a helper. Two copies of a rule (a lockout message, a threshold) will diverge the first time one is edited
-- **Dates stored as Unix timestamps** (`time()`), matching `_quick2fa_last_verified`, `_quick2fa_locked_until` and the event log. Format for display only, at the point of output, with `wp_date()` / `date_i18n()` so the site's locale and timezone apply
-
-### Template Pattern (Code-First)
-
-Templates use `printf()`/`echo` exclusively — no inline HTML mixed with PHP snippets. This prevents whitespace bleeding into attributes/values.
-
-```php
-// Correct
-printf(
-    '<button>%s</button>',
-    esc_html__( 'Click', 'quick-2fa' )
-);
-
-// Wrong — no inline HTML
-<button><?php esc_html_e( 'Click', 'quick-2fa' ); ?></button>
-```
-
-phpcs treats a template's scope as global, so variables a template defines itself are prefixed
-`quick_2fa_` (`WordPress.NamingConventions.PrefixAllGlobals`). Variables handed in by the rendering
-method keep their plain names and are listed in the template's `@var` docblock.
-
-### Login Page Templates
-
-Login pages (`views/verification-page.php`, `views/password-page.php`) have specific requirements:
-- Use `login_head` and `login_footer` actions — NOT `wp_head`/`wp_footer` (no theme context)
-- Use WordPress login page structure: `#login`, `#loginform`, `.message` CSS classes
-- Include `<meta name="robots" content="noindex, nofollow">` on all auth pages
-- Suppress Query Monitor on 2FA pages via `do_action( 'qm/cease' )`
-- Shared CSS lives in `assets/css/login-pages.css`
-- No inline JavaScript — all JS externalized to files in `assets/` and loaded via `wp_enqueue_script()`
-
-### CSS and JavaScript
-
-- **Logical properties for anything with a left or right.** Use `margin-inline-start`, `padding-inline-end`, `border-inline-start-color`, `inset-inline-end` and `text-align: start`, never `margin-left`, `right` or `text-align: left`. Core's admin and login styles switch sides in right-to-left locales and this plugin's CSS has no mirrored copy, so a physical property styles the wrong side. `.q2fa-message-warning` in `assets/css/login-pages.css` is the pattern. Top and bottom stay physical
-- **Plain JavaScript.** New scripts have no jQuery dependency, like `assets/js/password-page.js`. `assets/admin/settings.js` uses jQuery only because Select2 requires it
-
-### Logging
-
-Two methods, deliberately split — see `Github_Updater::log()` / `log_error()`:
-
-- `log_error()` — genuine failures (HTTP errors, malformed responses, missing assets). Logs
-  **unconditionally**, so a sysadmin diagnosing a broken install sees it without touching config
-- `log()` — routine flow tracing (cache hits, version comparisons, "up to date"). Logs only when `WP_DEBUG` is on
-
-An error that only appears under `WP_DEBUG` is a silent failure in production. Never hide an
-error behind a debug flag, and never leave a `catch` that records nothing.
-
-There is no logging dependency. WooCommerce is not a hard dependency here, so `error_log()`
-with a `phpcs:ignore` is correct — do not add a logging library.
-
-### Comments
-
-- One-line docblock summary per function, saying what it does. `@param`, `@return` and `@since` lines don't count
-- Inline comments only where the mechanism isn't obvious: a load-order trap, an API behaving unexpectedly, a guard whose absence would be silently wrong
-- Don't restate what the names already say, and don't label the obvious (`// Loop over users`)
-- Plain words: say "check", "guard" or "only when", not "gate" or "gating"
-- Match the wrap width of the surrounding file; there is no fixed column
-- Reasoning and history go in `docs/`, not in comments; see **Reference Files**
-
-### Boolean Options
-
-Use `filter_var()` with `FILTER_VALIDATE_BOOLEAN` to handle all WordPress boolean formats (`'1'`, `'yes'`, `'on'`, `true`):
-
-```php
-$enabled = (bool) filter_var( get_option( OPTION_ENABLED, false ), FILTER_VALIDATE_BOOLEAN );
-```
-
-### Commit Messages
-
-Format: `type: brief description` where type is one of: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `style:`, `test:`
-
-### Pre-Commit Workflow
-
-1. `phpcs` — check violations
-2. `phpcbf` — auto-fix
-3. `phpcs` — verify clean: no errors **and no warnings**
-4. Stage and commit
-
-Every `phpcs:ignore` and `phpcs:disable` names the exact sniff and ends with `-- reason`.
-
-## Porting the GitHub updater
-
-`includes/class-github-updater.php` is the GitHub updater for every Headwall plugin. Other
-plugins copy the file rather than share a class. Each copy sits in its own plugin's namespace,
-so several plugins on one site never interfere, whatever version each one ships.
-
-1. Copy the file to `includes/class-github-updater.php` in the target plugin
-2. Change the `namespace` and `@package` lines, and nothing else. No other line names Quick 2FA,
-   and `dev-notes/testing/test-github-updater.php` fails if one does, so keep it that way when
-   editing the file here
-3. Load it from the main plugin file, only where updates are checked:
-
-```php
-if ( is_admin() || ( defined( 'DOING_CRON' ) && DOING_CRON ) || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
-	require_once MY_PLUGIN_PATH . 'includes/class-github-updater.php';
-	new My_Plugin\Github_Updater( MY_PLUGIN_FILE, 'headwalluk/my-plugin', MY_PLUGIN_VERSION, 'my_plugin_updater_enabled' );
-}
-```
-
-4. Document the filter named in the last argument as a public contract. Returning false
-   disables updates for that plugin only
-5. Attach `<slug>.zip` (or `<slug>-<version>.zip`) to every GitHub Release. GitHub's source
-   archives are never used
-6. If `uninstall.php` deletes data, call `Github_Updater::delete_cache( basename( __DIR__ ) )`.
-   Cache transients are named from the slug: `my_plugin_github_release` and `_github_failed`
-
-Fixes go into Quick 2FA first and are tested here, then copied out. To check a copy for drift:
-
-```bash
-diff <(grep -v '^namespace \|@package ' includes/class-github-updater.php) \
-     <(grep -v '^namespace \|@package ' ../my-plugin/includes/class-github-updater.php)
-```
-
-**Replacing the old `Headwall_GitHub_Plugin_Updater` drop-in:** delete
-`includes/class-headwall-github-plugin-updater.php` and its `new` call. That drop-in fired
-`headwall_github_updater_enabled`. Where a plugin documented it, keep it working through a
-deprecated bridge onto the plugin's own filter, as `apply_deprecated_updater_filter()` does here.
+`should_skip_check()` covers the verification redirect only; other callbacks still check their own request context.
 
 ## WP-CLI Commands
 
@@ -344,47 +137,35 @@ wp quick-2fa clear-devices <user>           # Clear trusted devices
 wp quick-2fa emergency-disable --yes        # Disable 2FA entirely
 ```
 
-## Release Workflow
+## Release
 
-1. Update the version in `quick-2fa.php` — **both** the `Version:` header and the `QUICK_2FA_VERSION` constant
-2. Update `CHANGELOG.md`: move the `[Unreleased]` entries under the new version, and give each bug fix the version that introduced it, when known. If the version differs from the one in new `@since` or `@deprecated` tags, update those too
-3. Update `readme.txt` stable tag
-4. Run `phpcs` to verify compliance
-5. If the release touches **High-Impact Code**, the maintainer reads that diff line by line
-6. Tag release in git
-
-The version lives in **three** places that must agree with the git tag: the header `Version:`
-field, `QUICK_2FA_VERSION`, and the `readme.txt` stable tag. `.github/workflows/release.yml`
-refuses to build on a mismatch. This gate exists because v1.2.2 shipped with the header bumped
-and the constant left behind, which made the updater advertise a permanent false update on
-every site — see the 1.3.0 entry in `CHANGELOG.md`.
-
-**The `Version` must always correspond to a real GitHub Release tag.** Setting it to a version
-that doesn't exist on GitHub degrades the updater experience.
+Follow the skill's `release.md` (public). The version check in `release.yml` exists because
+v1.2.2 shipped with the header bumped and `QUICK_2FA_VERSION` left behind, which made the updater
+advertise a permanent false update on every site; see the 1.3.0 entry in `CHANGELOG.md`. The
+updater's repository is `UPDATER_GITHUB_REPO` in `constants.php`.
 
 ## Reference Files
 
-`docs/` is the maintained entry point and is tracked/public. **One audience per document** — do
-not mix operator and developer material in the same file:
+`docs/` (tracked, public):
 
 - `docs/how-it-works.md`, `docs/configuration.md`, `docs/trusted-devices.md`,
   `docs/account-locking.md`, `docs/wp-cli.md`, `docs/troubleshooting.md` — site operators
 - `docs/developers/hooks-and-filters.md` — the public extension surface
 - `docs/developers/extending.md` — practical developer recipes
 
-Rationale, evidence and history belong in `docs/`, not in code comments. Where a mechanism
-needs more than a sentence to justify, write it up in `docs/` and reference the file from the
-code.
-
-Supporting material (private, untracked):
+`dev-notes/` (private, untracked):
 
 - `dev-notes/00-project-tracker.md` — milestones, open design questions, deferred features
 - `dev-notes/02-snagging-list.md` — small agreed items awaiting a convenient moment. Check it
   before starting work: an item there may already cover the file you are about to touch
-- `dev-notes/archive/` — superseded material kept for reference, including the retired
-  `copilot-instructions.md` and the old `patterns/` and `workflows/` guides. Archived, not
-  authoritative: **this file is the standard**, not anything under `archive/`
-- `CHANGELOG.md` — per-version release notes (tracked)
+- `dev-notes/archive/` — superseded material kept for reference. Archived, not authoritative
+- `dev-notes/testing/` — the harnesses
+
+## Translations
+
+Run `wp-translate . --check-instructions` after a `wp-translate` upgrade; if it reports drift,
+run `wp-translate . --sync-instructions` and review the diff. Never hand-edit inside the
+`wp-translate:begin`/`end` markers — the block is hash-validated and edits break it.
 
 <!-- wp-translate:begin v=1.2.0 hash=8804fd5245f02addf9bdc48d7baa6039253260454c3103ddccb5fed21df6aa3e -->
 ## Translating this plugin (wp-translate conventions)

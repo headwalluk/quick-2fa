@@ -24,7 +24,7 @@
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
 
 		<!-- An if with elseif branches ends in an explicit else, with no-op branches
-		     holding only a comment (see CLAUDE.md, PHP Style). This sniff counts a comment as
+		     holding only a comment. This sniff counts a comment as
 		     empty, so only its if/elseif/else codes are excluded; empty catch, loop and
 		     switch bodies are still errors. -->
 		<exclude name="Generic.CodeAnalysis.EmptyStatement.DetectedIf"/>
