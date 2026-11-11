@@ -4,7 +4,7 @@ Lightweight email-based two-factor authentication for WordPress admin access.
 
 ## For site administrators
 
-- [How it works](how-it-works.md) — Request flow, what gets protected, what bypasses 2FA
+- [How it works](how-it-works.md) — Request flow, what gets protected, what bypasses 2FA, where data lives and privacy
 - [Configuration](configuration.md) — Every setting explained
 - [Trusted devices](trusted-devices.md) — How device trust works, expiry, revocation
 - [Account locking](account-locking.md) — Automatic and manual locks, emergency lockdown, the event log

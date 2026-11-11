@@ -242,7 +242,7 @@ const LOG_ALL_DEVICES_REVOKED         = 'all_devices_revoked';
  * Maximum security-log entries retained per user.
  *
  * The log lives in a single user_meta row, so it is capped rather than allowed
- * to grow without limit. Documented in readme.txt's privacy section.
+ * to grow without limit. Documented in docs/how-it-works.md, Privacy.
  *
  * @since 1.3.0
  */

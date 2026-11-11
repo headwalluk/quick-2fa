@@ -4,6 +4,16 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- **`readme.txt`.** Quick 2FA isn't on wordpress.org, and nothing else read the file: the updater builds its "View details" panel from the plugin header. Its Privacy Policy section is now the *Privacy* section of `docs/how-it-works.md`; its FAQ was already covered by `docs/`; every upgrade notice is also in this changelog. The release workflow checks that the tag, the plugin header and `QUICK_2FA_VERSION` agree.
+
+### Changed
+
+- `CLAUDE.md` holds only what is specific to Quick 2FA. The conventions it shared with other Headwall plugins moved to a separate, private standard.
+
 ## [1.6.1] — 2026-11-05
 
 ### Changed

@@ -103,6 +103,18 @@ owners who don't want it recorded can disable it with the `quick2fa_record_last_
 
 Codes are **never stored in plaintext** — they're hashed with `wp_hash_password()` and verified with `wp_check_password()`, the same primitives WordPress uses for user passwords.
 
+## Privacy
+
+Everything Quick 2FA stores stays on your site, in the places listed above. Of it, these are personal data:
+
+- **Last-login timestamps**, recorded for every user on every successful login. Turn recording off with the `quick2fa_record_last_login` [filter](developers/hooks-and-filters.md#quick2fa_record_last_login)
+- **The security event log**, which records the time, IP address and user agent of each event, kept to the 50 most recent entries per user. See [account locking](account-locking.md)
+- **Verification and password-change timestamps**
+
+Verification codes and trusted-device tokens are stored only as hashes. The raw device token lives only in a secure cookie in the user's browser.
+
+Nothing is sent to an external service. The only outbound request is the GitHub updater checking `api.github.com/repos/headwalluk/quick-2fa/releases/latest`, at most every 12 hours; turn it off with the `quick2fa_updater_enabled` [filter](developers/hooks-and-filters.md).
+
 ## Deactivating and deleting the plugin
 
 Deactivating Quick 2FA never deletes anything, so reactivating it picks up where it left off.
