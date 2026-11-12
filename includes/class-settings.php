@@ -35,7 +35,14 @@ class Settings {
 	 * @since 1.0.0
 	 */
 	public function add_settings_page(): void {
-		add_options_page( __( 'Quick 2FA Settings', 'quick-2fa' ), __( 'Quick 2FA', 'quick-2fa' ), 'manage_options', 'quick-2fa', array( $this, 'render_settings_page' ) );
+		add_options_page(
+			/* translators: %s is the plugin name, Quick 2FA */
+			sprintf( __( '%s Settings', 'quick-2fa' ), PLUGIN_NAME ),
+			PLUGIN_NAME,
+			'manage_options',
+			'quick-2fa',
+			array( $this, 'render_settings_page' )
+		);
 	}
 
 	/**

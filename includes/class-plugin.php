@@ -655,7 +655,8 @@ class Plugin {
 
 			printf(
 				'<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
-				esc_html__( 'Quick 2FA is currently disabled.', 'quick-2fa' ),
+				/* translators: %s is the plugin name, Quick 2FA */
+				esc_html( sprintf( __( '%s is currently disabled.', 'quick-2fa' ), PLUGIN_NAME ) ),
 				esc_html__( 'Your admin area is not protected by two-factor authentication.', 'quick-2fa' ),
 				esc_url( $settings_url ),
 				esc_html__( 'Enable 2FA', 'quick-2fa' )

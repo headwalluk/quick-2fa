@@ -16,7 +16,6 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: quick-2fa.php
-#: includes/class-settings.php:38
 msgid "Quick 2FA"
 msgstr "Quick 2FA"
 
@@ -48,7 +47,7 @@ msgstr "Εάν δεν ζητήσατε εσείς αυτόν τον κωδικό
 
 #: functions-private.php:45
 #: includes/class-email-handler.php:38
-#: includes/class-settings.php:382
+#: includes/class-settings.php:389
 msgid "Your verification code"
 msgstr "Ο κωδικός επαλήθευσης σας"
 
@@ -104,23 +103,15 @@ msgstr "Παρακαλώ εισάγετε τον κωδικό επαλήθευσ
 msgid "A new verification code has been sent to your email."
 msgstr "Έχει σταλεί ένας νέος κωδικός επαλήθευσης στο email σας."
 
-#: includes/class-plugin.php:658
-msgid "Quick 2FA is currently disabled."
-msgstr "Η λειτουργία «Quick 2FA» είναι προς το παρόν απενεργοποιημένη."
-
-#: includes/class-plugin.php:659
+#: includes/class-plugin.php:660
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "Ο πίνακας ελέγχου σας δεν προστατεύεται από έλεγχο ταυτότητας δύο παραγόντων."
 
-#: includes/class-plugin.php:661
+#: includes/class-plugin.php:662
 msgid "Enable 2FA"
 msgstr "Ενεργοποίηση της διπλής επαλήθευσης (2FA)"
 
-#: includes/class-settings.php:38
-msgid "Quick 2FA Settings"
-msgstr "Γρήγορες ρυθμίσεις 2FA"
-
-#: includes/class-settings.php:358
+#: includes/class-settings.php:365
 msgid "Select roles..."
 msgstr "Επιλέξτε ρόλους..."
 
@@ -604,3 +595,15 @@ msgstr "https://headwall-hosting.com/plugins/quick-2fa/"
 #: quick-2fa.php
 msgid "https://headwall-hosting.com/a-web-guys-blog/"
 msgstr "https://headwall-hosting.com/a-web-guys-blog/"
+
+#. translators: %s is the plugin name, Quick 2FA
+#: includes/class-plugin.php:659
+#, php-format
+msgid "%s is currently disabled."
+msgstr "Το %s είναι προς το παρόν απενεργοποιημένο."
+
+#. translators: %s is the plugin name, Quick 2FA
+#: includes/class-settings.php:40
+#, php-format
+msgid "%s Settings"
+msgstr "Ρυθμίσεις %s"

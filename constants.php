@@ -12,6 +12,13 @@ namespace Quick_2FA;
 defined( 'ABSPATH' ) || die();
 
 /**
+ * Product name, shown untranslated in admin text.
+ *
+ * @since 1.6.2
+ */
+const PLUGIN_NAME = 'Quick 2FA';
+
+/**
  * User meta keys.
  *
  * @since 1.0.0

@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The plugin and author links on the Plugins screen now go to the plugin's page and the author's page on headwall-hosting.com.
 - `CLAUDE.md` holds only what is specific to Quick 2FA. The conventions it shared with other Headwall plugins moved to a separate, private standard.
 
+### Fixed
+
+- The settings page title and the "currently disabled" notice translated the plugin name, so German showed "Schnelle 2FA-Einstellungen" and French "La 2FA rapide est actuellement désactivée". The name now stays as "Quick 2FA" in every language, and only the plugin's description is translated in the plugin header.
+
 ## [1.6.1] — 2026-11-05
 
 ### Changed
