@@ -20,11 +20,6 @@ msgstr ""
 msgid "Quick 2FA"
 msgstr "Quick 2FA"
 
-#. Plugin URI of the plugin
-#: quick-2fa.php
-msgid "https://github.com/headwalluk/quick-2fa"
-msgstr "https://github.com/headwalluk/quick-2fa"
-
 #. Description of the plugin
 #: quick-2fa.php
 msgid "Lightweight email-based two-factor authentication for WordPress admin access."
@@ -34,11 +29,6 @@ msgstr "Authentification à deux facteurs légère, par e-mail, pour l'accès à
 #: quick-2fa.php
 msgid "Paul Faulkner"
 msgstr "Paul Faulkner"
-
-#. Author URI of the plugin
-#: quick-2fa.php
-msgid "https://headwall-hosting.com"
-msgstr "https://headwall-hosting.com"
 
 #. translators: %s: User display name
 #: emails/verification-code.php:20
@@ -604,3 +594,13 @@ msgstr "Supprimer toutes les données du plugin lors de la désinstallation"
 #: views/settings-page.php:231
 msgid "When the plugin is deleted from the Plugins screen, also delete its settings, account locks, trusted devices, event logs and last-login records. Deactivating the plugin never deletes anything."
 msgstr "Lorsque le plugin est supprimé depuis l'écran « Plugins », supprimez également ses paramètres, les verrouillages de compte, les appareils de confiance, les journaux d'événements et les enregistrements des dernières connexions. La désactivation du plugin n'entraîne jamais la suppression de quoi que ce soit."
+
+#. Plugin URI of the plugin
+#: quick-2fa.php
+msgid "https://headwall-hosting.com/plugins/quick-2fa/"
+msgstr "https://headwall-hosting.com/plugins/quick-2fa/"
+
+#. Author URI of the plugin
+#: quick-2fa.php
+msgid "https://headwall-hosting.com/a-web-guys-blog/"
+msgstr "https://headwall-hosting.com/a-web-guys-blog/"

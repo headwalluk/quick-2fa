@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The plugin and author links on the Plugins screen now go to the plugin's page and the author's page on headwall-hosting.com.
 - `CLAUDE.md` holds only what is specific to Quick 2FA. The conventions it shared with other Headwall plugins moved to a separate, private standard.
 
 ## [1.6.1] — 2026-11-05
