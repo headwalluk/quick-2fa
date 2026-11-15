@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The plugin and author links on the Plugins screen now go to the plugin's page and the author's page on headwall-hosting.com.
 - `CLAUDE.md` holds only what is specific to Quick 2FA. The conventions it shared with other Headwall plugins moved to a separate, private standard.
 - **Settings are checked when they are read, not only when the settings page saves them.** A value written with `wp option update` or directly to the database that Quick 2FA can't use, such as a code expiry of `0` or an unknown mode, is now ignored in favour of the setting's default and logged to the PHP error log, naming the option. Before, most such values were used as stored.
+- **The docs now say plainly that AJAX and REST requests aren't challenged**, even from a session that has the password but hasn't verified; they used to describe those requests as coming from verified admin pages. Smaller corrections cover the HTTP/HTTPS cookie case, sessions after a password change, must-use recovery, object caches after a direct database edit, and how password age is counted for reminders.
 - An out-of-range code length now uses the default of 6 digits, as the settings page does when saving. Before, it was clamped to the nearest limit (4 or 10).
 
 ### Fixed

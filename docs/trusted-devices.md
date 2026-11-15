@@ -50,7 +50,7 @@ Anyone who can edit another user's profile can revoke that user's devices in the
 wp quick-2fa clear-devices <user>
 ```
 
-**Changing a password revokes all of the user's trusted devices**, whichever way it's changed: the password reminder page, the profile page, a password reset, or `wp user update --user_pass`. The session that made the change carries on, but every device, including that one, needs a code at its next login.
+**Changing a password revokes all of the user's trusted devices**, whichever way it's changed: the password reminder page, the profile page, a password reset, or `wp user update --user_pass`. The session that made the change carries on if it verified within the Verification Period; a long "remember me" session that verified earlier than that is asked for a code straight away. Every device, including that one, needs a code at its next login.
 
 Revoking devices doesn't end sessions that are already open. A session that verified recently stays verified until the Verification Period runs out or the user logs out. To force everyone out straight away, see [WP-CLI → force everyone to verify again](wp-cli.md#force-everyone-to-verify-again-after-a-security-incident).
 

@@ -59,8 +59,8 @@ The following requests skip the 2FA check entirely. **This is intentional and im
 | Bypass | Why |
 |--------|-----|
 | WP-CLI | Server-side automation, can't email a code to a script |
-| AJAX (`wp_doing_ajax()`) | Already-authenticated requests originating from a 2FA-verified admin page |
-| REST API (`REST_REQUEST`) | Application-to-application calls, typically authenticated via Application Passwords |
+| AJAX (`wp_doing_ajax()`) | Admin screens and plugins call `admin-ajax.php` in the background, where a redirect to the verification page would break them |
+| REST API (`REST_REQUEST`) | The block editor and integrations call the REST API in the background, for the same reason |
 | Cron (`wp_doing_cron()`) | Scheduled background tasks, no human present |
 | XML-RPC (`XMLRPC_REQUEST`) | Legacy integration endpoint, app-level auth |
 | Application Passwords | Already represents an explicit out-of-band credential decision |
@@ -68,6 +68,8 @@ The following requests skip the 2FA check entirely. **This is intentional and im
 | Already on a `?q2fa=` page | Prevents redirect loops |
 | Theme/plugin editor loopback | Core's fatal-error check after a PHP edit loops back with the admin's auth cookie but not the device-trust cookie, so it would otherwise fail the trusted-device check, get redirected to verification, and cause the edit to be reverted. Validated against core's `scrape_key_*` transient so bare query params don't bypass |
 | Plugin mode set to `disabled` | The master off switch — useful as a temporary recovery state (see [configuration](configuration.md#2fa-mode)) |
+
+**AJAX and REST requests are not challenged even from a session that hasn't verified.** Quick 2FA guards the admin screens, not every authenticated request: a user who has the password but not the code can't open the admin area, but a request they send directly to `admin-ajax.php` or the REST API with their login cookie is not stopped. Locking an account logs out its open sessions at their next admin page load, but not on those routes; to end them straight away, run `wp user session destroy <user> --all`.
 
 If you need to *also* protect any of these endpoints, that's a different security control (Application Passwords with strong scope, IP allow-listing at the web server, etc.) — Quick 2FA deliberately stays out of those layers.
 
@@ -93,6 +95,7 @@ owners who don't want it recorded can disable it with the `quick2fa_record_last_
 | Data | Storage |
 |------|---------|
 | Per-user state (code hash, lock status, trusted devices, event log) | `wp_usermeta`, keys starting `_quick2fa_` |
+| When the password was last changed, for reminders (`_password_last_changed`) | `wp_usermeta`. The one key without the plugin prefix |
 | Last-login timestamp (`_quick2fa_last_login`) | `wp_usermeta` |
 | Date this site started recording logins (`quick2fa_last_login_since`) | `wp_options` (autoloaded) |
 | Plugin settings | `wp_options` (autoloaded), names starting `quick2fa_` |
@@ -119,7 +122,7 @@ Nothing is sent to an external service. The only outbound request is the GitHub 
 
 Deactivating Quick 2FA never deletes anything, so reactivating it picks up where it left off.
 
-Deleting the plugin from the Plugins screen also keeps everything, unless **Delete all plugin data when uninstalled** is ticked under **Settings → Quick 2FA → Uninstall**. With it ticked, deleting the plugin removes its settings, account locks, trusted devices, event logs, last-login records and outstanding codes. Left unticked, the default, a reinstall finds the site as it was, locked accounts included.
+Deleting the plugin from the Plugins screen also keeps everything, unless **Delete all plugin data when uninstalled** is ticked under **Settings → Quick 2FA → Uninstall**. With it ticked, deleting the plugin removes its settings, account locks, trusted devices, event logs, last-login records, outstanding codes and the `_password_last_changed` key. That key has no plugin prefix, so if another plugin also uses it, its values go too. Left unticked, the default, a reinstall finds the site as it was, locked accounts included.
 
 Last-login records can't be recreated once they're gone (see [reading last-login data](developers/extending.md#retention)), so export them first if you might want them later.
 

@@ -12,7 +12,7 @@ All settings live under **Settings → Quick 2FA** in the WordPress admin. The d
 | Enabled for specific roles | `roles` | Only users with one of the **Protected Roles** must verify |
 | Disabled | `disabled` | 2FA is off. Useful as a temporary recovery state |
 
-**Protected Roles** (`quick2fa_protected_roles`) defaults to every role with the `install_plugins` or `manage_options` capability. On a standard site that is just Administrator.
+**Protected Roles** (`quick2fa_protected_roles`) defaults to every role with the `install_plugins` or `manage_options` capability. On a standard site that is just Administrator. With **Enabled for specific roles** and no roles selected, no one is asked to verify.
 
 While the mode is **Disabled**, every admin screen shows users who can manage options an error notice saying that 2FA is off. To switch to disabled from the command line, use [`wp quick-2fa emergency-disable`](wp-cli.md#emergency-disable---yes).
 
@@ -50,6 +50,12 @@ Quick 2FA can periodically nudge users to change their password. This is separat
 | Reminder Period | `quick2fa_password_reminder_period` | `60` days | Password age at which the reminder is shown |
 | Reminder Cooldown | `quick2fa_password_reminder_cooldown` | `1` day | How long to wait before showing the reminder again after the user dismisses it |
 
+The reminder page tells the user how often to change their password, using the Reminder Period. That text can be replaced with the [`quick2fa_password_intro`](developers/hooks-and-filters.md#quick2fa_password_intro) filter.
+
+Reminders apply to every user who reaches the admin area, whatever the **2FA Mode** and **Protected Roles**, but not while the mode is **Disabled**.
+
+Password age is counted from the last change made **on the reminder page**. Changing the password on the profile page, through a password reset or with `wp user update` doesn't reset it, so the user may still be reminded. A user with no recorded change is counted from their registration date, so when reminders are first switched on, every user registered more than a Reminder Period ago is reminded at their next admin page load.
+
 ## Email Settings
 
 | Setting page label | Option | Default | What it does |
@@ -62,7 +68,6 @@ Leave any of the three blank to use its default. An address that isn't valid is 
 
 Email is sent with `wp_mail()`, so it goes out however your site sends mail: an SMTP plugin, a transactional email service or the server's own mail system. If users aren't receiving codes, check your `wp_mail()` setup first; see [troubleshooting](troubleshooting.md#users-arent-receiving-verification-codes).
 
-The reminder page tells the user how often to change their password, using the Reminder Period.
 
 ## Uninstall
 

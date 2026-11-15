@@ -30,7 +30,7 @@ If trusted devices are *enabled* and you're still being challenged constantly, t
 
 - The browser is in a private/incognito window, or is set to clear cookies on close
 - A privacy extension or aggressive cookie policy is stripping the `quick2fa_device_…` cookie
-- You verified on HTTP but are now browsing on HTTPS (or vice versa) — the cookie is marked `Secure` on HTTPS and won't travel to an HTTP request
+- You verified on HTTPS but are now browsing on HTTP — a cookie set over HTTPS is marked `Secure` and isn't sent with an HTTP request
 - You're switching between different browsers or machines — each is, correctly, a separate device
 
 To confirm: after verifying with "Trust this device" ticked, check your browser's cookies for the current site and look for a `quick2fa_device_…` entry. If it isn't there after a successful verification, something on the client side is discarding it.
@@ -77,11 +77,11 @@ UPDATE wp_options SET option_value = 'disabled' WHERE option_name = 'quick2fa_mo
 DELETE FROM wp_usermeta WHERE user_id = 1 AND meta_key = '_quick2fa_locked_until';
 ```
 
-Adjust the table prefix (`wp_`) to match your installation.
+Adjust the table prefix (`wp_`) to match your installation. On a site with a persistent object cache (Redis, Memcached), WordPress keeps reading the cached value until the cache is flushed, so flush it after the edit.
 
 ### 5. SFTP / file system access
 
-Move or rename the plugin folder. WordPress will automatically deactivate it.
+Move or rename the plugin folder. WordPress will automatically deactivate it. For a must-use install, remove or rename the loader file in `wp-content/mu-plugins/` instead; renaming the plugin folder leaves the loader pointing at a missing file, which stops the site with a fatal error.
 
 ```
 mv wp-content/plugins/quick-2fa wp-content/plugins/quick-2fa.disabled
