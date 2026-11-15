@@ -29,5 +29,8 @@ wp-config.php
 # and blocked from remote access by dev-notes/.htaccess.
 dev-notes/
 
-# Emacs Projectile project marker
+# Emacs: Projectile project marker, backup, lock and auto-save files
 .projectile
+*~
+.#*
+\#*#
