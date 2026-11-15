@@ -1,0 +1,23 @@
+/**
+ * Quick 2FA: trusted-devices table on the profile and user-edit screens.
+ *
+ * The table sits inside the profile section's .form-table, whose th and td
+ * rules are descendant selectors; these reset them for the nested table.
+ */
+
+.form-table table.quick-2fa-trusted-devices {
+	max-width: 600px;
+	margin-top: 10px;
+}
+
+.form-table table.quick-2fa-trusted-devices th,
+.form-table table.quick-2fa-trusted-devices td {
+	padding: 8px 10px;
+	width: auto;
+	text-align: start;
+	vertical-align: middle;
+}
+
+.quick-2fa-revoke-all {
+	margin-top: 10px;
+}

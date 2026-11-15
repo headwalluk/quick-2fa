@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- The *Trusted Devices* table on the profile screen had header cells with no left padding, each forced to 200px wide, because it inherited the profile form's styles. Its header and body cells now have the same padding and are left-aligned.
 - A blank *Email Subject* or *From Name* sent verification emails with an empty subject or an empty sender name. Both now fall back to their defaults: "Your verification code" and the site name.
 - In *Enabled for specific roles* mode, a site where the protected-roles option had never been stored protected no roles, although the settings page showed administrators selected. Both now use the same default: every role that can install plugins or manage options.
 

@@ -518,6 +518,25 @@ class User_Management {
 	}
 
 	/**
+	 * Enqueue the trusted-devices table styles on the profile and user-edit screens.
+	 *
+	 * @since 1.7.0
+	 * @param mixed $hook Current admin page hook.
+	 */
+	public function enqueue_profile_styles( mixed $hook ): void {
+		if ( ! in_array( $hook, array( 'profile.php', 'user-edit.php' ), true ) || ! are_trusted_devices_enabled() ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'quick-2fa-profile',
+			QUICK_2FA_URL . 'assets/css/admin-profile.css',
+			array(),
+			QUICK_2FA_VERSION
+		);
+	}
+
+	/**
 	 * Handle revoke single device action.
 	 *
 	 * @since 0.6.1

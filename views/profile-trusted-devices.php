@@ -26,7 +26,7 @@ if ( empty( $trusted_devices ) ) {
 	$quick_2fa_device_count_text = _n( 'You have %d trusted device.', 'You have %d trusted devices.', count( $trusted_devices ), 'quick-2fa' );
 	printf( '<p>%s</p>', sprintf( esc_html( $quick_2fa_device_count_text ), count( $trusted_devices ) ) );
 
-	echo '<table class="widefat" style="max-width: 600px; margin-top: 10px;"><thead><tr>';
+	echo '<table class="widefat quick-2fa-trusted-devices"><thead><tr>';
 	printf( '<th>%s</th>', esc_html_x( 'Device', 'table column header', 'quick-2fa' ) );
 	printf( '<th>%s</th>', esc_html_x( 'Expires', 'table column header; when device trust expires', 'quick-2fa' ) );
 	printf( '<th>%s</th>', esc_html_x( 'Actions', 'table column header', 'quick-2fa' ) );
@@ -90,7 +90,7 @@ if ( empty( $trusted_devices ) ) {
 		'quick2fa_revoke_all_devices_' . $user->ID
 	);
 
-	printf( '<p style="margin-top: 10px;">' );
+	echo '<p class="quick-2fa-revoke-all">';
 	printf(
 		'<a href="%s" class="button button-secondary">%s</a>',
 		esc_url( $quick_2fa_revoke_all_url ),

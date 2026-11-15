@@ -105,7 +105,7 @@ The skill's `public-contracts.md` has the rules. Quick 2FA's contracts:
 |----------|----------|
 | Filters and actions | `quick2fa_record_last_login`, `quick2fa_account_locked`, `quick2fa_updater_enabled` |
 | Stored key strings | `_quick2fa_locked_until`, `_quick2fa_trusted_devices`, `quick2fa_mode`. A new `META_LOCKED_UNTIL` string would unlock every locked account |
-| Script and style handles | `quick-2fa-login`, `quick-2fa-password-page`, `quick-2fa-settings` |
+| Script and style handles | `quick-2fa-login`, `quick-2fa-password-page`, `quick-2fa-settings`, `quick-2fa-profile` |
 | Login page URLs | `wp-login.php?q2fa=verify`, `?q2fa=password` (`QUERY_PARAM`, `ACTION_*`) |
 | WP-CLI commands | `wp quick-2fa lock-all`. 1.3.0 renamed five with no aliases |
 

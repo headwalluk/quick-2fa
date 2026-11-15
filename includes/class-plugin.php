@@ -101,6 +101,7 @@ class Plugin {
 		// User profile screen: security section and device revocation.
 		add_action( 'show_user_profile', array( $this->user_management, 'render_profile_section' ) );
 		add_action( 'edit_user_profile', array( $this->user_management, 'render_profile_section' ) );
+		add_action( 'admin_enqueue_scripts', array( $this->user_management, 'enqueue_profile_styles' ) );
 		add_action( 'admin_action_quick2fa_revoke_device', array( $this->user_management, 'handle_revoke_device' ) );
 		add_action( 'admin_action_quick2fa_revoke_all_devices', array( $this->user_management, 'handle_revoke_all_devices' ) );
 
