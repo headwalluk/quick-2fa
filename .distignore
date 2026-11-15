@@ -9,6 +9,7 @@
 
 # Development notes (internal — not for end users)
 dev-notes
+code-analysis
 docs
 
 # Build / dependency manifests
@@ -46,4 +47,5 @@ README.md
 CHANGELOG.md
 SECURITY.md
 CLAUDE.md
+AGENTS.md
 .claude

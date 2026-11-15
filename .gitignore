@@ -29,6 +29,10 @@ wp-config.php
 # and blocked from remote access by dev-notes/.htaccess.
 dev-notes/
 
+# External code-analysis results, written by OpenAI Codex. Never published: a report
+# may describe an unfixed vulnerability. Blocked by code-analysis/.htaccess.
+code-analysis/
+
 # Emacs: Projectile project marker, backup, lock and auto-save files
 .projectile
 *~
