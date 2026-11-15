@@ -116,6 +116,10 @@ wp transient delete q2fa_rate_limit_code_gen_<user_id>
 
 A lock's end time is fixed when the lock starts, so changing the setting only affects new locks. Wait for the existing lock to end, or unlock the account with `wp quick-2fa unlock <user>`.
 
+## A setting I changed with `wp option update` is being ignored
+
+Quick 2FA checks every setting when it reads it (from 1.7.0). A value it can't use, such as a code expiry of `0`, a number outside the setting's range, or an unknown mode, is ignored in favour of that setting's default. Each request that reads it logs a line starting `Quick_2FA Settings [error]:` to the PHP error log, naming the option, the stored value and the default used instead. Correct the value, or save the setting from **Settings → Quick 2FA**, which only accepts valid values.
+
 ## The plugin updater isn't picking up new releases
 
 Quick 2FA polls GitHub for new releases on a 12-hour cache TTL. To force an immediate check:

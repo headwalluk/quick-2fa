@@ -89,6 +89,8 @@ The action is recorded to the PHP error log so it leaves a paper trail. **Re-ena
 
 Every setting is a WordPress option, so `wp option get` and `wp option update` work on all of them. [Configuration](configuration.md) lists each option name.
 
+`wp option update` doesn't go through the settings page's checks, so Quick 2FA checks every value again when it reads it. A value it can't use, such as a code expiry of `0` or an unknown mode, is ignored in favour of the setting's default, and an error naming the option is written to the PHP error log by every request that reads settings, until it's corrected. A blank email subject, from name or from address uses the default without logging anything.
+
 One setting has no field on the settings page and can only be changed this way: `quick2fa_disable_trusted_devices`, which makes every login session verify. See [trusted devices → disabling the feature](trusted-devices.md#disabling-the-feature).
 
 ## Plugin updates

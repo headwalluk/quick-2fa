@@ -58,6 +58,8 @@ Quick 2FA can periodically nudge users to change their password. This is separat
 | From Address | `quick2fa_email_from_address` | Site admin email | Sender address |
 | Email Subject | `quick2fa_email_subject` | "Your verification code" | Subject line |
 
+Leave any of the three blank to use its default. An address that isn't valid is saved as blank, so the site admin email is used.
+
 Email is sent with `wp_mail()`, so it goes out however your site sends mail: an SMTP plugin, a transactional email service or the server's own mail system. If users aren't receiving codes, check your `wp_mail()` setup first; see [troubleshooting](troubleshooting.md#users-arent-receiving-verification-codes).
 
 The reminder page tells the user how often to change their password, using the Reminder Period.

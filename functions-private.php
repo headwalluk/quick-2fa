@@ -41,7 +41,7 @@ function get_default_settings(): array {
 			OPTION_LOCKOUT_DURATION           => DEFAULT_LOCKOUT_DURATION,
 			OPTION_DELETE_DATA_ON_UNINSTALL   => DEFAULT_DELETE_DATA_ON_UNINSTALL,
 			OPTION_EMAIL_FROM_NAME            => get_bloginfo( 'name' ),
-			OPTION_EMAIL_FROM_ADDRESS         => get_option( 'admin_email' ),
+			OPTION_EMAIL_FROM_ADDRESS         => (string) get_option( 'admin_email' ),
 			OPTION_EMAIL_SUBJECT              => __( 'Your verification code', 'quick-2fa' ),
 		);
 	}
@@ -149,7 +149,7 @@ function get_verify_intro(): string {
  *                see `get_intro_allowed_html()`. Render with `wp_kses()`.
  */
 function get_password_intro(): string {
-	$reminder_period = (int) get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
+	$reminder_period = Plugin::instance()->get_settings()->get_int( OPTION_PASSWORD_REMINDER_PERIOD );
 
 	$intro = sprintf(
 		/* translators: %d: number of days between password changes, from the Reminder Period setting */
@@ -215,12 +215,7 @@ function is_2fa_page(): bool {
  * @return bool True unless quick2fa_disable_trusted_devices holds a true value.
  */
 function are_trusted_devices_enabled(): bool {
-	$disabled = (bool) filter_var(
-		get_option( OPTION_DISABLE_TRUSTED_DEVICES, DEFAULT_DISABLE_TRUSTED_DEVICES ),
-		FILTER_VALIDATE_BOOLEAN
-	);
-
-	return ! $disabled;
+	return ! Plugin::instance()->get_settings()->get_bool( OPTION_DISABLE_TRUSTED_DEVICES );
 }
 
 // ============================================================================
@@ -392,7 +387,7 @@ function should_skip_check(): bool {
 		$skip_reason = '2fa-page';
 	} elseif ( is_editor_loopback_request() ) {
 		$skip_reason = 'editor-loopback';
-	} elseif ( MODE_DISABLED === get_option( OPTION_MODE, DEFAULT_MODE ) ) {
+	} elseif ( MODE_DISABLED === Plugin::instance()->get_settings()->get_string( OPTION_MODE ) ) {
 		$skip_reason = 'mode-disabled';
 	} else {
 		// No skip condition matched; 2FA applies.

@@ -20,6 +20,7 @@
  * @var int    $trusted_device_expiry               Trusted device expiry in days
  * @var int    $lockout_duration                    Account lockout duration in minutes
  * @var array  $all_roles                           All WordPress roles
+ * @var string $const_settings_group                SETTINGS_GROUP constant value
  * @var string $const_option_mode                   OPTION_MODE constant value
  * @var string $const_option_protected_roles        OPTION_PROTECTED_ROLES constant value
  * @var string $const_option_verification_period    OPTION_VERIFICATION_PERIOD constant value
@@ -47,7 +48,7 @@ echo '<div class="wrap">';
 printf( '<h1>%s</h1>', esc_html( get_admin_page_title() ) );
 
 echo '<form method="post" action="options.php">';
-settings_fields( 'quick2fa_settings' );
+settings_fields( $const_settings_group );
 
 echo '<table class="form-table" role="presentation"><tbody>';
 

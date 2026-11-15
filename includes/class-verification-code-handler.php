@@ -50,10 +50,7 @@ class Verification_Code_Handler {
 	 * @return string Verification code.
 	 */
 	public function generate(): string {
-		// Clamped as well as validated on save: a length written straight to the
-		// database would otherwise shorten every code with no visible symptom.
-		$length = (int) get_option( OPTION_CODE_LENGTH, DEFAULT_CODE_LENGTH );
-		$length = max( CODE_LENGTH_MIN, min( CODE_LENGTH_MAX, $length ) );
+		$length = Plugin::instance()->get_settings()->get_int( OPTION_CODE_LENGTH );
 
 		$max  = (int) str_repeat( '9', $length );
 		$code = random_int( 0, $max );
@@ -148,7 +145,7 @@ class Verification_Code_Handler {
 		$is_expired     = true;
 
 		if ( $code_timestamp > 0 ) {
-			$expiry_seconds = (int) get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY ) * MINUTE_IN_SECONDS;
+			$expiry_seconds = Plugin::instance()->get_settings()->get_int( OPTION_CODE_EXPIRY ) * MINUTE_IN_SECONDS;
 			$is_expired     = ( time() - $code_timestamp ) > $expiry_seconds;
 		}
 
@@ -297,7 +294,7 @@ class Verification_Code_Handler {
 		if ( $this->is_expired() ) {
 			$this->cleanup();
 
-			$expiry_minutes = (int) get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
+			$expiry_minutes = Plugin::instance()->get_settings()->get_int( OPTION_CODE_EXPIRY );
 
 			return new \WP_Error(
 				'expired',

@@ -76,7 +76,7 @@ class Account_Security_Handler {
 	 */
 	public function lock_account( ?int $duration = null, array $context = array() ): void {
 		if ( null === $duration ) {
-			$duration = (int) get_option( OPTION_LOCKOUT_DURATION, DEFAULT_LOCKOUT_DURATION ) * MINUTE_IN_SECONDS;
+			$duration = Plugin::instance()->get_settings()->get_int( OPTION_LOCKOUT_DURATION ) * MINUTE_IN_SECONDS;
 		}
 
 		$locked_until = time() + $duration;

@@ -50,15 +50,12 @@ class Password_Reminder_Handler {
 	 * @return bool True if password reminder is needed.
 	 */
 	public function needs_reminder(): bool {
-		$reminders_enabled = (bool) filter_var(
-			get_option( OPTION_PASSWORD_REMINDERS_ENABLED, DEFAULT_PASSWORD_REMINDERS_ENABLED ),
-			FILTER_VALIDATE_BOOLEAN
-		);
+		$reminders_enabled = Plugin::instance()->get_settings()->get_bool( OPTION_PASSWORD_REMINDERS_ENABLED );
 
 		$needs_reminder = false;
 
 		if ( $reminders_enabled && get_userdata( $this->user_id ) instanceof \WP_User ) {
-			$period_days = (int) get_option( OPTION_PASSWORD_REMINDER_PERIOD, DEFAULT_PASSWORD_REMINDER_PERIOD );
+			$period_days = Plugin::instance()->get_settings()->get_int( OPTION_PASSWORD_REMINDER_PERIOD );
 
 			$needs_reminder = $this->get_password_age() > $period_days && ! $this->is_in_cooldown();
 		}
@@ -110,7 +107,7 @@ class Password_Reminder_Handler {
 		$in_cooldown   = false;
 
 		if ( $last_reminder > 0 ) {
-			$cooldown_seconds = (int) get_option( OPTION_PASSWORD_REMINDER_COOLDOWN, DEFAULT_PASSWORD_REMINDER_COOLDOWN ) * DAY_IN_SECONDS;
+			$cooldown_seconds = Plugin::instance()->get_settings()->get_int( OPTION_PASSWORD_REMINDER_COOLDOWN ) * DAY_IN_SECONDS;
 			$in_cooldown      = ( time() - $last_reminder ) < $cooldown_seconds;
 		}
 

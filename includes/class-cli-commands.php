@@ -543,7 +543,7 @@ class CLI_Commands {
 	 * @param array<string,mixed> $assoc_args Associative arguments.
 	 */
 	public function emergency_disable( array $args, array $assoc_args ): void {
-		$current_mode = (string) get_option( OPTION_MODE, DEFAULT_MODE );
+		$current_mode = Plugin::instance()->get_settings()->get_string( OPTION_MODE );
 
 		if ( MODE_DISABLED === $current_mode ) {
 			\WP_CLI::warning( 'Quick 2FA is already in disabled mode.' );

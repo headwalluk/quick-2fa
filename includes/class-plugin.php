@@ -27,12 +27,12 @@ class Plugin {
 	private static ?Plugin $instance = null;
 
 	/**
-	 * Plugin settings instance.
+	 * Plugin settings instance; created on first use by get_settings().
 	 *
 	 * @since 1.0.0
-	 * @var Settings
+	 * @var ?Settings
 	 */
-	private Settings $settings;
+	private ?Settings $settings = null;
 
 	/**
 	 * Users table and profile screen instance.
@@ -57,18 +57,35 @@ class Plugin {
 	}
 
 	/**
+	 * Get the settings instance, creating it on first use.
+	 *
+	 * @since 1.7.0
+	 * @return Settings
+	 */
+	public function get_settings(): Settings {
+		if ( is_null( $this->settings ) ) {
+			$this->settings = new Settings();
+		}
+
+		return $this->settings;
+	}
+
+	/**
 	 * Initialize hooks.
 	 *
 	 * @since 1.0.0
 	 */
 	public function run(): void {
-		$this->settings        = new Settings();
+		$settings              = $this->get_settings();
 		$this->user_management = new User_Management();
 
-		// Settings page.
-		add_action( 'admin_menu', array( $this->settings, 'add_settings_page' ) );
-		add_action( 'admin_init', array( $this->settings, 'register_settings' ) );
-		add_action( 'admin_enqueue_scripts', array( $this->settings, 'enqueue_scripts' ) );
+		// Settings: reload validated values after any write, and the settings page.
+		add_action( 'added_option', array( $settings, 'flush_cache' ) );
+		add_action( 'updated_option', array( $settings, 'flush_cache' ) );
+		add_action( 'deleted_option', array( $settings, 'flush_cache' ) );
+		add_action( 'admin_menu', array( $settings, 'add_settings_page' ) );
+		add_action( 'admin_init', array( $settings, 'register_settings' ) );
+		add_action( 'admin_enqueue_scripts', array( $settings, 'enqueue_scripts' ) );
 
 		// Users table: lockout column, sorting, status views and row actions.
 		add_filter( 'manage_users_columns', array( $this->user_management, 'add_lockout_column' ) );
@@ -383,7 +400,7 @@ class Plugin {
 				// A session that verified within the verification period stays verified, so
 				// revoking devices (a password change, for one) doesn't re-challenge it.
 				// Otherwise the device must be trusted; each entry carries its own expiry.
-				$verification_period = (int) get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD ) * DAY_IN_SECONDS;
+				$verification_period = $this->get_settings()->get_int( OPTION_VERIFICATION_PERIOD ) * DAY_IN_SECONDS;
 				$session_is_current  = $session_verified_time > 0 && ( time() - $session_verified_time ) < $verification_period;
 				$needs_verification  = ! $session_is_current && ! $security_handler->is_device_trusted();
 			} else {
@@ -403,13 +420,13 @@ class Plugin {
 	 * @return bool True if user's role requires 2FA.
 	 */
 	private function user_role_requires_2fa( int $user_id ): bool {
-		$mode     = (string) get_option( OPTION_MODE, DEFAULT_MODE );
+		$mode     = $this->get_settings()->get_string( OPTION_MODE );
 		$requires = false;
 
 		if ( MODE_ALL === $mode ) {
 			$requires = true;
 		} elseif ( MODE_ROLES === $mode ) {
-			$protected_roles = (array) get_option( OPTION_PROTECTED_ROLES, array() );
+			$protected_roles = $this->get_settings()->get_array( OPTION_PROTECTED_ROLES );
 			$user            = get_userdata( $user_id );
 
 			if ( ! empty( $protected_roles ) && $user instanceof \WP_User ) {
@@ -515,9 +532,9 @@ class Plugin {
 		}
 
 		if ( $trust_device ) {
-			$expiry_days = (int) get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
+			$expiry_days = $this->get_settings()->get_int( OPTION_TRUSTED_DEVICE_EXPIRY );
 		} else {
-			$expiry_days = (int) get_option( OPTION_VERIFICATION_PERIOD, DEFAULT_VERIFICATION_PERIOD );
+			$expiry_days = $this->get_settings()->get_int( OPTION_VERIFICATION_PERIOD );
 		}
 
 		$security_handler = new Account_Security_Handler( $user_id );
@@ -603,7 +620,7 @@ class Plugin {
 		}
 
 		$trusted_devices_enabled = are_trusted_devices_enabled();
-		$trusted_device_expiry   = (int) get_option( OPTION_TRUSTED_DEVICE_EXPIRY, DEFAULT_TRUSTED_DEVICE_EXPIRY );
+		$trusted_device_expiry   = $this->get_settings()->get_int( OPTION_TRUSTED_DEVICE_EXPIRY );
 		$verify_intro            = get_verify_intro();
 
 		require QUICK_2FA_PATH . 'views/verification-page.php';
@@ -675,10 +692,10 @@ class Plugin {
 			return;
 		}
 
-		$mode = (string) get_option( OPTION_MODE, DEFAULT_MODE );
+		$mode = $this->get_settings()->get_string( OPTION_MODE );
 
 		if ( MODE_DISABLED === $mode ) {
-			$settings_url = admin_url( 'options-general.php?page=quick-2fa' );
+			$settings_url = admin_url( 'options-general.php?page=' . SETTINGS_PAGE_SLUG );
 
 			printf(
 				'<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',

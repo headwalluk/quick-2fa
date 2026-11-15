@@ -35,7 +35,7 @@ class Email_Handler {
 	 */
 	public function send_verification_code( \WP_User $user, string $code ): array {
 		$to      = $user->user_email;
-		$subject = (string) get_option( OPTION_EMAIL_SUBJECT, __( 'Your verification code', 'quick-2fa' ) );
+		$subject = Plugin::instance()->get_settings()->get_string( OPTION_EMAIL_SUBJECT );
 		$message = $this->get_message( $code, $user );
 		$headers = $this->get_headers();
 
@@ -69,7 +69,7 @@ class Email_Handler {
 	 * @return string Formatted email message.
 	 */
 	public function get_message( string $code, \WP_User $user ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $code and $user are used in the included email template.
-		$code_expiry = (int) get_option( OPTION_CODE_EXPIRY, DEFAULT_CODE_EXPIRY );
+		$code_expiry = Plugin::instance()->get_settings()->get_int( OPTION_CODE_EXPIRY );
 
 		ob_start();
 		include \QUICK_2FA_PATH . 'emails/verification-code.php';
@@ -83,8 +83,8 @@ class Email_Handler {
 	 * @return array Email headers.
 	 */
 	public function get_headers(): array {
-		$from_name  = (string) get_option( OPTION_EMAIL_FROM_NAME, get_bloginfo( 'name' ) );
-		$from_email = (string) get_option( OPTION_EMAIL_FROM_ADDRESS, get_option( 'admin_email' ) );
+		$from_name  = Plugin::instance()->get_settings()->get_string( OPTION_EMAIL_FROM_NAME );
+		$from_email = Plugin::instance()->get_settings()->get_string( OPTION_EMAIL_FROM_ADDRESS );
 
 		[$from_name, $from_email] = $this->sanitize_headers( $from_name, $from_email );
 

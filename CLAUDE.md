@@ -65,7 +65,7 @@ before a release and after any change to high-impact code.
 | `includes/class-verification-code-handler.php` | Code generation (cryptographic), hashing, verification, rate limiting |
 | `includes/class-account-security-handler.php` | Account locking/unlocking, device fingerprinting, trusted devices, event logging |
 | `includes/class-email-handler.php` | Email template rendering and sending |
-| `includes/class-settings.php` | Admin settings page, option registration and validation |
+| `includes/class-settings.php` | Every settings read (`Plugin::instance()->get_settings()->get_int()`, and `get_string()`, `get_bool()`, `get_array()`), validated against one rules table that the save-side sanitisers share; plus the settings page and `register_setting()` |
 | `includes/class-password-reminder-handler.php` | Password age tracking, reminder cooldowns |
 | `includes/class-user-management.php` | Users table UI customization, lock/unlock row actions |
 | `includes/class-cli-commands.php` | WP-CLI commands for lock/unlock/status/emergency-disable |
@@ -74,7 +74,7 @@ before a release and after any change to high-impact code.
 ### Data Storage
 
 - **User meta** for per-user state (code hashes, lock status, trusted devices, logs)
-- **`wp_options`** for plugin settings (mode, code length, lock duration, etc.)
+- **`wp_options`** for plugin settings (mode, code length, lock duration, etc.), read only through the `Settings` getters. An invalid stored value takes the default and is logged. `uninstall.php` is the exception: the plugin isn't loaded there
 - **Transients** for temporary data (return URLs, rate limits)
 - **Every stored key carries the plugin prefix.** `META_PASSWORD_LAST_CHANGED` predates the rule and is listed in `uninstall.php` by name
 - **Uninstall deletes nothing by default.** Only with the *Delete all plugin data when uninstalled* setting on (`OPTION_DELETE_DATA_ON_UNINSTALL`) does `uninstall.php` remove the plugin's options, user meta and transients. Deactivation never deletes data
@@ -122,6 +122,7 @@ These paths decide who gets into an account:
 - Locking: `Account_Security_Handler::lock_account()` and `is_locked()`, and `Plugin::check_lockout_on_login()`
 - Device trust and session verification: `Account_Security_Handler::trust_device()`, `is_device_trusted()`, `clear_trusted_devices()`, `mark_current_session_verified()` and `get_current_session_verified_time()`, and the password-change revocation in `Plugin::revoke_devices_on_password_set()` and `revoke_devices_on_profile_update()`
 - `Password_Reminder_Handler::update_password()` and `maintain_session()`
+- `Settings::load()` and its rules table: they decide the mode, the protected roles and every duration the paths above use
 
 `should_skip_check()` covers the verification redirect only; other callbacks still check their own request context.
 

@@ -14,8 +14,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The plugin and author links on the Plugins screen now go to the plugin's page and the author's page on headwall-hosting.com.
 - `CLAUDE.md` holds only what is specific to Quick 2FA. The conventions it shared with other Headwall plugins moved to a separate, private standard.
+- **Settings are checked when they are read, not only when the settings page saves them.** A value written with `wp option update` or directly to the database that Quick 2FA can't use, such as a code expiry of `0` or an unknown mode, is now ignored in favour of the setting's default and logged to the PHP error log, naming the option. Before, most such values were used as stored.
+- An out-of-range code length now uses the default of 6 digits, as the settings page does when saving. Before, it was clamped to the nearest limit (4 or 10).
 
 ### Fixed
+
+- A blank *Email Subject* or *From Name* sent verification emails with an empty subject or an empty sender name. Both now fall back to their defaults: "Your verification code" and the site name.
+- In *Enabled for specific roles* mode, a site where the protected-roles option had never been stored protected no roles, although the settings page showed administrators selected. Both now use the same default: every role that can install plugins or manage options.
 
 - The settings page title and the "currently disabled" notice translated the plugin name, so German showed "Schnelle 2FA-Einstellungen" and French "La 2FA rapide est actuellement désactivée". The name now stays as "Quick 2FA" in every language, and only the plugin's description is translated in the plugin header.
 

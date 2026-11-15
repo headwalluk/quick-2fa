@@ -71,6 +71,16 @@ const OPTION_PREFIX = 'quick2fa_';
 const META_PREFIX   = '_quick2fa_';
 
 /**
+ * Settings page: the register_setting() group and the admin page slug.
+ *
+ * The slug is part of the settings page URL (options-general.php?page=quick-2fa).
+ *
+ * @since 1.7.0
+ */
+const SETTINGS_GROUP     = 'quick2fa_settings';
+const SETTINGS_PAGE_SLUG = 'quick-2fa';
+
+/**
  * 2FA modes.
  *
  * @since 1.0.0
@@ -82,10 +92,8 @@ const MODE_DISABLED = 'disabled';
 /**
  * Settings bounds.
  *
- * Each registered setting is clamped to its range on save by
- * Settings::sanitize_range(); a value outside the range falls back to the
- * matching DEFAULT_*. Kept here so the validator and the help text on the
- * settings page can cite one source rather than repeating the numbers.
+ * Settings checks each numeric setting against its range on save and on read;
+ * a value outside the range falls back to the matching DEFAULT_*.
  *
  * @since 1.3.0
  */
