@@ -19,17 +19,6 @@ defined( 'ABSPATH' ) || die();
 class Settings {
 
 	/**
-	 * Initialize hooks.
-	 *
-	 * @since 1.0.0
-	 */
-	public function run(): void {
-		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-	}
-
-	/**
 	 * Add settings page to WordPress admin menu.
 	 *
 	 * @since 1.0.0

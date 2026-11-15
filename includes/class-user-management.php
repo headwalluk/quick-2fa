@@ -24,40 +24,6 @@ defined( 'ABSPATH' ) || die();
 class User_Management {
 
 	/**
-	 * Initialize and register hooks.
-	 *
-	 * @since 0.6.0
-	 */
-	public function run(): void {
-		// Column display.
-		add_filter( 'manage_users_columns', array( $this, 'add_lockout_column' ) );
-		add_action( 'manage_users_custom_column', array( $this, 'render_lockout_column' ), 10, 3 );
-
-		// Column sorting.
-		add_filter( 'manage_users_sortable_columns', array( $this, 'make_column_sortable' ) );
-		add_action( 'pre_get_users', array( $this, 'handle_column_sort' ) );
-
-		// Filters.
-		add_filter( 'views_users', array( $this, 'add_lockout_filters' ) );
-		add_action( 'pre_get_users', array( $this, 'filter_by_lockout_status' ) );
-
-		// Row actions.
-		add_filter( 'user_row_actions', array( $this, 'add_lockout_actions' ), 10, 2 );
-
-		// Action handlers.
-		add_action( 'admin_action_quick2fa_lock', array( $this, 'handle_lock_user' ) );
-		add_action( 'admin_action_quick2fa_unlock', array( $this, 'handle_unlock_user' ) );
-
-		// Profile sections.
-		add_action( 'show_user_profile', array( $this, 'render_profile_section' ) );
-		add_action( 'edit_user_profile', array( $this, 'render_profile_section' ) );
-
-		// Profile action handlers.
-		add_action( 'admin_action_quick2fa_revoke_device', array( $this, 'handle_revoke_device' ) );
-		add_action( 'admin_action_quick2fa_revoke_all_devices', array( $this, 'handle_revoke_all_devices' ) );
-	}
-
-	/**
 	 * Add lock-out status column to users table.
 	 *
 	 * @since 0.6.0

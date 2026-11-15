@@ -24,7 +24,7 @@ class Plugin {
 	 * @since 1.0.0
 	 * @var ?Plugin
 	 */
-	private static $instance = null;
+	private static ?Plugin $instance = null;
 
 	/**
 	 * Plugin settings instance.
@@ -32,7 +32,15 @@ class Plugin {
 	 * @since 1.0.0
 	 * @var Settings
 	 */
-	private $settings;
+	private Settings $settings;
+
+	/**
+	 * Users table and profile screen instance.
+	 *
+	 * @since 1.7.0
+	 * @var User_Management
+	 */
+	private User_Management $user_management;
 
 	/**
 	 * Get single instance of the class.
@@ -54,11 +62,30 @@ class Plugin {
 	 * @since 1.0.0
 	 */
 	public function run(): void {
-		$this->settings = new Settings();
-		$this->settings->run();
+		$this->settings        = new Settings();
+		$this->user_management = new User_Management();
 
-		$user_management = new User_Management();
-		$user_management->run();
+		// Settings page.
+		add_action( 'admin_menu', array( $this->settings, 'add_settings_page' ) );
+		add_action( 'admin_init', array( $this->settings, 'register_settings' ) );
+		add_action( 'admin_enqueue_scripts', array( $this->settings, 'enqueue_scripts' ) );
+
+		// Users table: lockout column, sorting, status views and row actions.
+		add_filter( 'manage_users_columns', array( $this->user_management, 'add_lockout_column' ) );
+		add_action( 'manage_users_custom_column', array( $this->user_management, 'render_lockout_column' ), 10, 3 );
+		add_filter( 'manage_users_sortable_columns', array( $this->user_management, 'make_column_sortable' ) );
+		add_action( 'pre_get_users', array( $this->user_management, 'handle_column_sort' ) );
+		add_filter( 'views_users', array( $this->user_management, 'add_lockout_filters' ) );
+		add_action( 'pre_get_users', array( $this->user_management, 'filter_by_lockout_status' ) );
+		add_filter( 'user_row_actions', array( $this->user_management, 'add_lockout_actions' ), 10, 2 );
+		add_action( 'admin_action_quick2fa_lock', array( $this->user_management, 'handle_lock_user' ) );
+		add_action( 'admin_action_quick2fa_unlock', array( $this->user_management, 'handle_unlock_user' ) );
+
+		// User profile screen: security section and device revocation.
+		add_action( 'show_user_profile', array( $this->user_management, 'render_profile_section' ) );
+		add_action( 'edit_user_profile', array( $this->user_management, 'render_profile_section' ) );
+		add_action( 'admin_action_quick2fa_revoke_device', array( $this->user_management, 'handle_revoke_device' ) );
+		add_action( 'admin_action_quick2fa_revoke_all_devices', array( $this->user_management, 'handle_revoke_all_devices' ) );
 
 		// Supports MU plugin installation where activation hooks don't fire.
 		add_action( 'admin_init', array( $this, 'check_first_run' ), 1 );
