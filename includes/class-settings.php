@@ -35,6 +35,14 @@ class Settings {
 	private ?array $rules = null;
 
 	/**
+	 * Invalid-value messages already logged this request, as keys; survives flush_cache().
+	 *
+	 * @since 1.7.1
+	 * @var array<string,true>
+	 */
+	private array $logged_errors = array();
+
+	/**
 	 * Get a string setting.
 	 *
 	 * @since 1.7.0
@@ -159,7 +167,7 @@ class Settings {
 					$validated = ( $rule['validate'] )( $stored );
 
 					if ( null === $validated ) {
-						$this->log_error(
+						$this->log_error_once(
 							sprintf(
 								'%s: stored value %s is not valid; using the default %s.',
 								$key,
@@ -383,6 +391,19 @@ class Settings {
 	 */
 	private function log_error( string $message ): void {
 		error_log( __NAMESPACE__ . ' Settings [error]: ' . $message ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Invalid stored settings log unconditionally.
+	}
+
+	/**
+	 * Log a settings problem unless the same message was already logged this request.
+	 *
+	 * @since 1.7.1
+	 * @param string $message Message to log.
+	 */
+	private function log_error_once( string $message ): void {
+		if ( ! array_key_exists( $message, $this->logged_errors ) ) {
+			$this->logged_errors[ $message ] = true;
+			$this->log_error( $message );
+		}
 	}
 
 	/**

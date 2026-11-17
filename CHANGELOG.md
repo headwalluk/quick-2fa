@@ -4,6 +4,12 @@ All notable changes to Quick 2FA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- An invalid stored setting was written to the PHP error log several times in one request, once for each setting saved during it. It is now logged once per request.
+
 ## [1.7.0] — 2026-11-15
 
 ### Removed
