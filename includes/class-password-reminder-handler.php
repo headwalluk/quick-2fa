@@ -103,15 +103,15 @@ class Password_Reminder_Handler {
 	 * @return bool True if in cooldown period.
 	 */
 	public function is_in_cooldown(): bool {
-		$last_reminder = (int) get_user_meta( $this->user_id, META_LAST_PASSWORD_REMINDER, true );
-		$in_cooldown   = false;
+		$last_reminder  = (int) get_user_meta( $this->user_id, META_LAST_PASSWORD_REMINDER, true );
+		$is_in_cooldown = false;
 
 		if ( $last_reminder > 0 ) {
 			$cooldown_seconds = Plugin::instance()->get_settings()->get_int( OPTION_PASSWORD_REMINDER_COOLDOWN ) * DAY_IN_SECONDS;
-			$in_cooldown      = ( time() - $last_reminder ) < $cooldown_seconds;
+			$is_in_cooldown   = ( time() - $last_reminder ) < $cooldown_seconds;
 		}
 
-		return $in_cooldown;
+		return $is_in_cooldown;
 	}
 
 	/**

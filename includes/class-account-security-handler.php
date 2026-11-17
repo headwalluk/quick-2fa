@@ -306,13 +306,13 @@ class Account_Security_Handler {
 		$expiry = time() + $expiry_seconds;
 
 		$trusted_devices[ $key ] = $expiry;
-		$stored                  = update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices ) !== false;
+		$is_stored               = update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices ) !== false;
 
-		if ( $stored ) {
+		if ( $is_stored ) {
 			$this->set_device_cookie( $token, $expiry );
 		}
 
-		return $stored;
+		return $is_stored;
 	}
 
 	/**

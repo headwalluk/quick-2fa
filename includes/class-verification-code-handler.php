@@ -92,9 +92,9 @@ class Verification_Code_Handler {
 
 		// Determine if we need to start a fresh window: no prior data, or the previous window has elapsed.
 		// Anything that is not our own array shape counts as "no window" rather than being indexed into.
-		$no_existing_window = ! is_array( $limit_data ) || ! isset( $limit_data['window_start'], $limit_data['count'] );
-		$elapsed            = $no_existing_window ? PHP_INT_MAX : ( time() - $limit_data['window_start'] );
-		$is_new_window      = $no_existing_window || ( $elapsed > RATE_LIMIT_CODE_GENERATION_WINDOW );
+		$is_window_missing = ! is_array( $limit_data ) || ! isset( $limit_data['window_start'], $limit_data['count'] );
+		$elapsed           = $is_window_missing ? PHP_INT_MAX : ( time() - $limit_data['window_start'] );
+		$is_new_window     = $is_window_missing || ( $elapsed > RATE_LIMIT_CODE_GENERATION_WINDOW );
 
 		$result = true;
 

@@ -206,7 +206,7 @@ class Plugin {
 			$user = get_user_by( 'login', $user_login );
 		}
 
-		$record = false;
+		$should_record = false;
 
 		if ( $user instanceof \WP_User ) {
 			/**
@@ -220,10 +220,10 @@ class Plugin {
 			 * @param bool     $record Whether to record the login. Default true.
 			 * @param \WP_User $user   The user who logged in.
 			 */
-			$record = (bool) filter_var( apply_filters( 'quick2fa_record_last_login', true, $user ), FILTER_VALIDATE_BOOLEAN );
+			$should_record = (bool) filter_var( apply_filters( 'quick2fa_record_last_login', true, $user ), FILTER_VALIDATE_BOOLEAN );
 		}
 
-		if ( $record ) {
+		if ( $should_record ) {
 			$now = time();
 
 			// The first recorded login stamps the site's recording epoch; add_option()
@@ -402,8 +402,8 @@ class Plugin {
 				// revoking devices (a password change, for one) doesn't re-challenge it.
 				// Otherwise the device must be trusted; each entry carries its own expiry.
 				$verification_period = $this->get_settings()->get_int( OPTION_VERIFICATION_PERIOD ) * DAY_IN_SECONDS;
-				$session_is_current  = $session_verified_time > 0 && ( time() - $session_verified_time ) < $verification_period;
-				$needs_verification  = ! $session_is_current && ! $security_handler->is_device_trusted();
+				$is_session_current  = $session_verified_time > 0 && ( time() - $session_verified_time ) < $verification_period;
+				$needs_verification  = ! $is_session_current && ! $security_handler->is_device_trusted();
 			} else {
 				// Trusted devices disabled: every login session must verify once.
 				$needs_verification = 0 === $session_verified_time;
@@ -421,23 +421,23 @@ class Plugin {
 	 * @return bool True if user's role requires 2FA.
 	 */
 	private function user_role_requires_2fa( int $user_id ): bool {
-		$mode     = $this->get_settings()->get_string( OPTION_MODE );
-		$requires = false;
+		$mode        = $this->get_settings()->get_string( OPTION_MODE );
+		$is_required = false;
 
 		if ( MODE_ALL === $mode ) {
-			$requires = true;
+			$is_required = true;
 		} elseif ( MODE_ROLES === $mode ) {
 			$protected_roles = $this->get_settings()->get_array( OPTION_PROTECTED_ROLES );
 			$user            = get_userdata( $user_id );
 
 			if ( ! empty( $protected_roles ) && $user instanceof \WP_User ) {
-				$requires = ! empty( array_intersect( (array) $user->roles, $protected_roles ) );
+				$is_required = ! empty( array_intersect( (array) $user->roles, $protected_roles ) );
 			}
 		} else {
-			// MODE_DISABLED, or an unrecognised mode; $requires stays false.
+			// MODE_DISABLED, or an unrecognised mode; $is_required stays false.
 		}
 
-		return $requires;
+		return $is_required;
 	}
 
 	/**
@@ -525,14 +525,14 @@ class Plugin {
 	 *
 	 * @since 1.3.0
 	 * @param int  $user_id      User who just verified.
-	 * @param bool $trust_device Whether the user ticked "trust this device".
+	 * @param bool $should_trust_device Whether the user ticked "trust this device".
 	 */
-	private function apply_device_trust( int $user_id, bool $trust_device ): void {
+	private function apply_device_trust( int $user_id, bool $should_trust_device ): void {
 		if ( ! are_trusted_devices_enabled() ) {
 			return;
 		}
 
-		if ( $trust_device ) {
+		if ( $should_trust_device ) {
 			$expiry_days = $this->get_settings()->get_int( OPTION_TRUSTED_DEVICE_EXPIRY );
 		} else {
 			$expiry_days = $this->get_settings()->get_int( OPTION_VERIFICATION_PERIOD );
@@ -582,9 +582,9 @@ class Plugin {
 				if ( is_wp_error( $result ) ) {
 					$error = $result;
 				} else {
-					$trust_device = isset( $_POST['q2fa_trust_device'] ) && '1' === $_POST['q2fa_trust_device'];
+					$should_trust_device = isset( $_POST['q2fa_trust_device'] ) && '1' === $_POST['q2fa_trust_device'];
 
-					$this->apply_device_trust( $user_id, $trust_device );
+					$this->apply_device_trust( $user_id, $should_trust_device );
 
 					wp_safe_redirect( get_return_url( $user_id ) );
 					exit();
