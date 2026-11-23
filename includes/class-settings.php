@@ -37,7 +37,7 @@ class Settings {
 	/**
 	 * Invalid-value messages already logged this request, as keys; survives flush_cache().
 	 *
-	 * @since 1.7.1
+	 * @since 1.8.0
 	 * @var array<string,true>
 	 */
 	private array $logged_errors = array();
@@ -401,7 +401,7 @@ class Settings {
 	/**
 	 * Log a settings problem unless the same message was already logged this request.
 	 *
-	 * @since 1.7.1
+	 * @since 1.8.0
 	 * @param string $message Message to log.
 	 */
 	private function log_error_once( string $message ): void {

@@ -223,12 +223,12 @@ printf(
 echo '</tbody></table>';
 
 // AI Agents Section.
-printf( '<h2>%s</h2>', esc_html__( 'AI Agents', 'quick-2fa' ) );
+printf( '<h2>%s</h2>', esc_html_x( 'AI Agents', 'settings section heading; AI software assistants', 'quick-2fa' ) );
 echo '<table class="form-table" role="presentation"><tbody>';
 
 printf(
 	'<tr><th scope="row"><label for="quick2fa_abilities_enabled">%s</label></th><td><label><input type="checkbox" name="%s" id="quick2fa_abilities_enabled" value="1" %s> %s</label><p class="description">%s</p>%s</td></tr>',
-	esc_html__( 'Abilities API', 'quick-2fa' ),
+	esc_html_x( 'Abilities API', 'settings field label; the WordPress Abilities API feature', 'quick-2fa' ),
 	esc_attr( $const_option_abilities_enabled ),
 	checked( $abilities_enabled, true, false ),
 	esc_html__( 'Let AI agents query account security', 'quick-2fa' ),

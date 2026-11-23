@@ -214,7 +214,7 @@ class Github_Updater {
 	/**
 	 * Hide this plugin's stored update offer while the updater is disabled.
 	 *
-	 * @since 1.7.1
+	 * @since 1.8.0
 	 *
 	 * @param mixed $transient The update_plugins transient as read.
 	 * @return mixed The transient, without this plugin's offer when disabled.
@@ -237,7 +237,7 @@ class Github_Updater {
 	/**
 	 * Refuse a background auto-update whose release needs a newer WordPress or PHP.
 	 *
-	 * @since 1.7.1
+	 * @since 1.8.0
 	 *
 	 * @param mixed $update Whether to auto-update, or null to defer to the site's setting.
 	 * @param mixed $item   The update offer.
@@ -472,7 +472,7 @@ class Github_Updater {
 	/**
 	 * Read the main plugin file's header at a release tag, logging every failure.
 	 *
-	 * @since 1.7.1
+	 * @since 1.8.0
 	 *
 	 * @param string $tag_name The release's git tag.
 	 * @return array|null Header fields (version, requires, requires_php), or null on failure.
@@ -514,7 +514,7 @@ class Github_Updater {
 	/**
 	 * Extract the version and requirement fields from a plugin file's header comment.
 	 *
-	 * @since 1.7.1
+	 * @since 1.8.0
 	 *
 	 * @param string $contents The start of the main plugin file.
 	 * @return array{version: string, requires: string, requires_php: string} Each field, or '' when absent.

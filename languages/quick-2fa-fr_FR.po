@@ -45,13 +45,11 @@ msgstr "Votre code de vérification est : %s"
 msgid "If you did not request this code, please contact your site administrator immediately."
 msgstr "Si vous n'avez pas demandé ce code, veuillez contacter immédiatement l'administrateur de votre site."
 
-#: functions-private.php:45
-#: includes/class-email-handler.php:38
-#: includes/class-settings.php:389
+#: functions-private.php:46
 msgid "Your verification code"
 msgstr "Votre code de vérification"
 
-#: functions-private.php:123
+#: functions-private.php:124
 msgid "For your security, we need to verify your identity before you can access the admin area."
 msgstr "Pour votre sécurité, nous devons vérifier votre identité avant que vous puissiez accéder à l'espace d'administration."
 
@@ -59,154 +57,154 @@ msgstr "Pour votre sécurité, nous devons vérifier votre identité avant que v
 msgid "Failed to send verification email. Please contact your site administrator."
 msgstr "L'envoi de l'e-mail de vérification a échoué. Veuillez contacter l'administrateur de votre site."
 
-#: includes/class-password-reminder-handler.php:134
+#: includes/class-password-reminder-handler.php:131
 msgid "Please enter a password."
 msgstr "Veuillez saisir un mot de passe."
 
-#: includes/class-plugin.php:281
+#: includes/class-plugin.php:369
 msgid "Your account has been locked. Please contact your site administrator."
 msgstr "Votre compte a été verrouillé. Veuillez contacter l'administrateur du site."
 
 #. translators: %s: Time remaining until unlock
-#: includes/class-plugin.php:285
+#: includes/class-plugin.php:373
 #, php-format
 msgid "Your account has been locked. Please try again in %s."
 msgstr "Votre compte a été verrouillé. Veuillez réessayer dans %s."
 
-#: includes/class-plugin.php:313
+#: includes/class-plugin.php:401
 msgid "Account Locked"
 msgstr "Compte verrouillé"
 
-#: includes/class-plugin.php:467
+#: includes/class-plugin.php:557
 msgid "Invalid action"
 msgstr "Action non valide"
 
-#: includes/class-plugin.php:467
-#: includes/class-plugin.php:517
-#: includes/class-plugin.php:600
+#: includes/class-plugin.php:557
+#: includes/class-plugin.php:607
+#: includes/class-plugin.php:690
 msgctxt "error page title"
 msgid "Error"
 msgstr "Erreur"
 
-#: includes/class-plugin.php:527
-#: includes/class-plugin.php:549
-#: includes/class-plugin.php:615
-#: includes/class-plugin.php:628
+#: includes/class-plugin.php:617
+#: includes/class-plugin.php:639
+#: includes/class-plugin.php:705
+#: includes/class-plugin.php:718
 msgid "Security check failed. Please try again."
 msgstr "Échec du contrôle de sécurité. Veuillez réessayer."
 
-#: includes/class-plugin.php:532
+#: includes/class-plugin.php:622
 msgid "Please enter the verification code."
 msgstr "Veuillez saisir le code de vérification."
 
-#: includes/class-plugin.php:556
+#: includes/class-plugin.php:646
 msgid "A new verification code has been sent to your email."
 msgstr "Un nouveau code de vérification vous a été envoyé par e-mail."
 
-#: includes/class-plugin.php:660
+#: includes/class-plugin.php:750
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "Votre espace d'administration n'est pas protégé par une authentification à deux facteurs."
 
-#: includes/class-plugin.php:662
+#: includes/class-plugin.php:752
 msgid "Enable 2FA"
 msgstr "Activer l'authentification à deux facteurs (2FA)"
 
-#: includes/class-settings.php:365
+#: includes/class-settings.php:612
 msgid "Select roles..."
 msgstr "Sélectionner des rôles..."
 
-#: includes/class-user-management.php:78
-#: includes/class-user-management.php:86
+#: includes/class-user-management.php:44
+#: includes/class-user-management.php:52
 msgid "Lock Status"
 msgstr "État du verrouillage"
 
-#: includes/class-user-management.php:115
+#: includes/class-user-management.php:81
 msgid "Not locked out"
 msgstr "Pas bloqué"
 
-#: includes/class-user-management.php:184
+#: includes/class-user-management.php:150
 msgid "Locked Out"
 msgstr "Cloué dehors"
 
-#: includes/class-user-management.php:196
+#: includes/class-user-management.php:162
 msgid "Not Locked Out"
 msgstr "Pas bloqué"
 
-#: includes/class-user-management.php:288
+#: includes/class-user-management.php:254
 msgctxt "verb; user row action"
 msgid "Unlock"
 msgstr "Déverrouiller"
 
-#: includes/class-user-management.php:300
+#: includes/class-user-management.php:266
 msgctxt "verb; user row action"
 msgid "Lock Out"
 msgstr "Verrouiller"
 
-#: includes/class-user-management.php:316
-#: includes/class-user-management.php:371
-#: includes/class-user-management.php:566
-#: includes/class-user-management.php:612
+#: includes/class-user-management.php:282
+#: includes/class-user-management.php:337
+#: includes/class-user-management.php:551
+#: includes/class-user-management.php:597
 msgid "Security check failed."
 msgstr "Échec du contrôle de sécurité."
 
-#: includes/class-user-management.php:320
-#: includes/class-user-management.php:375
-#: includes/class-user-management.php:570
-#: includes/class-user-management.php:616
+#: includes/class-user-management.php:286
+#: includes/class-user-management.php:341
+#: includes/class-user-management.php:555
+#: includes/class-user-management.php:601
 msgid "You do not have permission to perform this action."
 msgstr "Vous n'êtes pas autorisé(e) à effectuer cette action."
 
-#: includes/class-user-management.php:324
+#: includes/class-user-management.php:290
 msgid "You cannot lock out your own account."
 msgstr "Vous ne pouvez pas bloquer votre propre compte."
 
-#: includes/class-user-management.php:329
-#: includes/class-user-management.php:380
-#: includes/class-user-management.php:575
-#: includes/class-user-management.php:621
+#: includes/class-user-management.php:295
+#: includes/class-user-management.php:346
+#: includes/class-user-management.php:560
+#: includes/class-user-management.php:606
 msgid "Invalid user."
 msgstr "Utilisateur invalide."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:350
+#: includes/class-user-management.php:316
 #, php-format
 msgid "User %s has been locked out."
 msgstr "L'utilisateur %s a été bloqué."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:397
+#: includes/class-user-management.php:363
 #, php-format
 msgid "User %s has been unlocked."
 msgstr "L'utilisateur %s a été débloqué."
 
-#: includes/class-user-management.php:441
+#: includes/class-user-management.php:407
 msgid "Locked out (manual)"
 msgstr "Verrouillage (manuel)"
 
 #. translators: %s: Formatted date and time
-#: includes/class-user-management.php:452
+#: includes/class-user-management.php:418
 #, php-format
 msgid "Locked out until %s"
 msgstr "Accès bloqué jusqu'à %s"
 
-#: includes/class-verification-code-handler.php:114
+#: includes/class-verification-code-handler.php:111
 msgid "Too many verification codes requested. Please wait a few more seconds before requesting another code."
 msgstr "Trop de codes de vérification ont été demandés. Veuillez patienter quelques secondes avant de demander un autre code."
 
-#: includes/class-verification-code-handler.php:204
+#: includes/class-verification-code-handler.php:201
 msgid "User not found."
 msgstr "Utilisateur introuvable."
 
-#: includes/class-verification-code-handler.php:294
+#: includes/class-verification-code-handler.php:291
 msgid "No verification code found. Please request a new code."
 msgstr "Aucun code de vérification n'a été trouvé. Veuillez demander un nouveau code."
 
-#: includes/class-verification-code-handler.php:255
+#: includes/class-verification-code-handler.php:252
 msgid "Too many failed verification attempts. Your account has been temporarily locked for security."
 msgstr "Trop de tentatives de vérification infructueuses. Votre compte a été temporairement bloqué pour des raisons de sécurité."
 
 #. translators: %d: number of attempts remaining
-#: includes/class-verification-code-handler.php:345
+#: includes/class-verification-code-handler.php:342
 #, php-format
 msgid "Invalid verification code. You have %d attempt remaining."
 msgid_plural "Invalid verification code. You have %d attempts remaining."
@@ -321,156 +319,156 @@ msgstr "Révoquer tous les appareils"
 msgid "Revoking devices will require re-verification from those devices on the next login."
 msgstr "La révocation des appareils nécessitera une nouvelle vérification depuis ces appareils lors de la prochaine connexion."
 
-#: views/settings-page.php:54
-#: views/settings-page.php:55
+#: views/settings-page.php:58
+#: views/settings-page.php:59
 msgid "2FA Mode"
 msgstr "Mode 2FA"
 
-#: views/settings-page.php:62
+#: views/settings-page.php:66
 msgctxt "2FA mode option label"
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: views/settings-page.php:63
+#: views/settings-page.php:67
 msgid "Two-factor authentication is disabled. Not recommended for production sites."
 msgstr "L'authentification à deux facteurs est désactivée. Non recommandée pour les sites de production."
 
-#: views/settings-page.php:71
+#: views/settings-page.php:75
 msgid "Enabled for all users"
 msgstr "Activé pour tous les utilisateurs"
 
-#: views/settings-page.php:72
+#: views/settings-page.php:76
 msgid "All users, including subscribers, will be required to verify their identity."
 msgstr "Tous les utilisateurs, y compris les abonnés, devront vérifier leur identité."
 
-#: views/settings-page.php:80
+#: views/settings-page.php:84
 msgid "Enabled for specific roles"
 msgstr "Activé pour certains rôles"
 
-#: views/settings-page.php:81
+#: views/settings-page.php:85
 msgid "Only users with selected roles will be required to verify their identity."
 msgstr "Seuls les utilisateurs disposant de certains rôles devront vérifier leur identité."
 
-#: views/settings-page.php:89
+#: views/settings-page.php:93
 msgid "Protected Roles"
 msgstr "Rôles protégés"
 
-#: views/settings-page.php:108
+#: views/settings-page.php:112
 msgid "Select which user roles require two-factor authentication."
 msgstr "Sélectionnez les rôles d'utilisateur pour lesquels l'authentification à deux facteurs est requise."
 
-#: views/settings-page.php:113
+#: views/settings-page.php:117
 msgid "Verification Period"
 msgstr "Période de vérification"
 
-#: views/settings-page.php:116
-#: views/settings-page.php:143
-#: views/settings-page.php:206
-#: views/settings-page.php:215
+#: views/settings-page.php:120
+#: views/settings-page.php:147
+#: views/settings-page.php:210
+#: views/settings-page.php:219
 msgctxt "unit suffix after a number input"
 msgid "days"
 msgstr "jours"
 
-#: views/settings-page.php:122
+#: views/settings-page.php:126
 msgid "Code Length"
 msgstr "Longueur du code"
 
-#: views/settings-page.php:125
+#: views/settings-page.php:129
 msgctxt "unit suffix after a number input"
 msgid "digits"
 msgstr "chiffres"
 
-#: views/settings-page.php:126
+#: views/settings-page.php:130
 msgid "Length of the verification code (4-8 digits)."
 msgstr "Longueur du code de vérification (4 à 8 chiffres)."
 
-#: views/settings-page.php:131
+#: views/settings-page.php:135
 msgid "Code Expiry"
 msgstr "Expiration du code"
 
-#: views/settings-page.php:134
-#: views/settings-page.php:152
+#: views/settings-page.php:138
+#: views/settings-page.php:156
 msgctxt "unit suffix after a number input"
 msgid "minutes"
 msgstr "minutes"
 
-#: views/settings-page.php:135
+#: views/settings-page.php:139
 msgid "How long verification codes remain valid (5-60 minutes)."
 msgstr "Durée de validité des codes de vérification (5 à 60 minutes)."
 
-#: views/settings-page.php:140
+#: views/settings-page.php:144
 msgid "Trust Device Duration"
 msgstr "Durée de validité du dispositif de confiance"
 
-#: views/settings-page.php:144
+#: views/settings-page.php:148
 msgid "How long a trusted device remains trusted before requiring 2FA again (1-365 days)."
 msgstr "Durée pendant laquelle un appareil de confiance reste considéré comme tel avant qu'une authentification à deux facteurs (2FA) ne soit à nouveau requise (1 à 365 jours)."
 
-#: views/settings-page.php:149
+#: views/settings-page.php:153
 msgid "Auto-Lock Duration"
 msgstr "Durée du verrouillage automatique"
 
-#: views/settings-page.php:153
+#: views/settings-page.php:157
 msgid "Duration to lock accounts after too many failed verification attempts (1-1440 minutes = 1 minute to 24 hours)."
 msgstr "Durée de blocage des comptes après un nombre excessif de tentatives de vérification infructueuses (1 à 1 440 minutes, soit 1 minute à 24 heures)."
 
-#: views/settings-page.php:159
+#: views/settings-page.php:163
 msgid "Email Settings"
 msgstr "Paramètres de messagerie"
 
-#: views/settings-page.php:164
+#: views/settings-page.php:168
 msgid "From Name"
 msgstr "De : Nom"
 
-#: views/settings-page.php:167
+#: views/settings-page.php:171
 msgid "The name that appears in the \"From\" field of verification emails."
 msgstr "Le nom qui apparaît dans le champ « De » des e-mails de vérification."
 
-#: views/settings-page.php:172
+#: views/settings-page.php:176
 msgid "From Address"
 msgstr "Adresse de l'expéditeur"
 
-#: views/settings-page.php:175
+#: views/settings-page.php:179
 msgid "The email address that appears in the \"From\" field of verification emails."
 msgstr "L'adresse e-mail qui apparaît dans le champ « De » des e-mails de vérification."
 
-#: views/settings-page.php:180
+#: views/settings-page.php:184
 msgid "Email Subject"
 msgstr "Objet de l'e-mail"
 
-#: views/settings-page.php:183
+#: views/settings-page.php:187
 msgid "Subject line for verification emails."
 msgstr "Objet des e-mails de vérification."
 
-#: views/settings-page.php:189
+#: views/settings-page.php:193
 msgid "Password Reminder Settings"
 msgstr "Paramètres de rappel du mot de passe"
 
-#: views/settings-page.php:194
+#: views/settings-page.php:198
 msgid "Password Reminders"
 msgstr "Rappels de mot de passe"
 
-#: views/settings-page.php:197
+#: views/settings-page.php:201
 msgid "Enable password change reminders"
 msgstr "Activer les rappels de changement de mot de passe"
 
-#: views/settings-page.php:198
+#: views/settings-page.php:202
 msgid "Periodically remind users to update their passwords."
 msgstr "Rappelez régulièrement aux utilisateurs de mettre à jour leurs mots de passe."
 
-#: views/settings-page.php:203
+#: views/settings-page.php:207
 msgid "Reminder Period"
 msgstr "Période de rappel"
 
-#: views/settings-page.php:207
+#: views/settings-page.php:211
 msgid "Remind users to change their password after this many days (30-365 days)."
 msgstr "Rappeler aux utilisateurs de changer leur mot de passe au bout de ce nombre de jours (30 à 365 jours)."
 
-#: views/settings-page.php:212
+#: views/settings-page.php:216
 msgid "Reminder Cooldown"
 msgstr "Délai de recharge du rappel"
 
-#: views/settings-page.php:216
+#: views/settings-page.php:220
 msgid "Wait this many days before showing the reminder again if dismissed (1-90 days)."
 msgstr "Attendre ce nombre de jours avant d'afficher à nouveau le rappel s'il a été ignoré (1 à 90 jours)."
 
@@ -513,20 +511,20 @@ msgstr[0] "Ce code expirera dans %d minute."
 msgstr[1] "Ce code expirera dans %d minutes."
 
 #. translators: %d: minimum number of characters required in a password
-#: includes/class-password-reminder-handler.php:141
+#: includes/class-password-reminder-handler.php:138
 #, php-format
 msgid "Password must be at least %d character long."
 msgid_plural "Password must be at least %d characters long."
 msgstr[0] "Le mot de passe doit comporter au moins %d caractères."
 msgstr[1] "Le mot de passe doit comporter au moins %d caractères."
 
-#: includes/class-plugin.php:516
-#: includes/class-plugin.php:599
+#: includes/class-plugin.php:606
+#: includes/class-plugin.php:689
 msgid "Your user account could not be loaded. Please sign in again."
 msgstr "Votre compte utilisateur n'a pas pu être chargé. Veuillez vous reconnecter."
 
 #. translators: %d: number of minutes to wait
-#: includes/class-verification-code-handler.php:120
+#: includes/class-verification-code-handler.php:117
 #, php-format
 msgid "Too many verification codes requested. Please wait %d minute before requesting another code."
 msgid_plural "Too many verification codes requested. Please wait %d minutes before requesting another code."
@@ -534,7 +532,7 @@ msgstr[0] "Trop de codes de vérification ont été demandés. Veuillez patiente
 msgstr[1] "Trop de codes de vérification ont été demandés. Veuillez patienter %d minutes avant de demander un autre code."
 
 #. translators: %d: number of minutes until unlock
-#: includes/class-verification-code-handler.php:280
+#: includes/class-verification-code-handler.php:277
 #, php-format
 msgid "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minute."
 msgid_plural "Your account has been temporarily locked due to too many failed attempts. Please try again in %d minutes."
@@ -542,7 +540,7 @@ msgstr[0] "Votre compte a été temporairement verrouillé en raison d'un nombre
 msgstr[1] "Votre compte a été temporairement verrouillé en raison d'un trop grand nombre de tentatives infructueuses. Veuillez réessayer dans %d minutes."
 
 #. translators: %d: number of minutes until expiry
-#: includes/class-verification-code-handler.php:306
+#: includes/class-verification-code-handler.php:303
 #, php-format
 msgid "Your verification code has expired. Codes are valid for %d minute. Please request a new code."
 msgid_plural "Your verification code has expired. Codes are valid for %d minutes. Please request a new code."
@@ -557,32 +555,32 @@ msgid_plural "It's been %d days since you last changed your password. For your s
 msgstr[0] "Cela fait %d jour(s) que vous avez changé votre mot de passe pour la dernière fois. Pour votre sécurité, nous vous recommandons de le mettre à jour régulièrement."
 msgstr[1] "Cela fait %d jours que vous avez changé votre mot de passe pour la dernière fois. Pour votre sécurité, nous vous recommandons de le mettre à jour régulièrement."
 
-#: views/settings-page.php:117
+#: views/settings-page.php:121
 msgid "How long a verification trusts the device when \"Trust this device\" is left unticked (1-365 days). Not used when trusted devices are disabled."
 msgstr "Durée pendant laquelle une vérification considère l'appareil comme fiable lorsque la case « Faire confiance à cet appareil » n'est pas cochée (1 à 365 jours). Non utilisé lorsque les appareils de confiance sont désactivés."
 
 #. translators: %d: number of days between password changes, from the Reminder Period setting
-#: functions-private.php:156
+#: functions-private.php:157
 #, php-format
 msgid "Regular password changes help keep your account secure. We recommend updating your password every %d day."
 msgid_plural "Regular password changes help keep your account secure. We recommend updating your password every %d days."
 msgstr[0] "Changer régulièrement de mot de passe contribue à la sécurité de votre compte. Nous vous recommandons de mettre à jour votre mot de passe tous les %d jours."
 msgstr[1] "Changer régulièrement de mot de passe contribue à la sécurité de votre compte. Nous vous recommandons de mettre à jour votre mot de passe tous les %d jours."
 
-#: views/settings-page.php:222
+#: views/settings-page.php:242
 msgctxt "settings section heading"
 msgid "Uninstall"
 msgstr "Désinstallation"
 
-#: views/settings-page.php:227
+#: views/settings-page.php:247
 msgid "Plugin Data"
 msgstr "Plug-in de données"
 
-#: views/settings-page.php:230
+#: views/settings-page.php:250
 msgid "Delete all plugin data when uninstalled"
 msgstr "Supprimer toutes les données du plugin lors de la désinstallation"
 
-#: views/settings-page.php:231
+#: views/settings-page.php:251
 msgid "When the plugin is deleted from the Plugins screen, also delete its settings, account locks, trusted devices, event logs and last-login records. Deactivating the plugin never deletes anything."
 msgstr "Lorsque le plugin est supprimé depuis l'écran « Plugins », supprimez également ses paramètres, les verrouillages de compte, les appareils de confiance, les journaux d'événements et les enregistrements des dernières connexions. La désactivation du plugin n'entraîne jamais la suppression de quoi que ce soit."
 
@@ -597,13 +595,157 @@ msgid "https://headwall-hosting.com/a-web-guys-blog/"
 msgstr "https://headwall-hosting.com/a-web-guys-blog/"
 
 #. translators: %s is the plugin name, Quick 2FA
-#: includes/class-plugin.php:659
+#: includes/class-plugin.php:749
 #, php-format
 msgid "%s is currently disabled."
 msgstr "%s est actuellement désactivé."
 
 #. translators: %s is the plugin name, Quick 2FA
-#: includes/class-settings.php:40
+#: includes/class-settings.php:422
 #, php-format
 msgid "%s Settings"
 msgstr "Paramètres de %s"
+
+#: includes/class-abilities.php:66
+msgid "Read-only queries about two-factor authentication, passwords and account security."
+msgstr "Requêtes en lecture seule concernant l'authentification à deux facteurs, les mots de passe et la sécurité des comptes."
+
+#: includes/class-abilities.php:84
+msgid "The user: an ID, login name or email address."
+msgstr "L'utilisateur : un identifiant, un nom d'utilisateur ou une adresse e-mail."
+
+#: includes/class-abilities.php:90
+msgid "Get a user's security status"
+msgstr "Obtenir le statut de sécurité d'un utilisateur"
+
+#: includes/class-abilities.php:91
+msgid "Returns when a user last changed their password, logged in and passed two-factor verification, whether two-factor authentication applies to them, whether their account is locked, and how many trusted devices they have. A null date means none has been recorded since Quick 2FA was installed."
+msgstr "Indique la date à laquelle un utilisateur a modifié son mot de passe pour la dernière fois, s'est connecté et a réussi la vérification à deux facteurs, précise si l'authentification à deux facteurs s'applique à lui, si son compte est verrouillé et combien d'appareils de confiance il possède. Une date nulle signifie qu'aucune information n'a été enregistrée depuis l'installation de Quick 2FA."
+
+#: includes/class-abilities.php:109
+msgid "List users' security status"
+msgstr "Afficher le statut de sécurité des utilisateurs"
+
+#: includes/class-abilities.php:110
+msgid "Lists the security status of many users, such as administrators whose password is older than a year, or staff who have not logged in for 90 days. Without roles, lists users who can edit posts (staff), not customers or subscribers."
+msgstr "Répertorie l'état de sécurité d'un grand nombre d'utilisateurs, tels que les administrateurs dont le mot de passe date de plus d'un an ou les membres du personnel qui ne se sont pas connectés depuis 90 jours. En l'absence de rôles, répertorie les utilisateurs autorisés à modifier les publications (membres du personnel), à l'exclusion des clients et des abonnés."
+
+#: includes/class-abilities.php:118
+msgid "Only users with one of these role slugs, such as administrator or shop_manager."
+msgstr "Seuls les utilisateurs disposant de l'un de ces identifiants de rôle, tels que « administrator » ou « shop_manager »."
+
+#: includes/class-abilities.php:123
+msgid "Only users whose password is older than this many days. A password with no recorded change is aged from the user's registration."
+msgstr "Uniquement les utilisateurs dont le mot de passe n'a pas été modifié depuis au moins ce nombre de jours. La durée de validité d'un mot de passe pour lequel aucune modification n'a été enregistrée est calculée à partir de la date d'inscription de l'utilisateur."
+
+#: includes/class-abilities.php:128
+msgid "Only users with no recorded login in this many days, including users with no recorded login at all."
+msgstr "Uniquement les utilisateurs qui ne se sont pas connectés depuis ce nombre de jours, y compris ceux qui ne se sont jamais connectés."
+
+#: includes/class-abilities.php:132
+msgid "Only users whose account is locked."
+msgstr "Uniquement les utilisateurs dont le compte est verrouillé."
+
+#: includes/class-abilities.php:154
+msgid "How many users matched, before limit and offset."
+msgstr "Nombre d'utilisateurs correspondants, avant application de la limite et du décalage."
+
+#: includes/class-abilities.php:172
+msgid "Get the two-factor authentication configuration"
+msgstr "Obtenir la configuration de l'authentification à deux facteurs"
+
+#: includes/class-abilities.php:173
+msgid "Returns how Quick 2FA is configured: who must use two-factor authentication, how long verifications and trusted devices last, lockout duration and password reminder settings."
+msgstr "Renvoie les informations relatives à la configuration de Quick 2FA : qui doit utiliser l'authentification à deux facteurs, la durée de validité des vérifications et des appareils de confiance, la durée du verrouillage du compte et les paramètres de rappel de mot de passe."
+
+#: includes/class-abilities.php:185
+msgid "Get a user's security events"
+msgstr "Récupérer les événements de sécurité d'un utilisateur"
+
+#: includes/class-abilities.php:186
+msgid "Returns a user's recent security events, newest first: verification codes sent, failed and successful verifications, account locks, password changes and trusted-device revocations. IP addresses and browser details are never returned."
+msgstr "Renvoie les événements de sécurité récents d'un utilisateur, classés par ordre chronologique décroissant : codes de vérification envoyés, vérifications échouées et réussies, verrouillages de compte, changements de mot de passe et révocations d'appareils de confiance. Les adresses IP et les informations relatives au navigateur ne sont jamais communiquées."
+
+#: includes/class-abilities.php:204
+msgid "Only events of these types."
+msgstr "Uniquement les événements de ce type."
+
+#: includes/class-abilities.php:239
+msgid "You are not allowed to query Quick 2FA."
+msgstr "Vous n'êtes pas autorisé à interroger Quick 2FA."
+
+#: includes/class-abilities.php:241
+msgid "Complete two-factor verification before querying Quick 2FA."
+msgstr "Effectuez la vérification à deux facteurs avant d'interroger Quick 2FA."
+
+#. translators: %d: the maximum number of users one query may cover
+#: includes/class-abilities.php:309
+#, php-format
+msgid "More than %d users match. Narrow the query with roles."
+msgstr "Plus de %d utilisateurs correspondent. Affinez la requête à l'aide des rôles."
+
+#: includes/class-abilities.php:582
+msgid "No user matches that ID, login name or email address."
+msgstr "Aucun utilisateur ne correspond à cet identifiant, à ce nom d'utilisateur ou à cette adresse e-mail."
+
+#: includes/class-abilities.php:659
+msgid "Whether this user must pass two-factor verification to reach the admin area."
+msgstr "Cet utilisateur doit-il passer par une authentification à deux facteurs pour accéder à l'espace d'administration ?"
+
+#: includes/class-abilities.php:663
+msgid "When the password was last changed, or null if no change has been recorded since Quick 2FA was installed."
+msgstr "Date de la dernière modification du mot de passe, ou valeur nulle si aucune modification n'a été enregistrée depuis l'installation de Quick 2FA."
+
+#: includes/class-abilities.php:667
+msgid "Days since the last recorded change, or since registration if none is recorded."
+msgstr "Nombre de jours écoulés depuis la dernière modification enregistrée, ou depuis l'enregistrement si aucune modification n'a été enregistrée."
+
+#: includes/class-abilities.php:672
+msgid "The last recorded login, or null if none has been recorded; see last_login_recorded_since in the configuration."
+msgstr "Dernière connexion enregistrée, ou « null » si aucune n'a été enregistrée ; voir « last_login_recorded_since » dans la configuration."
+
+#: includes/class-abilities.php:678
+msgid "Whether the lock lasts until an administrator removes it."
+msgstr "Le verrou reste-t-il en place jusqu’à ce qu’un administrateur le supprime ?"
+
+#: includes/class-abilities.php:700
+msgid "Who must use two-factor authentication: every user, the protected roles only, or nobody."
+msgstr "Qui doit utiliser l'authentification à deux facteurs : tous les utilisateurs, uniquement les rôles protégés ou personne ?"
+
+#: includes/class-abilities.php:705
+msgid "The roles that must use two-factor authentication when the mode is \"roles\"."
+msgstr "Les rôles qui doivent utiliser l'authentification à deux facteurs lorsque le mode est défini sur « rôles »."
+
+#: includes/class-abilities.php:718
+msgid "When Quick 2FA began recording logins; earlier logins are unknown."
+msgstr "La date à laquelle Quick 2FA a commencé à enregistrer les connexions n'est pas connue ; les connexions antérieures ne sont donc pas répertoriées."
+
+#: includes/class-abilities.php:750
+msgid "Event context: source, reason, attempts, success, device_count, locked_until, actor_user_id. Only the fields the event recorded."
+msgstr "Contexte de l'événement : source, raison, tentatives, réussite, nombre_d'appareils, verrouillé_jusqu'au, identifiant_utilisateur_de_l'acteur. Uniquement les champs enregistrés par l'événement."
+
+#: includes/class-abilities.php:754
+msgid "Reserved for non-identifying IP metadata such as country; always null in this version."
+msgstr "Réservé aux métadonnées IP non identifiantes, telles que le pays ; cette valeur est toujours nulle dans cette version."
+
+#: views/settings-page.php:226
+msgctxt "settings section heading; AI software assistants"
+msgid "AI Agents"
+msgstr "Agents IA"
+
+#: views/settings-page.php:231
+msgctxt "settings field label; the WordPress Abilities API feature"
+msgid "Abilities API"
+msgstr "API Abilities"
+
+#: views/settings-page.php:234
+msgid "Let AI agents query account security"
+msgstr "Permettre aux agents IA d'interroger la sécurité des comptes"
+
+#: views/settings-page.php:235
+msgid "Lets an administrator's AI agent ask when users last changed their password, logged in or verified, whether accounts are locked, and for recent security events. Read-only: an agent can never lock, unlock or change anything through Quick 2FA. IP addresses and email addresses are never returned."
+msgstr "Permet à l'agent IA d'un administrateur de demander aux utilisateurs quand ils ont modifié leur mot de passe, effectué leur dernière connexion ou procédé à leur dernière vérification, si leurs comptes sont verrouillés, ainsi que les événements de sécurité récents. En lecture seule : un agent ne peut en aucun cas verrouiller, déverrouiller ou modifier quoi que ce soit via Quick 2FA. Les adresses IP et les adresses e-mail ne sont jamais communiquées."
+
+#: views/settings-page.php:236
+msgid "Needs WordPress 6.9 or later; this site's WordPress has no Abilities API."
+msgstr "Nécessite WordPress 6.9 ou une version ultérieure ; la version de WordPress de ce site ne dispose pas de l'API Abilities."
