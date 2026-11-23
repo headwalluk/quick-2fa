@@ -56,7 +56,7 @@ See [troubleshooting → I am locked out of my own site](troubleshooting.md#i-am
 
 ## Rate limit on sending codes
 
-Separately from wrong codes, each user can be sent at most **3 codes per 15-minute window**, counted from the first code sent. This stops anyone, attacker or confused user, from flooding the user's inbox. Reloading the verification page reuses the current code and doesn't count; the **Resend Code** button always sends a new one and does.
+Separately from wrong codes, each user can be sent at most **3 codes per 15-minute window**, counted from the first code sent. This stops anyone, attacker or confused user, from flooding the user's inbox. Reloading the verification page reuses the current code and doesn't count; the **Resend Code** button always sends a new one and does. Once the limit is reached, the button is hidden until the window ends, but the code box stays, so the last code sent can still be entered.
 
 The limit is per user, not per session, so someone with the password can use up the legitimate user's allowance. That is an accepted trade-off.
 

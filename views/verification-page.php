@@ -51,37 +51,46 @@ if ( $message ) {
 	printf( '<div class="message">%s</div>', esc_html( $message ) );
 }
 
-if ( ! $error || 'rate_limited' !== $error->get_error_code() ) {
-	echo '<form name="q2fa-verify-form" id="loginform" action="" method="post">';
+$quick_2fa_is_rate_limited = $error instanceof WP_Error && 'rate_limited' === $error->get_error_code();
 
+echo '<form name="q2fa-verify-form" id="loginform" action="" method="post">';
+
+printf(
+	'<p>%s<br><br>%s<br><strong>%s</strong><br><br>%s</p>',
+	esc_html__( 'Account Verification Required', 'quick-2fa' ),
+	wp_kses( $verify_intro, \Quick_2FA\get_intro_allowed_html() ),
+	esc_html( \Quick_2FA\mask_email( $user->user_email ) ),
+	esc_html__( 'Please enter the verification code sent to your email.', 'quick-2fa' )
+);
+
+wp_nonce_field( 'quick2fa_verify' );
+
+echo '<p>';
+printf( '<label for="q2fa_code">%s</label>', esc_html__( 'Verification Code:', 'quick-2fa' ) );
+// Any valid length, not the current setting: a code issued before the setting changed must still fit.
+printf(
+	'<input type="text" name="q2fa_code" id="q2fa_code" class="input q2fa-verification-input" pattern="[0-9]{%1$d,%2$d}" maxlength="%2$d" required autocomplete="one-time-code" inputmode="numeric" autofocus>',
+	(int) \Quick_2FA\CODE_LENGTH_MIN,
+	(int) \Quick_2FA\CODE_LENGTH_MAX
+);
+echo '</p>';
+
+if ( $trusted_devices_enabled ) {
+	/* translators: %d: number of days */
+	$quick_2fa_trust_text = _n( 'Trust this device for %d day', 'Trust this device for %d days', $trusted_device_expiry, 'quick-2fa' );
 	printf(
-		'<p>%s<br><br>%s<br><strong>%s</strong><br><br>%s</p>',
-		esc_html__( 'Account Verification Required', 'quick-2fa' ),
-		wp_kses( $verify_intro, \Quick_2FA\get_intro_allowed_html() ),
-		esc_html( \Quick_2FA\mask_email( $user->user_email ) ),
-		esc_html__( 'Please enter the verification code sent to your email.', 'quick-2fa' )
+		'<p class="forgetmenot"><input type="checkbox" name="q2fa_trust_device" id="q2fa_trust_device" value="1"><label for="q2fa_trust_device">%s</label></p>',
+		sprintf( esc_html( $quick_2fa_trust_text ), (int) $trusted_device_expiry )
 	);
+}
 
-	wp_nonce_field( 'quick2fa_verify' );
+printf( '<p class="submit"><input type="submit" name="q2fa_verify" id="wp-submit" class="button button-primary button-large" value="%s"></p>', esc_html_x( 'Verify', 'verb; submit button label', 'quick-2fa' ) );
 
-	echo '<p>';
-	printf( '<label for="q2fa_code">%s</label>', esc_html__( 'Verification Code:', 'quick-2fa' ) );
-	echo '<input type="text" name="q2fa_code" id="q2fa_code" class="input q2fa-verification-input" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code" inputmode="numeric" autofocus>';
-	echo '</p>';
+echo '</form>';
 
-	if ( $trusted_devices_enabled ) {
-		/* translators: %d: number of days */
-		$quick_2fa_trust_text = _n( 'Trust this device for %d day', 'Trust this device for %d days', $trusted_device_expiry, 'quick-2fa' );
-		printf(
-			'<p class="forgetmenot"><input type="checkbox" name="q2fa_trust_device" id="q2fa_trust_device" value="1"><label for="q2fa_trust_device">%s</label></p>',
-			sprintf( esc_html( $quick_2fa_trust_text ), (int) $trusted_device_expiry )
-		);
-	}
-
-	printf( '<p class="submit"><input type="submit" name="q2fa_verify" id="wp-submit" class="button button-primary button-large" value="%s"></p>', esc_html_x( 'Verify', 'verb; submit button label', 'quick-2fa' ) );
-
-	echo '</form>';
-
+if ( $quick_2fa_is_rate_limited ) {
+	// Resending is rate-limited; the error above says so, and the button would only repeat it.
+} else {
 	echo '<form method="post" action="" class="simple">';
 	wp_nonce_field( 'quick2fa_resend' );
 	printf( '<button type="submit" name="q2fa_resend" class="button button-secondary">%s</button>', esc_html__( 'Resend Code', 'quick-2fa' ) );
