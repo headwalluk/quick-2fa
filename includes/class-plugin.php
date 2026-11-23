@@ -235,7 +235,7 @@ class Plugin {
 	}
 
 	/**
-	 * Revoke a user's trusted devices after wp_set_password() changes their password.
+	 * Record a password change made through wp_set_password().
 	 *
 	 * Covers password resets and the password reminder page.
 	 *
@@ -246,12 +246,12 @@ class Plugin {
 	 */
 	public function revoke_devices_on_password_set( mixed $password, mixed $user_id ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- Required by the wp_set_password signature.
 		if ( is_numeric( $user_id ) && (int) $user_id > 0 ) {
-			$this->revoke_devices_after_password_change( (int) $user_id );
+			$this->record_password_change( (int) $user_id );
 		}
 	}
 
 	/**
-	 * Revoke a user's trusted devices when a profile update changed their password.
+	 * Record a password change made through a profile update.
 	 *
 	 * Core's wp_update_user() stores the new hash itself rather than calling wp_set_password(),
 	 * so the profile page and `wp user update --user_pass` only reach this hook.
@@ -265,19 +265,23 @@ class Plugin {
 		$user = is_numeric( $user_id ) ? get_userdata( (int) $user_id ) : false;
 
 		if ( $user instanceof \WP_User && $old_user_data instanceof \WP_User && $user->user_pass !== $old_user_data->user_pass ) {
-			$this->revoke_devices_after_password_change( $user->ID );
+			$this->record_password_change( $user->ID );
 		}
 	}
 
 	/**
-	 * Revoke every trusted device for a user whose password has changed.
+	 * Stamp the password-change time, log the change and revoke every trusted device.
 	 *
 	 * @since 1.6.0
+	 * @since 1.8.0 Stamps and logs the change as well, for every route.
 	 *
 	 * @param int $user_id The user whose password changed.
 	 */
-	private function revoke_devices_after_password_change( int $user_id ): void {
+	private function record_password_change( int $user_id ): void {
+		update_user_meta( $user_id, META_PASSWORD_LAST_CHANGED, time() );
+
 		$security = new Account_Security_Handler( $user_id );
+		$security->log_event( LOG_PASSWORD_CHANGED );
 		$security->clear_trusted_devices(
 			array(
 				'source' => 'password_change',

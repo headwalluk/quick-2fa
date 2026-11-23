@@ -54,7 +54,7 @@ The reminder page tells the user how often to change their password, using the R
 
 Reminders apply to every user who reaches the admin area, whatever the **2FA Mode** and **Protected Roles**, but not while the mode is **Disabled**.
 
-Password age is counted from the last change made **on the reminder page**. Changing the password on the profile page, through a password reset or with `wp user update` doesn't reset it, so the user may still be reminded. A user with no recorded change is counted from their registration date, so when reminders are first switched on, every user registered more than a Reminder Period ago is reminded at their next admin page load.
+Password age is counted from the last change, whichever way it was made: the reminder page, the profile page, a password reset or `wp user update --user_pass`. Changes made before version 1.8.0 were recorded only on the reminder page. A user with no recorded change is counted from their registration date, so when reminders are first switched on, every user registered more than a Reminder Period ago is reminded at their next admin page load.
 
 ## Email Settings
 

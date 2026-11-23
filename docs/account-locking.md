@@ -72,7 +72,7 @@ Each user has a security event log. These events are recorded:
 | `verification_failed` | The user entered a wrong code |
 | `account_locked` | The account was locked, automatically or manually |
 | `account_unlocked` | The account was unlocked |
-| `password_changed` | The user changed their password from the password reminder page |
+| `password_changed` | The user's password was changed: on the reminder page, the profile page, by a reset or with `wp user update` |
 | `password_reminder_dismissed` | The user dismissed the password reminder |
 | `device_revoked` | A trusted device was revoked |
 | `all_devices_revoked` | All of the user's trusted devices were revoked |

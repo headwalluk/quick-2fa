@@ -149,12 +149,9 @@ class Password_Reminder_Handler {
 			$current_token = wp_get_session_token();
 			$sessions->destroy_others( $current_token );
 
+			// Plugin::record_password_change() stamps, logs and revokes devices from the wp_set_password hook.
 			wp_set_password( $new_password, $this->user_id );
 			$this->maintain_session( $sessions, $current_token );
-			update_user_meta( $this->user_id, META_PASSWORD_LAST_CHANGED, time() );
-
-			$security = new Account_Security_Handler( $this->user_id );
-			$security->log_event( LOG_PASSWORD_CHANGED );
 		}
 
 		return $result;
