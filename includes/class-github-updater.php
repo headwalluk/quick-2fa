@@ -8,7 +8,8 @@
  *
  *     new My_Plugin\Github_Updater( __FILE__, 'owner/my-plugin', MY_PLUGIN_VERSION, 'my_plugin_updater_enabled' );
  *
- * Each release must attach "<slug>.zip" or "<slug>-<version>.zip".
+ * Each release must attach "<slug>.zip" or "<slug>-<version>.zip", and the main
+ * plugin file must sit at the repository root, where its header is read at the tag.
  *
  * @package Quick_2FA
  * @since 1.0.0
@@ -48,6 +49,20 @@ class Github_Updater {
 	 * @var int
 	 */
 	private const REQUEST_TIMEOUT = 10;
+
+	/**
+	 * Bytes of the released main file read for its header, as get_file_data() does.
+	 *
+	 * @var int
+	 */
+	private const HEADER_BYTES = 8 * KB_IN_BYTES;
+
+	/**
+	 * User agent sent to GitHub, in place of core's, which names the site's URL.
+	 *
+	 * @var string
+	 */
+	private const USER_AGENT = 'WordPress';
 
 	/**
 	 * Absolute path to the main plugin file.
@@ -111,6 +126,8 @@ class Github_Updater {
 		$this->enabled_filter  = $enabled_filter;
 
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
+		add_filter( 'site_transient_update_plugins', array( $this, 'withdraw_offer_when_disabled' ) );
+		add_filter( 'auto_update_plugin', array( $this, 'block_incompatible_auto_update' ), PHP_INT_MAX, 2 );
 		add_filter( 'plugins_api', array( $this, 'plugin_info' ), 10, 3 );
 		add_action( 'upgrader_process_complete', array( $this, 'clear_cache' ), 10, 2 );
 	}
@@ -180,16 +197,67 @@ class Github_Updater {
 			} else {
 				$this->log( 'check_for_update: update available ' . $installed_version . ' → ' . $release['version'] . '.' );
 				$transient->response[ $this->plugin_basename ] = (object) array(
-					'slug'        => $this->plugin_slug,
-					'plugin'      => $this->plugin_basename,
-					'new_version' => $release['version'],
-					'url'         => $release['html_url'],
-					'package'     => $release['zip_url'],
+					'slug'         => $this->plugin_slug,
+					'plugin'       => $this->plugin_basename,
+					'new_version'  => $release['version'],
+					'url'          => $release['html_url'],
+					'package'      => $release['zip_url'],
+					'requires'     => $release['requires'],
+					'requires_php' => $release['requires_php'],
 				);
 			}
 		}
 
 		return $transient;
+	}
+
+	/**
+	 * Hide this plugin's stored update offer while the updater is disabled.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @param mixed $transient The update_plugins transient as read.
+	 * @return mixed The transient, without this plugin's offer when disabled.
+	 */
+	public function withdraw_offer_when_disabled( mixed $transient ): mixed {
+		// An offer stored before the filter was switched off survives until the next check, up to 12 hours.
+		if (
+			is_object( $transient ) &&
+			isset( $transient->response ) &&
+			is_array( $transient->response ) &&
+			isset( $transient->response[ $this->plugin_basename ] ) &&
+			! $this->is_enabled()
+		) {
+			unset( $transient->response[ $this->plugin_basename ] );
+		}
+
+		return $transient;
+	}
+
+	/**
+	 * Refuse a background auto-update whose release needs a newer WordPress or PHP.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @param mixed $update Whether to auto-update, or null to defer to the site's setting.
+	 * @param mixed $item   The update offer.
+	 * @return mixed False for this plugin's incompatible offer, otherwise $update unchanged.
+	 */
+	public function block_incompatible_auto_update( mixed $update, mixed $item ): mixed {
+		// Core's automatic updater checks only requires_php, and its single upgrade() skips the WordPress check.
+		$item_basename = is_object( $item ) ? ( $item->plugin ?? '' ) : '';
+
+		if ( $item_basename === $this->plugin_basename ) {
+			$requires     = is_string( $item->requires ?? null ) ? $item->requires : '';
+			$requires_php = is_string( $item->requires_php ?? null ) ? $item->requires_php : '';
+
+			if ( ! is_wp_version_compatible( $requires ) || ! is_php_version_compatible( $requires_php ) ) {
+				$this->log( 'block_incompatible_auto_update: release needs WordPress ' . $requires . ', PHP ' . $requires_php . '; auto-update refused.' );
+				$update = false;
+			}
+		}
+
+		return $update;
 	}
 
 	/**
@@ -248,8 +316,8 @@ class Github_Updater {
 			$result->version       = $release['version'];
 			$result->author        = $plugin_data['AuthorName'] ?? '';
 			$result->homepage      = $plugin_data['PluginURI'] ?? $release['html_url'];
-			$result->requires      = $plugin_data['RequiresWP'] ?? '';
-			$result->requires_php  = $plugin_data['RequiresPHP'] ?? '';
+			$result->requires      = $release['requires'];
+			$result->requires_php  = $release['requires_php'];
 			$result->downloaded    = 0;
 			$result->last_updated  = $release['published_at'] ?? '';
 			$result->download_link = $release['zip_url'];
@@ -300,7 +368,8 @@ class Github_Updater {
 		$failure_key = self::get_cache_key( $this->plugin_slug, 'failed' );
 		$cached      = get_transient( $release_key );
 
-		if ( is_array( $cached ) ) {
+		// A cache entry from a version that didn't record requirements counts as a miss.
+		if ( is_array( $cached ) && array_key_exists( 'requires_php', $cached ) ) {
 			$this->log( 'get_latest_release: using cached release data.' );
 			$release = $cached;
 		} elseif ( false !== get_transient( $failure_key ) ) {
@@ -337,8 +406,9 @@ class Github_Updater {
 		$response = wp_remote_get(
 			$url,
 			array(
-				'timeout' => self::REQUEST_TIMEOUT,
-				'headers' => array(
+				'timeout'    => self::REQUEST_TIMEOUT,
+				'user-agent' => self::USER_AGENT,
+				'headers'    => array(
 					'Accept' => 'application/vnd.github.v3+json',
 				),
 			)
@@ -367,27 +437,106 @@ class Github_Updater {
 	 * @since 1.3.0
 	 *
 	 * @param array $body Decoded GitHub release API response.
-	 * @return array|null Release data, or null if it carries no usable ZIP asset.
+	 * @return array|null Release data, or null if it has no usable ZIP asset or readable header.
 	 */
 	private function build_release( array $body ): ?array {
-		$release = null;
-		$zip_url = $this->find_zip_asset( $body );
+		$release     = null;
+		$tag_name    = (string) $body['tag_name'];
+		$tag_version = ltrim( $tag_name, 'v' );
+		$zip_url     = $this->find_zip_asset( $body );
+		$header      = '' === $zip_url ? null : $this->request_release_header( $tag_name );
 
 		if ( '' === $zip_url ) {
-			$this->log_error( 'build_release: no matching .zip asset for tag ' . $body['tag_name'] . '.' );
+			$this->log_error( 'build_release: no matching .zip asset for tag ' . $tag_name . '.' );
+		} elseif ( null === $header ) {
+			// request_release_header() has logged why.
+		} elseif ( $tag_version !== $header['version'] ) {
+			$this->log_error( 'build_release: tag ' . $tag_name . ' does not match the released header Version ' . $header['version'] . '.' );
 		} else {
-			$this->log( 'build_release: found release ' . $body['tag_name'] . '.' );
+			$this->log( 'build_release: found release ' . $tag_name . ' (requires WordPress ' . $header['requires'] . ', PHP ' . $header['requires_php'] . ').' );
 
 			$release = array(
-				'version'      => ltrim( (string) $body['tag_name'], 'v' ),
+				'version'      => $tag_version,
 				'zip_url'      => $zip_url,
 				'html_url'     => $body['html_url'] ?? '',
 				'body'         => $body['body'] ?? '',
 				'published_at' => $body['published_at'] ?? '',
+				'requires'     => $header['requires'],
+				'requires_php' => $header['requires_php'],
 			);
 		}
 
 		return $release;
+	}
+
+	/**
+	 * Read the main plugin file's header at a release tag, logging every failure.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @param string $tag_name The release's git tag.
+	 * @return array|null Header fields (version, requires, requires_php), or null on failure.
+	 */
+	private function request_release_header( string $tag_name ): ?array {
+		$header = null;
+		$url    = sprintf(
+			'https://raw.githubusercontent.com/%s/%s/%s',
+			$this->github_repo,
+			rawurlencode( $tag_name ),
+			rawurlencode( basename( $this->plugin_file ) )
+		);
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout'             => self::REQUEST_TIMEOUT,
+				'user-agent'          => self::USER_AGENT,
+				'limit_response_size' => self::HEADER_BYTES,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			$this->log_error( 'request_release_header: HTTP request to ' . $url . ' failed — ' . $response->get_error_message() );
+		} elseif ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			$this->log_error( 'request_release_header: GitHub returned HTTP ' . wp_remote_retrieve_response_code( $response ) . ' for ' . $url . '.' );
+		} else {
+			$header = $this->parse_plugin_header( wp_remote_retrieve_body( $response ) );
+
+			if ( '' === $header['version'] ) {
+				$this->log_error( 'request_release_header: no Version header in ' . $url . '.' );
+				$header = null;
+			}
+		}
+
+		return $header;
+	}
+
+	/**
+	 * Extract the version and requirement fields from a plugin file's header comment.
+	 *
+	 * @since 1.7.1
+	 *
+	 * @param string $contents The start of the main plugin file.
+	 * @return array{version: string, requires: string, requires_php: string} Each field, or '' when absent.
+	 */
+	private function parse_plugin_header( string $contents ): array {
+		$header_names = array(
+			'version'      => 'Version',
+			'requires'     => 'Requires at least',
+			'requires_php' => 'Requires PHP',
+		);
+		$header       = array();
+		$contents     = str_replace( "\r", "\n", substr( $contents, 0, self::HEADER_BYTES ) );
+
+		foreach ( $header_names as $field => $header_name ) {
+			// The same pattern and comment clean-up as core's get_file_data().
+			$pattern          = '/^(?:[ \t]*<\?(?:php)?)?[ \t\/*#@]*' . preg_quote( $header_name, '/' ) . ':(.*)$/mi';
+			$header[ $field ] = 1 === preg_match( $pattern, $contents, $matches )
+				? trim( preg_replace( '/\s*(?:\*\/|\?>).*/', '', $matches[1] ) )
+				: '';
+		}
+
+		return $header;
 	}
 
 	/**

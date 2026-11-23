@@ -116,7 +116,7 @@ Everything Quick 2FA stores stays on your site, in the places listed above. Of i
 
 Verification codes and trusted-device tokens are stored only as hashes. The raw device token lives only in a secure cookie in the user's browser.
 
-Nothing is sent to an external service. The only outbound request is the GitHub updater checking `api.github.com/repos/headwalluk/quick-2fa/releases/latest`, at most every 12 hours; turn it off with the `quick2fa_updater_enabled` [filter](developers/hooks-and-filters.md).
+Nothing about your site or its users is sent to an external service. The only outbound requests are the GitHub updater checking `api.github.com/repos/headwalluk/quick-2fa/releases/latest`, and reading the released `quick-2fa.php` header from `raw.githubusercontent.com` for its PHP and WordPress requirements, at most every 12 hours. Both send a plain `WordPress` user agent, not WordPress's default, which names the site's URL; GitHub sees only the server's IP address. Turn the updater off with the `quick2fa_updater_enabled` [filter](developers/hooks-and-filters.md).
 
 ## Deactivating and deleting the plugin
 

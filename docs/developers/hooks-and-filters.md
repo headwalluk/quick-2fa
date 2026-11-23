@@ -109,7 +109,7 @@ Disable the in-plugin GitHub auto-updater. Useful for staging environments, loca
 **Parameters:**
 - `bool $enabled` — `true` by default
 
-**Returns:** `bool` — Return `false` to disable update checks.
+**Returns:** `bool` — Return `false` to disable update checks. An update already found is withdrawn at once, so it is neither listed nor auto-installed.
 
 ```php
 // Disable updates on staging

@@ -8,7 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- **Background auto-updates could install a release that needs a newer PHP or WordPress than the site has.** The updater didn't tell WordPress the new release's requirements, so WordPress's own checks only caught it on a manual update, after downloading the zip. The updater now reads `Requires PHP` and `Requires at least` from the released `quick-2fa.php` header at the release tag, and passes them to WordPress, which marks an incompatible update as such. WordPress's background auto-updater checks only the PHP requirement, so the updater also refuses an auto-update whose release needs a newer WordPress. The *View details* panel shows the new release's requirements, not the installed version's. A release whose header can't be read, or whose `Version:` disagrees with its tag, is rejected and logged. Cached release data from earlier versions is refreshed on the next check.
+- **Switching the updater off with `quick2fa_updater_enabled` didn't withdraw an update already offered.** An offer found before the filter was added stayed in WordPress's update list for up to 12 hours, and a background auto-update could still install it. The offer is now hidden as soon as the filter returns false.
+- **Update checks sent the site's address to GitHub.** WordPress's default user agent names the site's URL. Both updater requests now send a plain `WordPress` user agent.
 - An invalid stored setting was written to the PHP error log several times in one request, once for each setting saved during it. It is now logged once per request.
+
+### Security
+
+- The release workflow pins each GitHub Action to a commit SHA instead of a movable tag, so a moved or compromised tag can't publish an altered `quick-2fa.zip`. It no longer leaves its token in the checkout, and fails rather than publishing a release with a zip missing. `softprops/action-gh-release` moves from v1 to v3.0.4 and `actions/checkout` from v4 to v7.0.1; the unused build-artifact uploads are gone.
 
 ## [1.7.0] — 2026-11-15
 

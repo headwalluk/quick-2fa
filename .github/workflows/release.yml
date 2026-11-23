@@ -13,8 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Third-party actions are pinned to a commit SHA, with the release it is as a comment.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Get version from tag
         id: get_version
@@ -69,21 +72,10 @@ jobs:
           cp quick-2fa-${{ steps.get_version.outputs.version }}.zip quick-2fa.zip
           cd ..
 
-      - name: Upload versioned zip as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: quick-2fa-${{ steps.get_version.outputs.version }}
-          path: build/quick-2fa-${{ steps.get_version.outputs.version }}.zip
-
-      - name: Upload generic zip as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: quick-2fa
-          path: build/quick-2fa.zip
-
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
+          fail_on_unmatched_files: true
           files: |
             build/quick-2fa-${{ steps.get_version.outputs.version }}.zip
             build/quick-2fa.zip
@@ -99,5 +91,3 @@ jobs:
             See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/master/CHANGELOG.md) for full release notes.
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
