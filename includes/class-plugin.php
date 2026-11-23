@@ -692,7 +692,28 @@ class Plugin {
 			);
 		}
 
-		$handler        = new Password_Reminder_Handler( $user_id );
+		$security = new Account_Security_Handler( $user_id );
+		$handler  = new Password_Reminder_Handler( $user_id );
+
+		// This page is a step after verification: it applies the admin gate itself,
+		// since admin_init doesn't fire on wp-login.php.
+		if ( $security->is_locked() ) {
+			wp_logout();
+			wp_die(
+				esc_html( $this->get_lockout_message( $user_id, $security ) ),
+				esc_html__( 'Account Locked', 'quick-2fa' ),
+				array( 'response' => 403 )
+			);
+		} elseif ( $this->user_needs_verification() ) {
+			wp_safe_redirect( get_verify_url() );
+			exit();
+		} elseif ( ! $handler->needs_reminder() ) {
+			wp_safe_redirect( get_return_url( $user_id ) );
+			exit();
+		} else {
+			// Verified, unlocked and due a reminder; render the page.
+		}
+
 		$days_since     = $handler->get_password_age();
 		$new_password   = $handler->generate_strong_password();
 		$password_intro = get_password_intro();

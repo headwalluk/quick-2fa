@@ -43,7 +43,7 @@ When the user lands on `wp-login.php?q2fa=verify`:
 3. The plain code is emailed to the user via `wp_mail()`
 4. User submits the code → `Verification_Code_Handler::verify()` checks against the stored hash
 5. On success → the current login session is marked as verified → if trusted devices are enabled, the device-trust cookie is set (see [trusted devices](trusted-devices.md)) → the return URL is read from its transient → redirect
-6. On the next admin page load, the password reminder check runs, and may redirect to `wp-login.php?q2fa=password`
+6. On the next admin page load, the password reminder check runs, and may redirect to `wp-login.php?q2fa=password`. That page makes the admin checks itself: a locked account is refused, a session that hasn't verified is sent to the code page, and a user with no reminder due is sent back
 
 ## What gets protected
 
