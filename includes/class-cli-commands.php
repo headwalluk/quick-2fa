@@ -50,9 +50,11 @@ class CLI_Commands {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		$this->lock_user( $user->ID, 'manual_lock' );
-
-		\WP_CLI::success( sprintf( "User '%s' has been locked out and all sessions terminated.", $user->user_login ) );
+		if ( $this->lock_user( $user->ID, 'manual_lock' ) ) {
+			\WP_CLI::success( sprintf( "User '%s' has been locked out and all sessions terminated.", $user->user_login ) );
+		} else {
+			\WP_CLI::error( sprintf( "User '%s' could not be locked: the lock wasn't saved. Their sessions were still ended.", $user->user_login ) );
+		}
 	}
 
 	/**
@@ -81,9 +83,11 @@ class CLI_Commands {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		$this->unlock_user( $user->ID, 'manual_unlock' );
-
-		\WP_CLI::success( sprintf( "User '%s' has been unlocked.", $user->user_login ) );
+		if ( $this->unlock_user( $user->ID, 'manual_unlock' ) ) {
+			\WP_CLI::success( sprintf( "User '%s' has been unlocked.", $user->user_login ) );
+		} else {
+			\WP_CLI::error( sprintf( "User '%s' could not be unlocked: the lock couldn't be removed.", $user->user_login ) );
+		}
 	}
 
 	/**
@@ -143,8 +147,9 @@ class CLI_Commands {
 		);
 		$user_ids   = $user_query->get_results();
 
-		$locked_count   = 0;
-		$excluded_count = 0;
+		$locked_count    = 0;
+		$excluded_count  = 0;
+		$failed_user_ids = array();
 
 		foreach ( $user_ids as $user_id ) {
 			if ( $excluded_user_id > 0 && (int) $user_id === $excluded_user_id ) {
@@ -152,8 +157,15 @@ class CLI_Commands {
 				continue;
 			}
 
-			$this->lock_user( (int) $user_id, 'emergency_lockdown' );
-			++$locked_count;
+			if ( $this->lock_user( (int) $user_id, 'emergency_lockdown' ) ) {
+				++$locked_count;
+			} else {
+				$failed_user_ids[] = (int) $user_id;
+			}
+		}
+
+		if ( ! empty( $failed_user_ids ) ) {
+			\WP_CLI::warning( sprintf( 'Could not save the lock for %d users (IDs %s). Their sessions were still ended.', count( $failed_user_ids ), implode( ', ', $failed_user_ids ) ) );
 		}
 
 		if ( $excluded_count > 0 ) {
@@ -209,11 +221,19 @@ class CLI_Commands {
 		} else {
 			\WP_CLI::confirm( sprintf( 'Are you sure you want to unlock %d users?', count( $user_ids ) ), $assoc_args );
 
-			$unlocked_count = 0;
+			$unlocked_count  = 0;
+			$failed_user_ids = array();
 
 			foreach ( $user_ids as $user_id ) {
-				$this->unlock_user( (int) $user_id, 'bulk_unlock' );
-				++$unlocked_count;
+				if ( $this->unlock_user( (int) $user_id, 'bulk_unlock' ) ) {
+					++$unlocked_count;
+				} else {
+					$failed_user_ids[] = (int) $user_id;
+				}
+			}
+
+			if ( ! empty( $failed_user_ids ) ) {
+				\WP_CLI::warning( sprintf( 'Could not remove the lock for %d users (IDs %s).', count( $failed_user_ids ), implode( ', ', $failed_user_ids ) ) );
 			}
 
 			\WP_CLI::success( sprintf( 'Unlocked %d users.', $unlocked_count ) );
@@ -469,10 +489,11 @@ class CLI_Commands {
 	 * @since 1.3.0
 	 * @param int    $user_id User to lock.
 	 * @param string $reason  Reason recorded in the event log.
+	 * @return bool True if the lock was saved. Sessions are ended either way.
 	 */
-	private function lock_user( int $user_id, string $reason ): void {
-		$security = new Account_Security_Handler( $user_id );
-		$security->lock_account(
+	private function lock_user( int $user_id, string $reason ): bool {
+		$security  = new Account_Security_Handler( $user_id );
+		$is_locked = $security->lock_account(
 			PERMANENT_LOCK_DURATION,
 			array(
 				'source' => 'wp_cli',
@@ -481,6 +502,8 @@ class CLI_Commands {
 		);
 
 		$this->destroy_all_sessions( $user_id );
+
+		return $is_locked;
 	}
 
 	/**
@@ -489,10 +512,12 @@ class CLI_Commands {
 	 * @since 1.3.0
 	 * @param int    $user_id User to unlock.
 	 * @param string $reason  Reason recorded in the event log.
+	 * @return bool True if the lock was removed.
 	 */
-	private function unlock_user( int $user_id, string $reason ): void {
+	private function unlock_user( int $user_id, string $reason ): bool {
 		$security = new Account_Security_Handler( $user_id );
-		$security->unlock_account(
+
+		return $security->unlock_account(
 			array(
 				'source' => 'wp_cli',
 				'reason' => $reason,

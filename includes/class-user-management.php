@@ -308,8 +308,8 @@ class User_Management {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
-		$security = new Account_Security_Handler( $user_id );
-		$security->lock_account(
+		$security  = new Account_Security_Handler( $user_id );
+		$is_locked = $security->lock_account(
 			PERMANENT_LOCK_DURATION,
 			array(
 				'source'   => 'admin_ui',
@@ -321,16 +321,29 @@ class User_Management {
 		$sessions = \WP_Session_Tokens::get_instance( $user_id );
 		$sessions->destroy_all();
 
-		add_settings_error(
-			'quick2fa_user_management',
-			'user_locked',
-			sprintf(
-				/* translators: %s: Username */
-				__( 'User %s has been locked out.', 'quick-2fa' ),
-				$user->user_login
-			),
-			'success'
-		);
+		if ( $is_locked ) {
+			add_settings_error(
+				'quick2fa_user_management',
+				'user_locked',
+				sprintf(
+					/* translators: %s: Username */
+					__( 'User %s has been locked out.', 'quick-2fa' ),
+					$user->user_login
+				),
+				'success'
+			);
+		} else {
+			add_settings_error(
+				'quick2fa_user_management',
+				'user_lock_failed',
+				sprintf(
+					/* translators: %s: Username */
+					__( 'User %s could not be locked out, because the lock could not be saved. Their sessions have been ended. Please try again.', 'quick-2fa' ),
+					$user->user_login
+				),
+				'error'
+			);
+		}
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 
 		wp_safe_redirect( $this->get_redirect_url() );
@@ -359,8 +372,8 @@ class User_Management {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
-		$security = new Account_Security_Handler( $user_id );
-		$security->unlock_account(
+		$security    = new Account_Security_Handler( $user_id );
+		$is_unlocked = $security->unlock_account(
 			array(
 				'source'   => 'admin_ui',
 				'reason'   => 'manual_unlock',
@@ -368,16 +381,29 @@ class User_Management {
 			)
 		);
 
-		add_settings_error(
-			'quick2fa_user_management',
-			'user_unlocked',
-			sprintf(
-				/* translators: %s: Username */
-				__( 'User %s has been unlocked.', 'quick-2fa' ),
-				$user->user_login
-			),
-			'success'
-		);
+		if ( $is_unlocked ) {
+			add_settings_error(
+				'quick2fa_user_management',
+				'user_unlocked',
+				sprintf(
+					/* translators: %s: Username */
+					__( 'User %s has been unlocked.', 'quick-2fa' ),
+					$user->user_login
+				),
+				'success'
+			);
+		} else {
+			add_settings_error(
+				'quick2fa_user_management',
+				'user_unlock_failed',
+				sprintf(
+					/* translators: %s: Username */
+					__( 'User %s could not be unlocked, because the lock could not be removed. Please try again.', 'quick-2fa' ),
+					$user->user_login
+				),
+				'error'
+			);
+		}
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 
 		wp_safe_redirect( $this->get_redirect_url() );

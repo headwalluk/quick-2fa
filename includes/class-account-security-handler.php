@@ -50,14 +50,16 @@ class Account_Security_Handler {
 	 * @return bool True if account is locked.
 	 */
 	public function is_locked(): bool {
-		$locked_until = (int) get_user_meta( $this->user_id, META_LOCKED_UNTIL, true );
+		$stored_value = get_user_meta( $this->user_id, META_LOCKED_UNTIL, true );
+		$locked_until = (int) $stored_value;
 		$is_locked    = false;
 
 		if ( $locked_until > 0 ) {
 			if ( time() >= $locked_until ) {
-				// Lock has elapsed — clear it, so the check is self-healing. The
+				// Lock has elapsed — clear it, so the check is self-healing. Only the value
+				// read here is deleted, so a lock written since then survives. The
 				// failed-attempt count is left as it was; see docs/account-locking.md.
-				$this->clear_lock();
+				$this->clear_lock( (string) $stored_value );
 			} else {
 				$is_locked = true;
 			}
@@ -71,10 +73,12 @@ class Account_Security_Handler {
 	 *
 	 * @since 0.4.0
 	 * @since 1.6.0 Added $context, which is logged and passed to the action.
+	 * @since 1.8.1 Returns whether the lock was saved; on failure nothing is logged as an event and the action doesn't fire.
 	 * @param int|null $duration Lock duration in seconds, or null to use the OPTION_LOCKOUT_DURATION setting.
 	 * @param array    $context  Who or what caused the lock: 'source' and 'reason', plus 'admin_id' from the admin UI.
+	 * @return bool True if the lock is stored.
 	 */
-	public function lock_account( ?int $duration = null, array $context = array() ): void {
+	public function lock_account( ?int $duration = null, array $context = array() ): bool {
 		if ( null === $duration ) {
 			$duration = Plugin::instance()->get_settings()->get_int( OPTION_LOCKOUT_DURATION ) * MINUTE_IN_SECONDS;
 		}
@@ -84,18 +88,27 @@ class Account_Security_Handler {
 		update_user_meta( $this->user_id, META_LOCKED_UNTIL, $locked_until );
 		delete_transient( TRANSIENT_LOCKED_COUNT );
 
-		$this->log_event( LOG_ACCOUNT_LOCKED, array_merge( $context, array( 'locked_until' => $locked_until ) ) );
+		// update_user_meta() returns false for an unchanged value as well as a failure, so read it back.
+		$is_stored = (int) get_user_meta( $this->user_id, META_LOCKED_UNTIL, true ) === $locked_until;
 
-		/**
-		 * Fires after an account is locked, automatically or by hand.
-		 *
-		 * @since 1.6.0
-		 *
-		 * @param int   $user_id      The locked user.
-		 * @param int   $locked_until Unix timestamp the lock ends. A manual lock is set about 200 years ahead.
-		 * @param array $context      Who or what caused the lock: 'source' and 'reason', plus 'admin_id' from the admin UI.
-		 */
-		do_action( 'quick2fa_account_locked', $this->user_id, $locked_until, $context );
+		if ( $is_stored ) {
+			$this->log_event( LOG_ACCOUNT_LOCKED, array_merge( $context, array( 'locked_until' => $locked_until ) ) );
+
+			/**
+			 * Fires after an account is locked, automatically or by hand.
+			 *
+			 * @since 1.6.0
+			 *
+			 * @param int   $user_id      The locked user.
+			 * @param int   $locked_until Unix timestamp the lock ends. A manual lock is set about 200 years ahead.
+			 * @param array $context      Who or what caused the lock: 'source' and 'reason', plus 'admin_id' from the admin UI.
+			 */
+			do_action( 'quick2fa_account_locked', $this->user_id, $locked_until, $context );
+		} else {
+			$this->log_error( sprintf( 'the lock for user %d could not be saved', $this->user_id ) );
+		}
+
+		return $is_stored;
 	}
 
 	/**
@@ -105,34 +118,57 @@ class Account_Security_Handler {
 	 *
 	 * @since 0.4.0
 	 * @since 1.6.0 Added $context; now also resets the failed-attempt count, logs the event and fires the action.
+	 * @since 1.8.1 Returns whether the lock was removed; on failure nothing is logged as an event and the action doesn't fire.
 	 * @param array $context Who unlocked it: 'source' and 'reason', plus 'admin_id' from the admin UI.
+	 * @return bool True if no lock remains.
 	 */
-	public function unlock_account( array $context = array() ): void {
+	public function unlock_account( array $context = array() ): bool {
 		$this->clear_lock();
-		update_user_meta( $this->user_id, META_CODE_ATTEMPTS, 0 );
 
-		$this->log_event( LOG_ACCOUNT_UNLOCKED, $context );
+		$is_removed = '' === get_user_meta( $this->user_id, META_LOCKED_UNTIL, true );
 
-		/**
-		 * Fires after an account is unlocked by hand, from the admin UI or WP-CLI.
-		 *
-		 * Doesn't fire when a timed lock runs out.
-		 *
-		 * @since 1.6.0
-		 *
-		 * @param int   $user_id The unlocked user.
-		 * @param array $context Who unlocked it: 'source' and 'reason', plus 'admin_id' from the admin UI.
-		 */
-		do_action( 'quick2fa_account_unlocked', $this->user_id, $context );
+		if ( $is_removed ) {
+			update_user_meta( $this->user_id, META_CODE_ATTEMPTS, 0 );
+
+			$this->log_event( LOG_ACCOUNT_UNLOCKED, $context );
+
+			/**
+			 * Fires after an account is unlocked by hand, from the admin UI or WP-CLI.
+			 *
+			 * Doesn't fire when a timed lock runs out.
+			 *
+			 * @since 1.6.0
+			 *
+			 * @param int   $user_id The unlocked user.
+			 * @param array $context Who unlocked it: 'source' and 'reason', plus 'admin_id' from the admin UI.
+			 */
+			do_action( 'quick2fa_account_unlocked', $this->user_id, $context );
+		} else {
+			$this->log_error( sprintf( 'the lock for user %d could not be removed', $this->user_id ) );
+		}
+
+		return $is_removed;
+	}
+
+	/**
+	 * Write an error to the PHP error log, whatever WP_DEBUG says.
+	 *
+	 * @since 1.8.1
+	 * @param string $message Message.
+	 */
+	private function log_error( string $message ): void {
+		error_log( __NAMESPACE__ . ' Account_Security_Handler [error]: ' . $message ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Failed lock changes log unconditionally.
 	}
 
 	/**
 	 * Remove the lock timestamp and the cached locked-user count.
 	 *
 	 * @since 1.6.0
+	 * @since 1.8.1 Added $expected_value.
+	 * @param string $expected_value Delete only if the stored value is this; '' deletes any value.
 	 */
-	private function clear_lock(): void {
-		delete_user_meta( $this->user_id, META_LOCKED_UNTIL );
+	private function clear_lock( string $expected_value = '' ): void {
+		delete_user_meta( $this->user_id, META_LOCKED_UNTIL, $expected_value );
 		delete_transient( TRANSIENT_LOCKED_COUNT );
 	}
 

@@ -191,7 +191,7 @@ The same context is written to the account's event log.
 
 ### `quick2fa_account_locked`
 
-Fires after an account is locked, automatically or by hand.
+Fires after an account is locked, automatically or by hand, once the lock is saved. If the lock can't be saved, it doesn't fire, and the failure is written to the PHP error log.
 
 **Parameters:**
 - `int $user_id` — The locked user
@@ -217,7 +217,7 @@ add_action( 'quick2fa_account_locked', function( $user_id, $locked_until, $conte
 
 ### `quick2fa_account_unlocked`
 
-Fires after an account is unlocked by hand, from the admin UI or WP-CLI. It doesn't fire when a timed lock simply runs out.
+Fires after an account is unlocked by hand, from the admin UI or WP-CLI, once the lock is removed. It doesn't fire when a timed lock simply runs out, or when the lock can't be removed.
 
 **Parameters:**
 - `int $user_id` — The unlocked user
