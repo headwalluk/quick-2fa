@@ -272,13 +272,18 @@ function get_current_admin_url(): string {
 	$admin_url   = admin_url();
 	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
-	if ( '' !== $request_uri ) {
-		// Keep only the path and query; the host comes from home_url().
-		$parsed = wp_parse_url( $request_uri );
-		$path   = $parsed['path'] ?? '';
-		$query  = isset( $parsed['query'] ) ? '?' . $parsed['query'] : '';
+	$parsed_request = '' === $request_uri ? false : wp_parse_url( $request_uri );
+	$parsed_admin   = wp_parse_url( $admin_url );
 
-		$admin_url = home_url( $path . $query );
+	if ( is_array( $parsed_request ) && isset( $parsed_request['path'] ) && is_array( $parsed_admin ) && isset( $parsed_admin['scheme'], $parsed_admin['host'] ) ) {
+		// REQUEST_URI's path starts at the web root, so it joins the bare origin, not home_url(),
+		// which would repeat a subdirectory install's path.
+		$origin = $parsed_admin['scheme'] . '://' . $parsed_admin['host'] . ( isset( $parsed_admin['port'] ) ? ':' . $parsed_admin['port'] : '' );
+		$query  = isset( $parsed_request['query'] ) ? '?' . $parsed_request['query'] : '';
+
+		$admin_url = $origin . '/' . ltrim( $parsed_request['path'], '/' ) . $query;
+	} else {
+		// No usable request path; return to the dashboard.
 	}
 
 	return $admin_url;

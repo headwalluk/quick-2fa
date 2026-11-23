@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- **On a site installed in a subfolder, verification sent the user to a page that doesn't exist.** The return address repeated the folder (`/blog/blog/wp-admin/…`). It is now built from the site's own address and the page the user asked for.
 - **The Users screen's *Locked Out* and *Not Locked Out* views, and sorting by *Lock Status*, did nothing** (since 0.6.0). Both views listed every user, and the sort left the order unchanged. They now filter and sort as labelled, and sorting by lock status still lists users who have never been locked.
 - **Codes of any length but 6 couldn't be entered** (since 1.0.0). The code box accepted exactly 6 digits, so on a site with *Code Length* set to anything else, every code was refused by the browser. It now accepts any length from 4 to 10.
 - **Hitting the resend limit hid the code box** (since 1.0.0). A user who requested several codes while waiting for a slow email had no way to enter the one that then arrived. The box now stays, and only the **Resend Code** button is hidden.
