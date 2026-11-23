@@ -60,6 +60,8 @@ Separately from wrong codes, each user can be sent at most **3 codes per 15-minu
 
 The limit is per user, not per session, so someone with the password can use up the legitimate user's allowance. That is an accepted trade-off.
 
+The wrong-code count holds even when guesses arrive at the same moment: each guess takes its own attempt before it is checked, and a code can be used by only one login. The 3-codes limit is looser: requests sent at the same instant can each get a code, so a burst can send one or two more emails than the limit.
+
 ## Event logging
 
 Each user has a security event log. These events are recorded:

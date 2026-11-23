@@ -62,13 +62,17 @@ class Verification_Code_Handler {
 	 * Store hashed verification code.
 	 *
 	 * @since 0.4.0
+	 * @since 1.8.1 Returns the stored hash, which identifies this code to discard_code().
 	 * @param string $code Plain text code.
+	 * @return string The stored hash.
 	 */
-	public function store( string $code ): void {
+	public function store( string $code ): string {
 		$hash = wp_hash_password( $code );
-		update_user_meta( $this->user_id, META_CODE_HASH, $hash );
+
+		// The hash is written last: it is what makes the code live.
 		update_user_meta( $this->user_id, META_CODE_TIMESTAMP, time() );
 		update_user_meta( $this->user_id, META_CODE_ATTEMPTS, 0 );
+		update_user_meta( $this->user_id, META_CODE_HASH, $hash );
 
 		$security = new Account_Security_Handler( $this->user_id );
 		$security->log_event(
@@ -78,6 +82,8 @@ class Verification_Code_Handler {
 				'ip'        => get_ip_address(),
 			)
 		);
+
+		return $hash;
 	}
 
 	/**
@@ -201,7 +207,7 @@ class Verification_Code_Handler {
 				$result = new \WP_Error( 'user_not_found', __( 'User not found.', 'quick-2fa' ) );
 			} else {
 				$code = $this->generate();
-				$this->store( $code );
+				$hash = $this->store( $code );
 
 				$email_handler = new Email_Handler();
 				$send_result   = $email_handler->send_verification_code( $user, $code );
@@ -218,7 +224,7 @@ class Verification_Code_Handler {
 
 				if ( ! $send_result['success'] ) {
 					// Drop the undelivered code, so the next page load sends a fresh one.
-					$this->cleanup();
+					$this->discard_code( $hash );
 
 					$result = new \WP_Error( 'email_failed', $send_result['error'] );
 				}
@@ -285,14 +291,14 @@ class Verification_Code_Handler {
 			);
 		}
 
-		$hash = get_user_meta( $this->user_id, META_CODE_HASH, true );
+		$hash = $this->read_from_database( META_CODE_HASH );
 
-		if ( empty( $hash ) ) {
+		if ( '' === $hash ) {
 			return new \WP_Error( 'no_code', __( 'No verification code found. Please request a new code.', 'quick-2fa' ) );
 		}
 
 		if ( $this->is_expired() ) {
-			$this->cleanup();
+			$this->discard_code( $hash );
 
 			$expiry_minutes = Plugin::instance()->get_settings()->get_int( OPTION_CODE_EXPIRY );
 
@@ -311,9 +317,10 @@ class Verification_Code_Handler {
 			);
 		}
 
-		$attempts = (int) get_user_meta( $this->user_id, META_CODE_ATTEMPTS, true );
+		// Every guess, right or wrong, takes an attempt before the hash is checked.
+		$attempt_number = $this->reserve_attempt();
 
-		if ( $attempts >= RATE_LIMIT_VERIFICATION_MAX ) {
+		if ( 0 === $attempt_number ) {
 			return $this->lock_and_build_error( $security );
 		}
 
@@ -321,18 +328,16 @@ class Verification_Code_Handler {
 		$result = true;
 
 		if ( ! wp_check_password( $code, $hash ) ) {
-			update_user_meta( $this->user_id, META_CODE_ATTEMPTS, $attempts + 1 );
-
 			$security->log_event(
 				LOG_VERIFICATION_FAILED,
 				array(
 					'timestamp' => time(),
 					'ip'        => get_ip_address(),
-					'attempts'  => $attempts + 1,
+					'attempts'  => $attempt_number,
 				)
 			);
 
-			$remaining = RATE_LIMIT_VERIFICATION_MAX - ( $attempts + 1 );
+			$remaining = RATE_LIMIT_VERIFICATION_MAX - $attempt_number;
 
 			if ( $remaining > 0 ) {
 				$result = new \WP_Error(
@@ -346,10 +351,12 @@ class Verification_Code_Handler {
 			} else {
 				$result = $this->lock_and_build_error( $security );
 			}
+		} elseif ( ! $this->discard_code( $hash ) ) {
+			// A simultaneous request with the same code consumed it first.
+			$result = new \WP_Error( 'no_code', __( 'No verification code found. Please request a new code.', 'quick-2fa' ) );
 		} else {
 			update_user_meta( $this->user_id, META_LAST_VERIFIED, time() );
 			$security->mark_current_session_verified();
-			$this->cleanup();
 
 			$security->log_event(
 				LOG_VERIFICATION_SUCCESS,
@@ -364,13 +371,112 @@ class Verification_Code_Handler {
 	}
 
 	/**
-	 * Clean up verification code metadata.
+	 * Take the next verification attempt for the current code.
 	 *
-	 * @since 0.4.0
+	 * The count is advanced with a compare-and-swap, so simultaneous guesses each take
+	 * their own attempt instead of sharing one.
+	 *
+	 * @since 1.8.1
+	 * @return int The attempt number taken (1 to RATE_LIMIT_VERIFICATION_MAX), or 0 if none is left.
 	 */
-	private function cleanup(): void {
-		delete_user_meta( $this->user_id, META_CODE_HASH );
-		delete_user_meta( $this->user_id, META_CODE_TIMESTAMP );
-		delete_user_meta( $this->user_id, META_CODE_ATTEMPTS );
+	private function reserve_attempt(): int {
+		$attempt_number = 0;
+
+		for ( $try_count = 0; $try_count < ATTEMPT_RESERVE_TRIES; ++$try_count ) {
+			$stored_count = $this->read_from_database( META_CODE_ATTEMPTS );
+			$attempts     = (int) $stored_count;
+
+			if ( $attempts >= RATE_LIMIT_VERIFICATION_MAX ) {
+				break;
+			}
+
+			if ( $this->compare_and_set_attempts( $stored_count, $attempts + 1 ) ) {
+				$attempt_number = $attempts + 1;
+				break;
+			}
+		}
+
+		return $attempt_number;
+	}
+
+	/**
+	 * Set the attempt count only if it still holds the value read.
+	 *
+	 * Direct, because update_user_meta() skips the comparison for a previous value PHP
+	 * considers empty, which includes '0'.
+	 *
+	 * @since 1.8.1
+	 * @param string $expected_value The stored value read by read_from_database(), '' for none.
+	 * @param int    $new_count      Count to store.
+	 * @return bool True if this call changed it.
+	 */
+	private function compare_and_set_attempts( string $expected_value, int $new_count ): bool {
+		global $wpdb;
+
+		$is_set = false;
+
+		if ( '' === $expected_value ) {
+			// No row; store() always writes one, so this is state from an older version.
+			$is_set = false !== add_user_meta( $this->user_id, META_CODE_ATTEMPTS, $new_count, true );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Compare-and-swap; the cache is cleared below.
+			$rows_changed = $wpdb->update(
+				$wpdb->usermeta,
+				array( 'meta_value' => (string) $new_count ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Keyed by user ID and meta key.
+				array(
+					'user_id'    => $this->user_id,
+					'meta_key'   => META_CODE_ATTEMPTS, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Keyed by user ID.
+					'meta_value' => $expected_value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- The compare in compare-and-swap.
+				),
+				array( '%s' ),
+				array( '%d', '%s', '%s' )
+			);
+			wp_cache_delete( $this->user_id, 'user_meta' );
+			$is_set = 1 === $rows_changed;
+		}
+
+		return $is_set;
+	}
+
+	/**
+	 * Read one of this user's meta values from the database, not the object cache.
+	 *
+	 * A persistent object cache can briefly hold a value another request has since
+	 * changed, and a compare-and-swap must compare against the stored one.
+	 *
+	 * @since 1.8.1
+	 * @param string $meta_key Meta key.
+	 * @return string The value, or '' if there is none.
+	 */
+	private function read_from_database( string $meta_key ): string {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bypasses the cache on purpose; see above.
+		$value = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id ASC LIMIT 1", $this->user_id, $meta_key ) );
+
+		return is_string( $value ) ? $value : '';
+	}
+
+	/**
+	 * Remove a code, if it is still the stored one, with its timestamp and attempt count.
+	 *
+	 * Deleting by value means only one request can remove a given code, and a newer code
+	 * stored meanwhile is left alone.
+	 *
+	 * @since 1.8.1
+	 * @param string $hash The hash of the code to remove.
+	 * @return bool True if this call removed it.
+	 */
+	private function discard_code( string $hash ): bool {
+		$is_removed = '' !== $hash && delete_user_meta( $this->user_id, META_CODE_HASH, $hash );
+
+		if ( $is_removed ) {
+			delete_user_meta( $this->user_id, META_CODE_TIMESTAMP );
+			delete_user_meta( $this->user_id, META_CODE_ATTEMPTS );
+		} else {
+			// Already removed, or replaced by a newer code; nothing of this code is left.
+		}
+
+		return $is_removed;
 	}
 }

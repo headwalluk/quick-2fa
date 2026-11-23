@@ -140,6 +140,13 @@ const RATE_LIMIT_CODE_GENERATION_WINDOW = 900; // 15 minutes in seconds.
 const RATE_LIMIT_VERIFICATION_MAX       = 5;
 
 /**
+ * How many times reserve_attempt() retries when another request changes the count first.
+ *
+ * @since 1.8.1
+ */
+const ATTEMPT_RESERVE_TRIES = 10;
+
+/**
  * Permanent locks are stored as a lock-until timestamp far enough in the
  * future that it will never be reached. Anything beyond this offset from now
  * is treated as permanent, and reported as "contact your administrator"
