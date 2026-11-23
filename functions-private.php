@@ -40,6 +40,7 @@ function get_default_settings(): array {
 			OPTION_TRUSTED_DEVICE_EXPIRY      => DEFAULT_TRUSTED_DEVICE_EXPIRY,
 			OPTION_LOCKOUT_DURATION           => DEFAULT_LOCKOUT_DURATION,
 			OPTION_DELETE_DATA_ON_UNINSTALL   => DEFAULT_DELETE_DATA_ON_UNINSTALL,
+			OPTION_ABILITIES_ENABLED          => DEFAULT_ABILITIES_ENABLED,
 			OPTION_EMAIL_FROM_NAME            => get_bloginfo( 'name' ),
 			OPTION_EMAIL_FROM_ADDRESS         => (string) get_option( 'admin_email' ),
 			OPTION_EMAIL_SUBJECT              => __( 'Your verification code', 'quick-2fa' ),

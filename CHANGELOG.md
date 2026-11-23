@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **Read-only queries for AI agents, through the WordPress Abilities API (WordPress 6.9+).** An administrator's AI agent can ask when a user last changed their password, logged in or verified, whether an account is locked, which staff have stale passwords or dormant accounts, how Quick 2FA is configured, and for a user's recent security events. Four abilities: `quick-2fa/get-user-security-status`, `quick-2fa/list-user-security`, `quick-2fa/get-configuration` and `quick-2fa/get-security-events`. **Off by default**: turn it on under *AI Agents → Abilities API* on the settings page. Nothing can be changed through them. IP addresses, user agents and email addresses are never returned. Callers need `manage_options`, adjustable with the new `quick2fa_abilities_capability` filter, and a call from a logged-in browser must come from a session that has passed 2FA. See `docs/ai-agents.md` and `docs/developers/abilities.md`.
+
 ### Fixed
 
 - **Background auto-updates could install a release that needs a newer PHP or WordPress than the site has.** The updater didn't tell WordPress the new release's requirements, so WordPress's own checks only caught it on a manual update, after downloading the zip. The updater now reads `Requires PHP` and `Requires at least` from the released `quick-2fa.php` header at the release tag, and passes them to WordPress, which marks an incompatible update as such. WordPress's background auto-updater checks only the PHP requirement, so the updater also refuses an auto-update whose release needs a newer WordPress. The *View details* panel shows the new release's requirements, not the installed version's. A release whose header can't be read, or whose `Version:` disagrees with its tag, is rejected and logged. Cached release data from earlier versions is refreshed on the next check.

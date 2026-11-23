@@ -43,6 +43,14 @@ class Plugin {
 	private User_Management $user_management;
 
 	/**
+	 * Abilities API registration and callbacks.
+	 *
+	 * @since 1.8.0
+	 * @var Abilities
+	 */
+	private Abilities $abilities;
+
+	/**
 	 * Users whose wp_set_password action has fired this request, for revoke_devices_on_profile_update().
 	 *
 	 * @since 1.8.0
@@ -86,6 +94,7 @@ class Plugin {
 	public function run(): void {
 		$settings              = $this->get_settings();
 		$this->user_management = new User_Management();
+		$this->abilities       = new Abilities();
 
 		// Settings: reload validated values after any write, and the settings page.
 		add_action( 'added_option', array( $settings, 'flush_cache' ) );
@@ -112,6 +121,10 @@ class Plugin {
 		add_action( 'admin_enqueue_scripts', array( $this->user_management, 'enqueue_profile_styles' ) );
 		add_action( 'admin_action_quick2fa_revoke_device', array( $this->user_management, 'handle_revoke_device' ) );
 		add_action( 'admin_action_quick2fa_revoke_all_devices', array( $this->user_management, 'handle_revoke_all_devices' ) );
+
+		// Abilities API (WordPress 6.9+): read-only queries, registered only when enabled.
+		add_action( 'wp_abilities_api_categories_init', array( $this->abilities, 'register_category' ) );
+		add_action( 'wp_abilities_api_init', array( $this->abilities, 'register_abilities' ) );
 
 		// Supports MU plugin installation where activation hooks don't fire.
 		add_action( 'admin_init', array( $this, 'check_first_run' ), 1 );
@@ -409,9 +422,10 @@ class Plugin {
 	 * login session is challenged once. See docs/trusted-devices.md.
 	 *
 	 * @since 1.0.0
+	 * @since 1.8.0 Public, for Abilities::check_permission().
 	 * @return bool True if verification is needed.
 	 */
-	private function user_needs_verification(): bool {
+	public function user_needs_verification(): bool {
 		$user_id = get_current_user_id();
 
 		if ( ! $user_id || ! $this->user_role_requires_2fa( $user_id ) ) {
@@ -447,10 +461,11 @@ class Plugin {
 	 * Check if user's role requires 2FA.
 	 *
 	 * @since 1.0.0
+	 * @since 1.8.0 Public, for the Abilities API.
 	 * @param int $user_id User ID.
 	 * @return bool True if user's role requires 2FA.
 	 */
-	private function user_role_requires_2fa( int $user_id ): bool {
+	public function user_role_requires_2fa( int $user_id ): bool {
 		$mode        = $this->get_settings()->get_string( OPTION_MODE );
 		$is_required = false;
 

@@ -33,6 +33,7 @@ require_once QUICK_2FA_PATH . 'includes/class-email-handler.php';
 require_once QUICK_2FA_PATH . 'includes/class-verification-code-handler.php';
 require_once QUICK_2FA_PATH . 'includes/class-password-reminder-handler.php';
 require_once QUICK_2FA_PATH . 'includes/class-user-management.php';
+require_once QUICK_2FA_PATH . 'includes/class-abilities.php';
 require_once QUICK_2FA_PATH . 'includes/class-plugin.php';
 require_once QUICK_2FA_PATH . 'includes/class-settings.php';
 

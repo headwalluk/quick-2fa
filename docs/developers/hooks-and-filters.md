@@ -157,6 +157,26 @@ See [Reading last-login data](extending.md#reading-last-login-data) for the data
 
 ---
 
+### `quick2fa_abilities_capability`
+
+The capability a user needs to run Quick 2FA's [abilities](abilities.md). Applied on every ability call. Only matters when the *Abilities API* setting is on.
+
+**Parameters:**
+- `string $capability` — `'manage_options'` by default
+
+**Returns:** `string` — A capability name. An empty or non-string value falls back to `manage_options`.
+
+```php
+// Only users who can manage other users' roles may query account security
+add_filter( 'quick2fa_abilities_capability', function( $capability ) {
+    return 'promote_users';
+} );
+```
+
+A request from a logged-in browser must also have passed 2FA, whatever the capability. See [Abilities API → Permission](abilities.md#permission).
+
+---
+
 ## Actions
 
 Both lock actions pass a `$context` array saying who or what acted:

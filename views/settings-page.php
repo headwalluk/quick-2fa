@@ -36,6 +36,9 @@
  * @var string $const_option_lockout_duration              OPTION_LOCKOUT_DURATION constant value
  * @var bool   $delete_data_on_uninstall                   Whether uninstalling deletes all plugin data
  * @var string $const_option_delete_data_on_uninstall      OPTION_DELETE_DATA_ON_UNINSTALL constant value
+ * @var bool   $abilities_enabled                          Whether the Abilities API queries are registered
+ * @var bool   $is_abilities_api_available                 Whether this WordPress has the Abilities API (6.9+)
+ * @var string $const_option_abilities_enabled             OPTION_ABILITIES_ENABLED constant value
  * @var string $const_mode_all                      MODE_ALL constant value
  * @var string $const_mode_roles                    MODE_ROLES constant value
  * @var string $const_mode_disabled                 MODE_DISABLED constant value
@@ -215,6 +218,22 @@ printf(
 	esc_attr( $password_reminder_cooldown ),
 	esc_html_x( 'days', 'unit suffix after a number input', 'quick-2fa' ),
 	esc_html__( 'Wait this many days before showing the reminder again if dismissed (1-90 days).', 'quick-2fa' )
+);
+
+echo '</tbody></table>';
+
+// AI Agents Section.
+printf( '<h2>%s</h2>', esc_html__( 'AI Agents', 'quick-2fa' ) );
+echo '<table class="form-table" role="presentation"><tbody>';
+
+printf(
+	'<tr><th scope="row"><label for="quick2fa_abilities_enabled">%s</label></th><td><label><input type="checkbox" name="%s" id="quick2fa_abilities_enabled" value="1" %s> %s</label><p class="description">%s</p>%s</td></tr>',
+	esc_html__( 'Abilities API', 'quick-2fa' ),
+	esc_attr( $const_option_abilities_enabled ),
+	checked( $abilities_enabled, true, false ),
+	esc_html__( 'Let AI agents query account security', 'quick-2fa' ),
+	esc_html__( 'Lets an administrator\'s AI agent ask when users last changed their password, logged in or verified, whether accounts are locked, and for recent security events. Read-only: an agent can never lock, unlock or change anything through Quick 2FA. IP addresses and email addresses are never returned.', 'quick-2fa' ),
+	$is_abilities_api_available ? '' : sprintf( '<p class="description">%s</p>', esc_html__( 'Needs WordPress 6.9 or later; this site\'s WordPress has no Abilities API.', 'quick-2fa' ) )
 );
 
 echo '</tbody></table>';

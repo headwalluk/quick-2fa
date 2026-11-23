@@ -23,7 +23,7 @@ plugin-neutral where it already is, and if the pattern itself changes, update th
 
 ## Testing
 
-Eight harnesses live in `dev-notes/testing/`, one per class or helper file. Run each with
+Nine harnesses live in `dev-notes/testing/`, one per class or helper file. Run each with
 `wp eval-file wp-content/plugins/quick-2fa/dev-notes/testing/<file>.php`. All of them must pass
 before a release and after any change to high-impact code.
 
@@ -43,6 +43,7 @@ before a release and after any change to high-impact code.
 ### Hook Strategy
 
 - **`admin_init` (priority 1)** — check verification before admin area loads. Skips: WP-CLI, AJAX, REST API, cron, XML-RPC, App Passwords, User Switching plugin, and requests already on a `?q2fa=` page.
+- **`wp_abilities_api_categories_init` / `wp_abilities_api_init`** — register the `quick-2fa` category and abilities, when the setting is on. Core fires them only on 6.9+, so nothing else guards the version
 - **`login_init`** — renders 2FA pages when `?q2fa=` query param is present on `wp-login.php`. Always calls `exit()` after rendering.
 - **`wp_authenticate_user`** — blocks locked users at login time.
 
@@ -69,6 +70,7 @@ before a release and after any change to high-impact code.
 | `includes/class-password-reminder-handler.php` | Password age tracking, reminder cooldowns |
 | `includes/class-user-management.php` | Users table UI customization, lock/unlock row actions |
 | `includes/class-cli-commands.php` | WP-CLI commands for lock/unlock/status/emergency-disable |
+| `includes/class-abilities.php` | Four read-only Abilities API queries (WordPress 6.9+), registered only with `OPTION_ABILITIES_ENABLED` on. Reads stored meta directly: `get_password_age()`, `is_locked()` and `is_device_trusted()` all write |
 | `includes/class-github-updater.php` | In-plugin updater, and the canonical copy every public Headwall plugin ports. Fixes go here first. Must not name Quick 2FA outside its `namespace` and `@package` lines; `dev-notes/testing/test-github-updater.php` fails if it does |
 
 ### Data Storage
@@ -108,6 +110,7 @@ The skill's `public-contracts.md` has the rules. Quick 2FA's contracts:
 | Script and style handles | `quick-2fa-login`, `quick-2fa-password-page`, `quick-2fa-settings`, `quick-2fa-profile` |
 | Login page URLs | `wp-login.php?q2fa=verify`, `?q2fa=password` (`QUERY_PARAM`, `ACTION_*`) |
 | WP-CLI commands | `wp quick-2fa lock-all`. 1.3.0 renamed five with no aliases |
+| Abilities | `quick-2fa/get-user-security-status` and the other three, with their input and output field names (`docs/developers/abilities.md`) |
 
 - `_quick2fa_last_login` is the one stored key documented as readable by outside code
 - `quick_2fa_updater_enabled` is the one filter without the `quick2fa_` prefix, and it is deprecated in favour of `quick2fa_updater_enabled`, bridged by `apply_deprecated_updater_filter()`
@@ -120,6 +123,7 @@ These paths decide who gets into an account:
 - `Verification_Code_Handler::store()` and `verify()`
 - `Plugin::check_verification()`, `Plugin::user_needs_verification()` and `should_skip_check()`
 - Locking: `Account_Security_Handler::lock_account()` and `is_locked()`, and `Plugin::check_lockout_on_login()`
+- `Abilities::check_permission()`: who can read every user's security state. Capability, plus a verified session for cookie-authenticated calls
 - Device trust and session verification: `Account_Security_Handler::trust_device()`, `is_device_trusted()`, `clear_trusted_devices()`, `mark_current_session_verified()` and `get_current_session_verified_time()`, and the password-change revocation in `Plugin::revoke_devices_on_password_set()` and `revoke_devices_on_profile_update()`
 - `Password_Reminder_Handler::update_password()` and `maintain_session()`
 - `Settings::load()` and its rules table: they decide the mode, the protected roles and every duration the paths above use

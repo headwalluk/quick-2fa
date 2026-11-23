@@ -69,6 +69,14 @@ Leave any of the three blank to use its default. An address that isn't valid is 
 Email is sent with `wp_mail()`, so it goes out however your site sends mail: an SMTP plugin, a transactional email service or the server's own mail system. If users aren't receiving codes, check your `wp_mail()` setup first; see [troubleshooting](troubleshooting.md#users-arent-receiving-verification-codes).
 
 
+## AI agents
+
+| Setting page label | Option | Default | What it does |
+|--------------------|--------|---------|--------------|
+| Abilities API | `quick2fa_abilities_enabled` | Off | Lets an administrator's AI agent query account security through the WordPress Abilities API (WordPress 6.9+). Read-only |
+
+See [AI agents](ai-agents.md) for what an agent can ask and what is never returned.
+
 ## Uninstall
 
 | Setting page label | Option | Default | What it does |

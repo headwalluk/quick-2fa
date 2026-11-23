@@ -8,12 +8,14 @@ Lightweight email-based two-factor authentication for WordPress admin access.
 - [Configuration](configuration.md) — Every setting explained
 - [Trusted devices](trusted-devices.md) — How device trust works, expiry, revocation
 - [Account locking](account-locking.md) — Automatic and manual locks, emergency lockdown, the event log
+- [AI agents](ai-agents.md) — Letting an AI agent query account security, read-only
 - [WP-CLI reference](wp-cli.md) — Full command list
 - [Troubleshooting](troubleshooting.md) — Common issues and how to recover
 
 ## For developers
 
 - [Hooks and filters](developers/hooks-and-filters.md) — The public extension surface
+- [Abilities API](developers/abilities.md) — The four read-only abilities: names, inputs and outputs
 - [Extending Quick 2FA](developers/extending.md) — Practical recipes (custom intro, custom passwords, disabling auto-updates, reading last-login data)
 
 ## Need to escalate?

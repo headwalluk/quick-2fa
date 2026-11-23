@@ -59,6 +59,7 @@ const OPTION_LOCKOUT_DURATION           = 'quick2fa_lockout_duration';
 const OPTION_LAST_LOGIN_SINCE           = 'quick2fa_last_login_since';
 const OPTION_VERSION                    = 'quick2fa_version';
 const OPTION_DELETE_DATA_ON_UNINSTALL   = 'quick2fa_delete_data_on_uninstall';
+const OPTION_ABILITIES_ENABLED          = 'quick2fa_abilities_enabled';
 
 /**
  * Prefixes shared by every option and user meta key the plugin stores.
@@ -264,6 +265,26 @@ const LOG_ALL_DEVICES_REVOKED         = 'all_devices_revoked';
 const LOG_MAX_ENTRIES = 50;
 
 /**
+ * Abilities API: category, ability names and query bounds.
+ *
+ * The names are public contracts; see docs/developers/abilities.md.
+ *
+ * @since 1.8.0
+ */
+const ABILITY_CATEGORY                  = 'quick-2fa';
+const ABILITY_GET_USER_SECURITY_STATUS  = 'quick-2fa/get-user-security-status';
+const ABILITY_LIST_USER_SECURITY        = 'quick-2fa/list-user-security';
+const ABILITY_GET_CONFIGURATION         = 'quick-2fa/get-configuration';
+const ABILITY_GET_SECURITY_EVENTS       = 'quick-2fa/get-security-events';
+const ABILITIES_DEFAULT_CAPABILITY      = 'manage_options';
+const ABILITIES_STAFF_CAPABILITY        = 'edit_posts';
+const ABILITIES_LIST_LIMIT_DEFAULT      = 50;
+const ABILITIES_LIST_LIMIT_MAX          = 200;
+const ABILITIES_LIST_SCAN_MAX           = 1000;
+const ABILITIES_EVENTS_LIMIT_DEFAULT    = 20;
+const ABILITIES_EVENT_REASON_MAX_LENGTH = 200;
+
+/**
  * GitHub updater.
  *
  * @since 1.0.0
@@ -302,3 +323,4 @@ const DEFAULT_DISABLE_TRUSTED_DEVICES  = false;
 const DEFAULT_TRUSTED_DEVICE_EXPIRY    = 30;
 const DEFAULT_LOCKOUT_DURATION         = 60;
 const DEFAULT_DELETE_DATA_ON_UNINSTALL = false;
+const DEFAULT_ABILITIES_ENABLED        = false;

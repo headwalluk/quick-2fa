@@ -16,6 +16,7 @@ Lightweight email-based two-factor authentication for WordPress admin access.
 - Password reminders to nudge users towards regular password rotation
 - Last-login tracking for every user — a record WordPress core does not keep, recorded passively outside the 2FA flow
 - Comprehensive WP-CLI commands for incident response and recovery
+- Read-only queries for AI agents through the WordPress Abilities API (opt-in, WordPress 6.9+)
 - Non-breaking by design — REST API, WP-CLI, AJAX, cron, XML-RPC, and Application Passwords all bypass 2FA so existing integrations keep working
 
 ## Install
@@ -57,9 +58,11 @@ Full user and developer documentation lives in [`docs/`](docs/):
 - [Configuration](docs/configuration.md)
 - [Trusted devices](docs/trusted-devices.md)
 - [Account locking](docs/account-locking.md)
+- [AI agents](docs/ai-agents.md)
 - [WP-CLI reference](docs/wp-cli.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Hooks and filters](docs/developers/hooks-and-filters.md) *(for developers)*
+- [Abilities API](docs/developers/abilities.md) *(for developers)*
 - [Extending Quick 2FA](docs/developers/extending.md) *(for developers)*
 
 ## Security disclosures

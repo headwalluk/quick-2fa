@@ -280,6 +280,11 @@ class Settings {
 					'validate' => fn( mixed $value ): ?bool => $this->validate_boolean( $value ),
 					'sanitize' => 'sanitize_checkbox',
 				),
+				OPTION_ABILITIES_ENABLED          => array(
+					'type'     => 'boolean',
+					'validate' => fn( mixed $value ): ?bool => $this->validate_boolean( $value ),
+					'sanitize' => 'sanitize_checkbox',
+				),
 			);
 		}
 
@@ -635,6 +640,8 @@ class Settings {
 		$trusted_device_expiry      = $this->get_int( OPTION_TRUSTED_DEVICE_EXPIRY );
 		$lockout_duration           = $this->get_int( OPTION_LOCKOUT_DURATION );
 		$delete_data_on_uninstall   = $this->get_bool( OPTION_DELETE_DATA_ON_UNINSTALL );
+		$abilities_enabled          = $this->get_bool( OPTION_ABILITIES_ENABLED );
+		$is_abilities_api_available = function_exists( 'wp_register_ability' );
 
 		$wp_roles  = wp_roles();
 		$all_roles = $wp_roles->get_names();
@@ -655,6 +662,7 @@ class Settings {
 		$const_option_trusted_device_expiry      = OPTION_TRUSTED_DEVICE_EXPIRY;
 		$const_option_lockout_duration           = OPTION_LOCKOUT_DURATION;
 		$const_option_delete_data_on_uninstall   = OPTION_DELETE_DATA_ON_UNINSTALL;
+		$const_option_abilities_enabled          = OPTION_ABILITIES_ENABLED;
 		$const_mode_all                          = MODE_ALL;
 		$const_mode_roles                        = MODE_ROLES;
 		$const_mode_disabled                     = MODE_DISABLED;
