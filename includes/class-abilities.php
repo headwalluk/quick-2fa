@@ -550,9 +550,10 @@ class Abilities {
 	}
 
 	/**
-	 * Find a user by ID, email address or login name.
+	 * Find a user of this site by ID, email address or login name.
 	 *
 	 * @since 1.8.0
+	 * @since 1.8.1 On multisite, a user of another site counts as not found, unless the caller can manage network users.
 	 * @param mixed $identifier The identifier from the ability input.
 	 * @return ?\WP_User The user, or null if none matches.
 	 */
@@ -569,7 +570,10 @@ class Abilities {
 			// No usable identifier; $user stays false.
 		}
 
-		return $user instanceof \WP_User ? $user : null;
+		// User lookups are network-wide; a subsite administrator sees only this site's users.
+		$is_visible = $user instanceof \WP_User && ( ! is_multisite() || is_user_member_of_blog( $user->ID ) || current_user_can( 'manage_network_users' ) );
+
+		return $is_visible ? $user : null;
 	}
 
 	/**

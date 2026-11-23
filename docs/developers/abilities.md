@@ -29,7 +29,7 @@ Refusals are `WP_Error`s: `quick2fa_ability_forbidden` (capability) or `quick2fa
 
 ## `quick-2fa/get-user-security-status`
 
-**Input:** `user` (required): an ID, login name or email address. An unknown user is a `quick2fa_user_not_found` error.
+**Input:** `user` (required): an ID, login name or email address. An unknown user is a `quick2fa_user_not_found` error. On multisite, so is a user who isn't a member of the current site, unless the caller can `manage_network_users`.
 
 **Output:** one user record.
 
