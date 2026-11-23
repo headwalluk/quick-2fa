@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- **The password reminder page accepted passwords WordPress can't use.** A password over 4,096 bytes was saved as a hash nobody could log in with, after the user's other sessions had been ended. It is now refused with a message. A malformed request sending the password field as a list caused a PHP error; it is now treated as an empty password.
+
 ### Security
 
 - **Adding `?q2fa=` to an admin URL skipped 2FA and the account-lock check** (since 1.0.0). Someone who had an account's password, but not its email code, could reach the admin area by opening any admin page with `?q2fa=` added to its address, and a locked account could do the same. The check was meant to stop a redirect loop on the 2FA pages, but those are on `wp-login.php`, where the admin check never runs. It is gone.

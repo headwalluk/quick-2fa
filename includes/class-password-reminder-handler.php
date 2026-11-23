@@ -144,6 +144,8 @@ class Password_Reminder_Handler {
 					PASSWORD_MIN_LENGTH
 				)
 			);
+		} elseif ( strlen( $new_password ) > PASSWORD_MAX_BYTES ) {
+			$result = new \WP_Error( 'password_too_long', __( 'That password is too long. Please choose a shorter one.', 'quick-2fa' ) );
 		} else {
 			$sessions      = \WP_Session_Tokens::get_instance( $this->user_id );
 			$current_token = wp_get_session_token();

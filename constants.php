@@ -324,3 +324,10 @@ const DEFAULT_TRUSTED_DEVICE_EXPIRY    = 30;
 const DEFAULT_LOCKOUT_DURATION         = 60;
 const DEFAULT_DELETE_DATA_ON_UNINSTALL = false;
 const DEFAULT_ABILITIES_ENABLED        = false;
+
+/**
+ * Longest password WordPress can hash, in bytes; wp_hash_password() returns an unusable '*' above it.
+ *
+ * @since 1.8.1
+ */
+const PASSWORD_MAX_BYTES = 4096;
