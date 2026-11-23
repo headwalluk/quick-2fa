@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- **The Users screen's *Locked Out* and *Not Locked Out* views, and sorting by *Lock Status*, did nothing** (since 0.6.0). Both views listed every user, and the sort left the order unchanged. They now filter and sort as labelled, and sorting by lock status still lists users who have never been locked.
 - **Codes of any length but 6 couldn't be entered** (since 1.0.0). The code box accepted exactly 6 digits, so on a site with *Code Length* set to anything else, every code was refused by the browser. It now accepts any length from 4 to 10.
 - **Hitting the resend limit hid the code box** (since 1.0.0). A user who requested several codes while waiting for a slow email had no way to enter the one that then arrived. The box now stays, and only the **Resend Code** button is hidden.
 - **The password reminder page accepted passwords WordPress can't use.** A password over 4,096 bytes was saved as a hash nobody could log in with, after the user's other sessions had been ended. It is now refused with a message. A malformed request sending the password field as a list caused a PHP error; it is now treated as an empty password.

@@ -212,6 +212,13 @@ const SORT_KEY_LOCKED    = 'quick2fa_locked';
 const QUERY_ARG_FILTER   = 'quick2fa_filter';
 
 /**
+ * Name of the lock meta clause in the Users list query, which the lock-status sort orders by.
+ *
+ * @since 1.8.1
+ */
+const META_CLAUSE_LOCKED_UNTIL = 'quick2fa_locked_until';
+
+/**
  * Cached count of locked users, for the users-list filter badge.
  *
  * Invalidated by Account_Security_Handler::lock_account() and

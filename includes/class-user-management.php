@@ -104,24 +104,6 @@ class User_Management {
 	}
 
 	/**
-	 * Handle column sorting in users query.
-	 *
-	 * @since 0.6.0
-	 * @param mixed $query User query object.
-	 */
-	public function handle_column_sort( mixed $query ): void {
-		if ( ! $query instanceof \WP_User_Query || ! is_admin() || ! $query->is_main_query() ) {
-			return;
-		}
-
-		$orderby = $query->get( 'orderby' );
-		if ( SORT_KEY_LOCKED === $orderby ) {
-			$query->set( 'meta_key', META_LOCKED_UNTIL );
-			$query->set( 'orderby', 'meta_value_num' );
-		}
-	}
-
-	/**
 	 * Add lock-out filter links to users table.
 	 *
 	 * @since 0.6.0
@@ -167,58 +149,89 @@ class User_Management {
 	}
 
 	/**
-	 * Filter users by lock-out status.
+	 * Apply the lock-status filter and sort to the Users list table's query.
 	 *
-	 * @since 0.6.0
-	 * @param mixed $query User query object.
+	 * @since 1.8.1
+	 * @param mixed $args WP_User_Query arguments for the list table.
+	 * @return mixed Arguments with the filter and sort applied, or $args unchanged if it is not an array.
 	 */
-	public function filter_by_lockout_status( mixed $query ): void {
-		if ( ! $query instanceof \WP_User_Query || ! is_admin() || ! $query->is_main_query() ) {
-			return;
+	public function apply_lock_status_query( mixed $args ): mixed {
+		if ( ! is_array( $args ) ) {
+			return $args;
 		}
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking filter state.
-		$filter = isset( $_GET[ QUERY_ARG_FILTER ] ) ? sanitize_text_field( wp_unslash( $_GET[ QUERY_ARG_FILTER ] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking filter state.
+		$filter     = isset( $_GET[ QUERY_ARG_FILTER ] ) && is_string( $_GET[ QUERY_ARG_FILTER ] ) ? sanitize_key( wp_unslash( $_GET[ QUERY_ARG_FILTER ] ) ) : '';
+		$is_sorted  = isset( $args['orderby'] ) && SORT_KEY_LOCKED === $args['orderby'];
+		$now        = time();
+		$lock_query = array();
 
+		// The sort orders by the named clause. Under OR, only a NOT EXISTS clause's join is
+		// restricted to the lock key, so its column holds the lock time, or NULL when unset.
 		if ( 'locked' === $filter ) {
-			// Show only locked users.
-			$query->set(
-				'meta_query',
-				array(
-					'relation' => 'AND',
-					array(
-						'key'     => META_LOCKED_UNTIL,
-						'compare' => 'EXISTS',
-					),
-					array(
-						'key'     => META_LOCKED_UNTIL,
-						'value'   => time(),
-						'compare' => '>',
-						'type'    => 'NUMERIC',
-					),
-				)
+			$lock_query = array(
+				META_CLAUSE_LOCKED_UNTIL => array(
+					'key'     => META_LOCKED_UNTIL,
+					'value'   => $now,
+					'compare' => '>',
+					'type'    => 'NUMERIC',
+				),
 			);
 		} elseif ( 'unlocked' === $filter ) {
-			// Show only non-locked users.
-			$query->set(
-				'meta_query',
+			$lock_query = array(
+				'relation'               => 'OR',
+				META_CLAUSE_LOCKED_UNTIL => array(
+					'key'     => META_LOCKED_UNTIL,
+					'compare' => 'NOT EXISTS',
+					'type'    => 'NUMERIC',
+				),
 				array(
-					'relation' => 'OR',
-					array(
-						'key'     => META_LOCKED_UNTIL,
-						'compare' => 'NOT EXISTS',
-					),
-					array(
-						'key'     => META_LOCKED_UNTIL,
-						'value'   => time(),
-						'compare' => '<=',
-						'type'    => 'NUMERIC',
-					),
-				)
+					'key'     => META_LOCKED_UNTIL,
+					'value'   => $now,
+					'compare' => '<=',
+					'type'    => 'NUMERIC',
+				),
+			);
+		} elseif ( $is_sorted ) {
+			// Sort only: keep users who have never been locked.
+			$lock_query = array(
+				'relation'               => 'OR',
+				META_CLAUSE_LOCKED_UNTIL => array(
+					'key'     => META_LOCKED_UNTIL,
+					'compare' => 'NOT EXISTS',
+					'type'    => 'NUMERIC',
+				),
+				array(
+					'key'     => META_LOCKED_UNTIL,
+					'compare' => 'EXISTS',
+				),
 			);
 		} else {
-			// No filter, or an unrecognised value; the query is left unchanged.
+			// No filter and no lock-status sort; the query is left unchanged.
 		}
+
+		if ( ! empty( $lock_query ) ) {
+			$existing_meta_query = isset( $args['meta_query'] ) && is_array( $args['meta_query'] ) ? $args['meta_query'] : array();
+
+			if ( ! empty( $existing_meta_query ) ) {
+				$lock_query = array(
+					'relation' => 'AND',
+					$existing_meta_query,
+					$lock_query,
+				);
+			} else {
+				// No conditions from elsewhere to keep.
+			}
+
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- The Users screen filters on lock meta by design.
+			$args['meta_query'] = $lock_query;
+		}
+
+		if ( $is_sorted ) {
+			$args['orderby'] = META_CLAUSE_LOCKED_UNTIL;
+		}
+
+		return $args;
 	}
 
 	/**

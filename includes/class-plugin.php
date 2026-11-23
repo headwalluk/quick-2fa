@@ -108,9 +108,8 @@ class Plugin {
 		add_filter( 'manage_users_columns', array( $this->user_management, 'add_lockout_column' ) );
 		add_action( 'manage_users_custom_column', array( $this->user_management, 'render_lockout_column' ), 10, 3 );
 		add_filter( 'manage_users_sortable_columns', array( $this->user_management, 'make_column_sortable' ) );
-		add_action( 'pre_get_users', array( $this->user_management, 'handle_column_sort' ) );
+		add_filter( 'users_list_table_query_args', array( $this->user_management, 'apply_lock_status_query' ) );
 		add_filter( 'views_users', array( $this->user_management, 'add_lockout_filters' ) );
-		add_action( 'pre_get_users', array( $this->user_management, 'filter_by_lockout_status' ) );
 		add_filter( 'user_row_actions', array( $this->user_management, 'add_lockout_actions' ), 10, 2 );
 		add_action( 'admin_action_quick2fa_lock', array( $this->user_management, 'handle_lock_user' ) );
 		add_action( 'admin_action_quick2fa_unlock', array( $this->user_management, 'handle_unlock_user' ) );
