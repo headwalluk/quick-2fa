@@ -43,6 +43,14 @@ class Plugin {
 	private User_Management $user_management;
 
 	/**
+	 * Users whose wp_set_password action has fired this request, for revoke_devices_on_profile_update().
+	 *
+	 * @since 1.8.0
+	 * @var array<int,bool>
+	 */
+	private array $password_set_user_ids = array();
+
+	/**
 	 * Get single instance of the class.
 	 *
 	 * @since 1.0.0
@@ -110,7 +118,7 @@ class Plugin {
 		add_action( 'admin_init', array( $this, 'check_verification' ), 1 );
 		add_filter( 'wp_authenticate_user', array( $this, 'check_lockout_on_login' ), 10, 1 );
 		add_action( 'wp_login', array( $this, 'record_last_login' ), 10, 2 );
-		add_action( 'wp_set_password', array( $this, 'revoke_devices_on_password_set' ), 10, 2 );
+		add_action( 'wp_set_password', array( $this, 'revoke_devices_on_password_set' ), 10, 3 );
 		add_action( 'profile_update', array( $this, 'revoke_devices_on_profile_update' ), 10, 2 );
 		add_action( 'login_init', array( $this, 'handle_login_actions' ) );
 		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_login_assets' ) );
@@ -235,28 +243,42 @@ class Plugin {
 	}
 
 	/**
-	 * Record a password change made through wp_set_password().
+	 * Record a password change made through wp_set_password(), unless the password is unchanged.
 	 *
-	 * Covers password resets and the password reminder page.
+	 * Covers password resets, the reminder page and, on newer WordPress, wp_update_user().
+	 * Core also fires the action on user creation and when it rehashes a password at login;
+	 * the new password then still matches the old hash, so nothing is recorded.
 	 *
 	 * @since 1.6.0
+	 * @since 1.8.0 Ignores an unchanged password, using $old_user_data (WordPress 6.7+).
 	 *
-	 * @param mixed $password The new plaintext password (unused).
-	 * @param mixed $user_id  The user whose password was set.
+	 * @param mixed $password      The plaintext password just set.
+	 * @param mixed $user_id       The user whose password was set.
+	 * @param mixed $old_user_data The user before the update; absent before WordPress 6.7.
 	 */
-	public function revoke_devices_on_password_set( mixed $password, mixed $user_id ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- Required by the wp_set_password signature.
+	public function revoke_devices_on_password_set( #[\SensitiveParameter] mixed $password, mixed $user_id, mixed $old_user_data = null ): void {
 		if ( is_numeric( $user_id ) && (int) $user_id > 0 ) {
-			$this->record_password_change( (int) $user_id );
+			$user_id = (int) $user_id;
+
+			$this->password_set_user_ids[ $user_id ] = true;
+
+			// Called without a user ID: given one, older wp_check_password() rehashes, firing this action again.
+			$is_password_unchanged = is_string( $password ) && $old_user_data instanceof \WP_User && wp_check_password( $password, $old_user_data->user_pass );
+
+			if ( ! $is_password_unchanged ) {
+				$this->record_password_change( $user_id );
+			}
 		}
 	}
 
 	/**
-	 * Record a password change made through a profile update.
+	 * Record a password change made through a profile update, unless wp_set_password already has.
 	 *
-	 * Core's wp_update_user() stores the new hash itself rather than calling wp_set_password(),
-	 * so the profile page and `wp user update --user_pass` only reach this hook.
+	 * Older WordPress has wp_update_user() store the new hash without firing wp_set_password, so the
+	 * profile page and `wp user update --user_pass` reach only this hook. Newer WordPress fires both.
 	 *
 	 * @since 1.6.0
+	 * @since 1.8.0 Skips a change the wp_set_password action has already handled.
 	 *
 	 * @param mixed $user_id       The updated user.
 	 * @param mixed $old_user_data The user as it was before the update.
@@ -265,7 +287,11 @@ class Plugin {
 		$user = is_numeric( $user_id ) ? get_userdata( (int) $user_id ) : false;
 
 		if ( $user instanceof \WP_User && $old_user_data instanceof \WP_User && $user->user_pass !== $old_user_data->user_pass ) {
-			$this->record_password_change( $user->ID );
+			if ( isset( $this->password_set_user_ids[ $user->ID ] ) ) {
+				unset( $this->password_set_user_ids[ $user->ID ] );
+			} else {
+				$this->record_password_change( $user->ID );
+			}
 		}
 	}
 
