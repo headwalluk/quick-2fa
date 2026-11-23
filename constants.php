@@ -140,11 +140,13 @@ const RATE_LIMIT_CODE_GENERATION_WINDOW = 900; // 15 minutes in seconds.
 const RATE_LIMIT_VERIFICATION_MAX       = 5;
 
 /**
- * How many times reserve_attempt() retries when another request changes the count first.
+ * How many times reserve_attempt() and change_trusted_devices() retry when another
+ * request changes the stored value first.
  *
  * @since 1.8.1
  */
-const ATTEMPT_RESERVE_TRIES = 10;
+const ATTEMPT_RESERVE_TRIES   = 10;
+const DEVICE_LIST_WRITE_TRIES = 10;
 
 /**
  * Permanent locks are stored as a lock-until timestamp far enough in the

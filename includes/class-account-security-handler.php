@@ -296,17 +296,21 @@ class Account_Security_Handler {
 		$is_trusted = false;
 
 		if ( '' !== $key ) {
-			$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
+			$trusted_devices = $this->read_trusted_devices()['devices'];
 
-			if ( is_array( $trusted_devices ) && isset( $trusted_devices[ $key ] ) ) {
+			if ( isset( $trusted_devices[ $key ] ) ) {
 				$expiry = (int) $trusted_devices[ $key ];
 
 				if ( $expiry > time() ) {
 					$is_trusted = true;
 				} else {
 					// Trust expired, clean it up.
-					unset( $trusted_devices[ $key ] );
-					update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
+					$this->change_trusted_devices(
+						static function ( array $devices ) use ( $key ): array {
+							unset( $devices[ $key ] );
+							return $devices;
+						}
+					);
 				}
 			}
 		}
@@ -327,22 +331,21 @@ class Account_Security_Handler {
 	 * @return bool True on success.
 	 */
 	public function trust_device( int $expiry_seconds ): bool {
-		// Prune first, then read: adding to a pre-cleanup snapshot could
-		// resurrect an entry that had just expired.
-		$this->cleanup_expired_devices();
-
-		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
-
-		if ( ! is_array( $trusted_devices ) ) {
-			$trusted_devices = array();
-		}
-
 		$token  = bin2hex( random_bytes( DEVICE_TOKEN_BYTES ) );
 		$key    = hash( 'sha256', $token );
 		$expiry = time() + $expiry_seconds;
 
-		$trusted_devices[ $key ] = $expiry;
-		$is_stored               = update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices ) !== false;
+		// Expired entries are pruned in the same change, so none is written back.
+		$is_stored = $this->change_trusted_devices(
+			static function ( array $devices ) use ( $key, $expiry ): array {
+				$current_time = time();
+				$devices      = array_filter( $devices, static fn( mixed $device_expiry ): bool => (int) $device_expiry >= $current_time );
+
+				$devices[ $key ] = $expiry;
+
+				return $devices;
+			}
+		);
 
 		if ( $is_stored ) {
 			$this->set_device_cookie( $token, $expiry );
@@ -390,25 +393,132 @@ class Account_Security_Handler {
 	 * @return int Number of devices removed.
 	 */
 	public function cleanup_expired_devices(): int {
-		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
-		$removed         = 0;
+		$removed = 0;
 
-		if ( is_array( $trusted_devices ) && ! empty( $trusted_devices ) ) {
-			$current_time = time();
+		$this->change_trusted_devices(
+			static function ( array $devices ) use ( &$removed ): array {
+				$current_time = time();
+				$kept         = array_filter( $devices, static fn( mixed $device_expiry ): bool => (int) $device_expiry >= $current_time );
+				$removed      = count( $devices ) - count( $kept );
 
-			foreach ( $trusted_devices as $device_key => $expiry ) {
-				if ( (int) $expiry < $current_time ) {
-					unset( $trusted_devices[ $device_key ] );
-					++$removed;
-				}
+				return $kept;
+			}
+		);
+
+		return $removed;
+	}
+
+	/**
+	 * Revoke one trusted device by its key.
+	 *
+	 * @since 1.8.1
+	 * @param string $device_key SHA-256 of the device's token.
+	 * @return bool True if the device was in the list and has been removed.
+	 */
+	public function revoke_device( string $device_key ): bool {
+		$was_listed = false;
+
+		$is_saved = $this->change_trusted_devices(
+			static function ( array $devices ) use ( $device_key, &$was_listed ): array {
+				$was_listed = isset( $devices[ $device_key ] );
+				unset( $devices[ $device_key ] );
+
+				return $devices;
+			}
+		);
+
+		return $is_saved && $was_listed;
+	}
+
+	/**
+	 * Read the trusted-device list from the database, not the object cache.
+	 *
+	 * A persistent object cache can briefly hold a list from before a revocation, and
+	 * change_trusted_devices() must compare against the stored row.
+	 *
+	 * @since 1.8.1
+	 * @return array{raw: string, devices: array<string, int>} The stored row ('' for none) and its devices.
+	 */
+	private function read_trusted_devices(): array {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bypasses the cache on purpose; see above.
+		$raw_value = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id ASC LIMIT 1", $this->user_id, META_TRUSTED_DEVICES ) );
+		$raw_value = is_string( $raw_value ) ? $raw_value : '';
+		$devices   = maybe_unserialize( $raw_value );
+
+		return array(
+			'raw'     => $raw_value,
+			'devices' => is_array( $devices ) ? $devices : array(),
+		);
+	}
+
+	/**
+	 * Apply a change to the trusted-device list, writing it only over the row it was read from.
+	 *
+	 * Another request may revoke or add devices between the read and the write. The write
+	 * compares against the row read, and on a mismatch the change is applied again to the
+	 * current list, so a stale copy can never restore a revoked device.
+	 *
+	 * @since 1.8.1
+	 * @param callable $change Receives the current devices, returns the new devices.
+	 * @return bool True once the change is stored.
+	 */
+	private function change_trusted_devices( callable $change ): bool {
+		global $wpdb;
+
+		$is_saved = false;
+
+		for ( $try_count = 0; $try_count < DEVICE_LIST_WRITE_TRIES; ++$try_count ) {
+			$stored      = $this->read_trusted_devices();
+			$new_devices = $change( $stored['devices'] );
+
+			if ( $new_devices === $stored['devices'] ) {
+				$is_saved = true;
+				break;
 			}
 
-			if ( $removed > 0 ) {
-				update_user_meta( $this->user_id, META_TRUSTED_DEVICES, $trusted_devices );
+			if ( '' === $stored['raw'] ) {
+				$rows_changed = false === add_user_meta( $this->user_id, META_TRUSTED_DEVICES, $new_devices, true ) ? 0 : 1;
+			} elseif ( empty( $new_devices ) ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Compare-and-delete; the cache is cleared below.
+				$rows_changed = $wpdb->delete(
+					$wpdb->usermeta,
+					array(
+						'user_id'    => $this->user_id,
+						'meta_key'   => META_TRUSTED_DEVICES, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Keyed by user ID.
+						'meta_value' => $stored['raw'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- The compare in compare-and-delete.
+					),
+					array( '%d', '%s', '%s' )
+				);
+			} else {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Compare-and-swap; the cache is cleared below.
+				$rows_changed = $wpdb->update(
+					$wpdb->usermeta,
+					array( 'meta_value' => maybe_serialize( $new_devices ) ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Keyed by user ID and meta key.
+					array(
+						'user_id'    => $this->user_id,
+						'meta_key'   => META_TRUSTED_DEVICES, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Keyed by user ID.
+						'meta_value' => $stored['raw'], // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- The compare in compare-and-swap.
+					),
+					array( '%s' ),
+					array( '%d', '%s', '%s' )
+				);
+			}
+
+			wp_cache_delete( $this->user_id, 'user_meta' );
+
+			if ( 1 === $rows_changed ) {
+				$is_saved = true;
+				break;
 			}
 		}
 
-		return $removed;
+		if ( ! $is_saved ) {
+			$this->log_error( sprintf( 'the trusted-device list for user %d could not be saved', $this->user_id ) );
+		}
+
+		return $is_saved;
 	}
 
 	/**
@@ -420,9 +530,9 @@ class Account_Security_Handler {
 	 * @return int Number of devices removed.
 	 */
 	public function clear_trusted_devices( array $context = array() ): int {
-		$trusted_devices = get_user_meta( $this->user_id, META_TRUSTED_DEVICES, true );
-		$device_count    = is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
+		$device_count = count( $this->read_trusted_devices()['devices'] );
 
+		// An unconditional delete: a revocation wins over any change in flight.
 		delete_user_meta( $this->user_id, META_TRUSTED_DEVICES );
 
 		if ( $device_count > 0 ) {

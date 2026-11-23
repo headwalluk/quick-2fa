@@ -535,12 +535,6 @@ class User_Management {
 		}
 
 		$security_handler = new Account_Security_Handler( $user->ID );
-		$trusted_devices  = get_user_meta( $user->ID, META_TRUSTED_DEVICES, true );
-
-		if ( ! is_array( $trusted_devices ) ) {
-			$trusted_devices = array();
-		}
-
 		$security_handler->cleanup_expired_devices();
 
 		$trusted_devices = get_user_meta( $user->ID, META_TRUSTED_DEVICES, true );
@@ -599,16 +593,9 @@ class User_Management {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
-		$trusted_devices = get_user_meta( $user_id, META_TRUSTED_DEVICES, true );
-		if ( ! is_array( $trusted_devices ) ) {
-			$trusted_devices = array();
-		}
+		$security = new Account_Security_Handler( $user_id );
 
-		if ( isset( $trusted_devices[ $device_key ] ) ) {
-			unset( $trusted_devices[ $device_key ] );
-			update_user_meta( $user_id, META_TRUSTED_DEVICES, $trusted_devices );
-
-			$security = new Account_Security_Handler( $user_id );
+		if ( $security->revoke_device( $device_key ) ) {
 			$security->log_event(
 				LOG_DEVICE_REVOKED,
 				array(
