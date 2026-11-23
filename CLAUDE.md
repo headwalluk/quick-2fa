@@ -23,7 +23,7 @@ plugin-neutral where it already is, and if the pattern itself changes, update th
 
 ## Testing
 
-Nine harnesses live in `dev-notes/testing/`, one per class or helper file. Run each with
+Ten harnesses live in `dev-notes/testing/`, one per class or helper file, plus `test-http-gates.php`, which sends real requests to the site with a test user's login cookies to cover the gates WP-CLI skips. Run each with
 `wp eval-file wp-content/plugins/quick-2fa/dev-notes/testing/<file>.php`. All of them must pass
 before a release and after any change to high-impact code.
 
@@ -42,7 +42,7 @@ before a release and after any change to high-impact code.
 
 ### Hook Strategy
 
-- **`admin_init` (priority 1)** — check verification before admin area loads. Skips: WP-CLI, AJAX, REST API, cron, XML-RPC, App Passwords, User Switching plugin, and requests already on a `?q2fa=` page.
+- **`admin_init` (priority 1)** — check verification before admin area loads. Skips: WP-CLI, AJAX, REST API, cron, XML-RPC, App Passwords, User Switching plugin and the theme/plugin editor loopback. The 2FA pages are on `wp-login.php`, where `admin_init` never fires, so they need no skip
 - **`wp_abilities_api_categories_init` / `wp_abilities_api_init`** — register the `quick-2fa` category and abilities, when the setting is on. Core fires them only on 6.9+, so nothing else guards the version
 - **`login_init`** — renders 2FA pages when `?q2fa=` query param is present on `wp-login.php`. Always calls `exit()` after rendering.
 - **`wp_authenticate_user`** — blocks locked users at login time.

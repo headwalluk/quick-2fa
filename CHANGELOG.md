@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Security
+
+- **Adding `?q2fa=` to an admin URL skipped 2FA and the account-lock check** (since 1.0.0). Someone who had an account's password, but not its email code, could reach the admin area by opening any admin page with `?q2fa=` added to its address, and a locked account could do the same. The check was meant to stop a redirect loop on the 2FA pages, but those are on `wp-login.php`, where the admin check never runs. It is gone.
+- **Made-up editor-loopback parameters skipped 2FA and the account-lock check** (since 1.3.0). An admin URL carrying `wp_scrape_key` with an empty `wp_scrape_nonce` passed as WordPress's own theme/plugin editor check, because a missing record compared equal to the empty value. The nonce must now match a real, non-empty record that WordPress set.
+
 ## [1.8.0] — 2026-11-23
 
 ### Added

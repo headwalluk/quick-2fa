@@ -199,17 +199,6 @@ function get_password_url(): string {
 }
 
 /**
- * Check if current request is a 2FA page.
- *
- * @since 1.0.0
- * @return bool True if on a 2FA page.
- */
-function is_2fa_page(): bool {
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking if parameter exists.
-	return isset( $_GET[ QUERY_PARAM ] );
-}
-
-/**
  * Whether trusted devices are enabled, reading the disable option as a boolean.
  *
  * @since 1.4.0
@@ -343,13 +332,15 @@ function is_editor_loopback_request(): bool {
 	$is_loopback = false;
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Validated against core's transient below.
-	if ( isset( $_REQUEST['wp_scrape_key'], $_REQUEST['wp_scrape_nonce'] ) ) {
+	if ( isset( $_REQUEST['wp_scrape_key'], $_REQUEST['wp_scrape_nonce'] ) && is_string( $_REQUEST['wp_scrape_key'] ) && is_string( $_REQUEST['wp_scrape_nonce'] ) ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Validated against core's transient below.
 		$scrape_key = substr( sanitize_key( wp_unslash( $_REQUEST['wp_scrape_key'] ) ), 0, 32 );
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Compared as a string to core's transient below.
-		$scrape_nonce = (string) wp_unslash( $_REQUEST['wp_scrape_nonce'] );
+		$scrape_nonce   = wp_unslash( $_REQUEST['wp_scrape_nonce'] );
+		$expected_nonce = '' === $scrape_key ? false : get_transient( 'scrape_key_' . $scrape_key );
 
-		$is_loopback = (string) get_transient( 'scrape_key_' . $scrape_key ) === $scrape_nonce;
+		// A missing transient is false; it must never match an empty nonce.
+		$is_loopback = is_string( $expected_nonce ) && '' !== $expected_nonce && hash_equals( $expected_nonce, $scrape_nonce );
 	}
 
 	return $is_loopback;
@@ -383,9 +374,6 @@ function should_skip_check(): bool {
 	} elseif ( function_exists( 'current_user_switched' ) && current_user_switched() ) {
 		// User Switching plugin: the switch is admin-initiated and already authenticated.
 		$skip_reason = 'user-switching';
-	} elseif ( is_2fa_page() ) {
-		// Already on a 2FA page; redirecting again would loop.
-		$skip_reason = '2fa-page';
 	} elseif ( is_editor_loopback_request() ) {
 		$skip_reason = 'editor-loopback';
 	} elseif ( MODE_DISABLED === Plugin::instance()->get_settings()->get_string( OPTION_MODE ) ) {

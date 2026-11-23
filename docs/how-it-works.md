@@ -24,7 +24,6 @@ admin_init (priority 1)
         │     ├── XML-RPC request? → skip
         │     ├── Application Password auth? → skip
         │     ├── User Switching active? → skip
-        │     ├── already on a ?q2fa= page? → skip (no loops)
         │     ├── theme/plugin editor loopback? → skip
         │     └── plugin in disabled mode? → skip
         │
@@ -65,7 +64,6 @@ The following requests skip the 2FA check entirely. **This is intentional and im
 | XML-RPC (`XMLRPC_REQUEST`) | Legacy integration endpoint, app-level auth |
 | Application Passwords | Already represents an explicit out-of-band credential decision |
 | User Switching plugin | Admin-initiated impersonation, already authenticated as admin |
-| Already on a `?q2fa=` page | Prevents redirect loops |
 | Theme/plugin editor loopback | Core's fatal-error check after a PHP edit loops back with the admin's auth cookie but not the device-trust cookie, so it would otherwise fail the trusted-device check, get redirected to verification, and cause the edit to be reverted. Validated against core's `scrape_key_*` transient so bare query params don't bypass |
 | Plugin mode set to `disabled` | The master off switch — useful as a temporary recovery state (see [configuration](configuration.md#2fa-mode)) |
 
