@@ -502,6 +502,10 @@ class CLI_Commands {
 				)
 			);
 
+			if ( is_wp_error( $device_count ) ) {
+				\WP_CLI::error( sprintf( "Trusted devices for user '%s' could not be cleared: %s", $user->user_login, $device_count->get_error_message() ) );
+			}
+
 			\WP_CLI::success( sprintf( "Cleared %d trusted devices for user '%s'.", $device_count, $user->user_login ) );
 		}
 	}

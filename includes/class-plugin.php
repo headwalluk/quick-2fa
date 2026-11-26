@@ -321,6 +321,8 @@ class Plugin {
 
 		$security = new Account_Security_Handler( $user_id );
 		$security->log_event( LOG_PASSWORD_CHANGED );
+
+		// A revocation that fails is logged as an error by clear_trusted_devices().
 		$security->clear_trusted_devices(
 			array(
 				'source' => 'password_change',

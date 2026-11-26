@@ -644,10 +644,12 @@ class User_Management {
 					'device_key' => $device_key,
 				)
 			);
+			$this->queue_notice( 'success', __( 'The trusted device has been revoked.', 'quick-2fa' ) );
+		} else {
+			$this->queue_notice( 'error', __( 'The trusted device could not be revoked, or had already been removed. Check the list and try again.', 'quick-2fa' ) );
 		}
 
-		$redirect_url = add_query_arg( 'updated', 'true', get_edit_user_link( $user_id ) );
-		wp_safe_redirect( $redirect_url );
+		wp_safe_redirect( get_edit_user_link( $user_id ) );
 		exit();
 	}
 
@@ -673,8 +675,8 @@ class User_Management {
 			wp_die( esc_html__( 'Invalid user.', 'quick-2fa' ) );
 		}
 
-		$security = new Account_Security_Handler( $user_id );
-		$security->clear_trusted_devices(
+		$security     = new Account_Security_Handler( $user_id );
+		$device_count = $security->clear_trusted_devices(
 			array(
 				'source'   => 'admin_ui',
 				'reason'   => 'revoke_all',
@@ -682,8 +684,20 @@ class User_Management {
 			)
 		);
 
-		$redirect_url = add_query_arg( 'updated', 'true', get_edit_user_link( $user_id ) );
-		wp_safe_redirect( $redirect_url );
+		if ( is_wp_error( $device_count ) ) {
+			$this->queue_notice( 'error', $device_count->get_error_message() );
+		} else {
+			$this->queue_notice(
+				'success',
+				sprintf(
+					/* translators: %d: number of trusted devices revoked */
+					_n( '%d trusted device has been revoked.', '%d trusted devices have been revoked.', $device_count, 'quick-2fa' ),
+					$device_count
+				)
+			);
+		}
+
+		wp_safe_redirect( get_edit_user_link( $user_id ) );
 		exit();
 	}
 }

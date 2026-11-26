@@ -635,20 +635,30 @@ class Account_Security_Handler {
 	 *
 	 * @since 0.6.0
 	 * @since 1.6.0 Added $context, logs the event itself, and returns the number of devices removed.
+	 * @since 1.9.0 Returns a WP_Error, logged, if any of the devices is still stored afterwards.
 	 * @param array $context Who or what revoked them: 'source' and 'reason', plus 'admin_id' from the admin UI.
-	 * @return int Number of devices removed.
+	 * @return int|\WP_Error Number of devices removed, or an error if they weren't.
 	 */
-	public function clear_trusted_devices( array $context = array() ): int {
-		$device_count = count( $this->read_trusted_devices()['devices'] );
+	public function clear_trusted_devices( array $context = array() ): int|\WP_Error {
+		$device_keys = array_keys( $this->read_trusted_devices()['devices'] );
 
 		// An unconditional delete: a revocation wins over any change in flight.
 		delete_user_meta( $this->user_id, META_TRUSTED_DEVICES );
 
-		if ( $device_count > 0 ) {
-			$this->log_event( LOG_ALL_DEVICES_REVOKED, array_merge( $context, array( 'device_count' => $device_count ) ) );
+		// A device trusted after the delete is new, so only the revoked keys are checked.
+		$remaining_keys = array_intersect( $device_keys, array_keys( $this->read_trusted_devices()['devices'] ) );
+		$result         = count( $device_keys );
+
+		if ( ! empty( $remaining_keys ) ) {
+			$this->log_error( sprintf( 'the trusted devices for user %d could not be removed', $this->user_id ) );
+			$result = new \WP_Error( 'devices_not_revoked', __( 'The trusted devices could not be removed. Please try again.', 'quick-2fa' ) );
+		} elseif ( $result > 0 ) {
+			$this->log_event( LOG_ALL_DEVICES_REVOKED, array_merge( $context, array( 'device_count' => $result ) ) );
+		} else {
+			// There were none to revoke.
 		}
 
-		return $device_count;
+		return $result;
 	}
 
 	/**

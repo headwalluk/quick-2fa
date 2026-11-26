@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **The Users screen never showed whether Lock Out or Unlock worked** (since 0.6.0). The result was stored for core's settings-page notices, which the Users screen doesn't display, so a lock that failed to save looked the same as one that worked. The result is now kept for the administrator who acted and shown once on the Users or profile screen they return to.
 
+- **A device revocation that failed to save still reported success** (since 0.6.0). `clear_trusted_devices()` ignored the delete's result, so `wp quick-2fa clear-devices` and *Revoke all devices* could confirm a revocation that hadn't happened, and log it as done. It now checks that the revoked devices are gone; if not, it logs an error and returns one, the CLI exits with an error, and the profile screen says so. Revoking one device or all of them now shows its result on the profile screen, in place of core's generic "User updated."
+
 ## [1.8.1] — 2026-11-23
 
 **A security release: update every site.** The first two fixes close ways for someone who has an account's password, but not its email code, to reach the admin area. The fixes come from a code review of 1.8.0.
