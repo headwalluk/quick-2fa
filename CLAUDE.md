@@ -23,7 +23,7 @@ plugin-neutral where it already is, and if the pattern itself changes, update th
 
 ## Testing
 
-Ten harnesses live in `dev-notes/testing/`, one per class or helper file, plus `test-http-gates.php`, which sends real requests to the site with a test user's login cookies to cover the gates WP-CLI skips. Run each with
+Eleven harnesses live in `dev-notes/testing/`, one per class or helper file, plus `test-http-gates.php`, which sends real requests to the site with a test user's login cookies to cover the gates WP-CLI skips. Run each with
 `wp eval-file wp-content/plugins/quick-2fa/dev-notes/testing/<file>.php`. All of them must pass
 before a release and after any change to high-impact code.
 
@@ -138,6 +138,7 @@ wp quick-2fa lock <user>                    # Lock a user account
 wp quick-2fa unlock <user>                  # Unlock a user account
 wp quick-2fa status <user>                  # Check user 2FA status
 wp quick-2fa lock-all --exclude=admin       # Emergency lockdown
+wp quick-2fa lock-all --exclude=admin --dry-run  # Report only; every writing command takes --dry-run
 wp quick-2fa list-locked                    # List all locked users
 wp quick-2fa clear-devices <user>           # Clear trusted devices
 wp quick-2fa emergency-disable --yes        # Disable 2FA entirely

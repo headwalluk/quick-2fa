@@ -28,6 +28,9 @@ class CLI_Commands {
 	 * <user>
 	 * : User ID, login, or email address.
 	 *
+	 * [--dry-run]
+	 * : Report what would be locked, without changing anything.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Lock user by ID
@@ -38,11 +41,16 @@ class CLI_Commands {
 	 *     $ wp quick-2fa lock john_doe
 	 *     Success: User 'john_doe' has been locked out and all sessions terminated.
 	 *
+	 *     # Check first
+	 *     $ wp quick-2fa lock john_doe --dry-run
+	 *     Success: Dry run: would lock user 'john_doe' permanently and end 2 active sessions. Lock status now: Unlocked.
+	 *
 	 * @since 0.6.0
+	 * @since 1.9.0 Added --dry-run.
 	 * @param array $args       Positional arguments.
-	 * @param array $assoc_args Associative arguments (unused, required by WP-CLI).
+	 * @param array $assoc_args Associative arguments.
 	 */
-	public function lock( array $args, array $assoc_args ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WP-CLI signature.
+	public function lock( array $args, array $assoc_args ): void {
 		[$user_identifier] = $args;
 
 		$user = $this->get_user( $user_identifier );
@@ -50,7 +58,16 @@ class CLI_Commands {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		if ( $this->lock_user( $user->ID, 'manual_lock' ) ) {
+		if ( $this->is_dry_run( $assoc_args ) ) {
+			\WP_CLI::success(
+				sprintf(
+					"Dry run: would lock user '%s' permanently and end %d active sessions. Lock status now: %s.",
+					$user->user_login,
+					count( \WP_Session_Tokens::get_instance( $user->ID )->get_all() ),
+					$this->describe_lock_status( $user->ID )
+				)
+			);
+		} elseif ( $this->lock_user( $user->ID, 'manual_lock' ) ) {
 			\WP_CLI::success( sprintf( "User '%s' has been locked out and all sessions terminated.", $user->user_login ) );
 		} else {
 			\WP_CLI::error( sprintf( "User '%s' could not be locked: the lock wasn't saved. Their sessions were still ended.", $user->user_login ) );
@@ -65,6 +82,9 @@ class CLI_Commands {
 	 * <user>
 	 * : User ID, login, or email address.
 	 *
+	 * [--dry-run]
+	 * : Report what would be unlocked, without changing anything.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Unlock user
@@ -72,10 +92,11 @@ class CLI_Commands {
 	 *     Success: User 'john_doe' has been unlocked.
 	 *
 	 * @since 0.6.0
+	 * @since 1.9.0 Added --dry-run.
 	 * @param array $args       Positional arguments.
-	 * @param array $assoc_args Associative arguments (unused, required by WP-CLI).
+	 * @param array $assoc_args Associative arguments.
 	 */
-	public function unlock( array $args, array $assoc_args ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WP-CLI signature.
+	public function unlock( array $args, array $assoc_args ): void {
 		[$user_identifier] = $args;
 
 		$user = $this->get_user( $user_identifier );
@@ -83,7 +104,15 @@ class CLI_Commands {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		if ( $this->unlock_user( $user->ID, 'manual_unlock' ) ) {
+		if ( $this->is_dry_run( $assoc_args ) ) {
+			\WP_CLI::success(
+				sprintf(
+					"Dry run: would unlock user '%s' and reset its failed-attempt count. Lock status now: %s.",
+					$user->user_login,
+					$this->describe_lock_status( $user->ID )
+				)
+			);
+		} elseif ( $this->unlock_user( $user->ID, 'manual_unlock' ) ) {
 			\WP_CLI::success( sprintf( "User '%s' has been unlocked.", $user->user_login ) );
 		} else {
 			\WP_CLI::error( sprintf( "User '%s' could not be unlocked: the lock couldn't be removed.", $user->user_login ) );
@@ -101,6 +130,9 @@ class CLI_Commands {
 	 * [--yes]
 	 * : Skip confirmation prompt.
 	 *
+	 * [--dry-run]
+	 * : Report how many users would be locked, without asking or changing anything.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Lock all users except admin
@@ -112,13 +144,19 @@ class CLI_Commands {
 	 *     Are you sure you want to lock ALL users? [y/n] y
 	 *     Success: Locked 143 users.
 	 *
+	 *     # Check the exclusion before locking anyone
+	 *     $ wp quick-2fa lock-all --exclude=admin --dry-run
+	 *     Success: Dry run: would lock 142 users and end their sessions. Would exclude user 1 ('admin').
+	 *
 	 * @subcommand lock-all
 	 *
 	 * @since 0.6.0
+	 * @since 1.9.0 Added --dry-run.
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
 	public function lock_all( array $args, array $assoc_args ): void {
+		$is_dry_run         = $this->is_dry_run( $assoc_args );
 		$exclude            = $assoc_args['exclude'] ?? null;
 		$excluded_user_id   = 0;
 		$excluded_user_name = '';
@@ -134,7 +172,9 @@ class CLI_Commands {
 			$excluded_user_name = $excluded_user->user_login;
 		}
 
-		if ( $excluded_user_id > 0 ) {
+		if ( $is_dry_run ) {
+			// No prompt: a dry run changes nothing.
+		} elseif ( $excluded_user_id > 0 ) {
 			\WP_CLI::confirm( sprintf( "Are you sure you want to lock ALL users except '%s'?", $excluded_user_name ), $assoc_args );
 		} else {
 			\WP_CLI::confirm( 'Are you sure you want to lock ALL users?', $assoc_args );
@@ -157,7 +197,9 @@ class CLI_Commands {
 				continue;
 			}
 
-			if ( $this->lock_user( (int) $user_id, 'emergency_lockdown' ) ) {
+			if ( $is_dry_run ) {
+				++$locked_count;
+			} elseif ( $this->lock_user( (int) $user_id, 'emergency_lockdown' ) ) {
 				++$locked_count;
 			} else {
 				$failed_user_ids[] = (int) $user_id;
@@ -168,7 +210,11 @@ class CLI_Commands {
 			\WP_CLI::warning( sprintf( 'Could not save the lock for %d users (IDs %s). Their sessions were still ended.', count( $failed_user_ids ), implode( ', ', $failed_user_ids ) ) );
 		}
 
-		if ( $excluded_count > 0 ) {
+		if ( $is_dry_run && $excluded_count > 0 ) {
+			\WP_CLI::success( sprintf( "Dry run: would lock %d users and end their sessions. Would exclude user %d ('%s').", $locked_count, $excluded_user_id, $excluded_user_name ) );
+		} elseif ( $is_dry_run ) {
+			\WP_CLI::success( sprintf( 'Dry run: would lock %d users and end their sessions.', $locked_count ) );
+		} elseif ( $excluded_count > 0 ) {
 			\WP_CLI::success( sprintf( 'Locked %d users. Excluded %d user.', $locked_count, $excluded_count ) );
 		} else {
 			\WP_CLI::success( sprintf( 'Locked %d users.', $locked_count ) );
@@ -183,15 +229,22 @@ class CLI_Commands {
 	 * [--yes]
 	 * : Skip confirmation prompt.
 	 *
+	 * [--dry-run]
+	 * : List the users who would be unlocked, without asking or changing anything.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp quick-2fa unlock-all
 	 *     Are you sure you want to unlock 23 users? [y/n] y
 	 *     Success: Unlocked 23 users.
 	 *
+	 *     $ wp quick-2fa unlock-all --dry-run
+	 *     Success: Dry run: would unlock 2 users (IDs 42, 73).
+	 *
 	 * @subcommand unlock-all
 	 *
 	 * @since 0.6.0
+	 * @since 1.9.0 Added --dry-run.
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Associative arguments.
 	 */
@@ -218,6 +271,8 @@ class CLI_Commands {
 
 		if ( empty( $user_ids ) ) {
 			\WP_CLI::warning( 'No locked users found.' );
+		} elseif ( $this->is_dry_run( $assoc_args ) ) {
+			\WP_CLI::success( sprintf( 'Dry run: would unlock %d users (IDs %s).', count( $user_ids ), implode( ', ', array_map( 'intval', $user_ids ) ) ) );
 		} else {
 			\WP_CLI::confirm( sprintf( 'Are you sure you want to unlock %d users?', count( $user_ids ) ), $assoc_args );
 
@@ -284,24 +339,12 @@ class CLI_Commands {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		$security = new Account_Security_Handler( $user->ID );
-		$locked   = $security->is_locked();
-		if ( $locked ) {
-			$locked_until = (int) get_user_meta( $user->ID, META_LOCKED_UNTIL, true );
-			if ( $locked_until > time() + PERMANENT_LOCK_THRESHOLD ) {
-				$lock_status = 'Locked (permanent)';
-			} else {
-				$lock_status = sprintf( 'Locked until %s', wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $locked_until ) );
-			}
-		} else {
-			$lock_status = 'Unlocked';
-		}
+		$lock_status = $this->describe_lock_status( $user->ID );
 
 		$last_verified         = (int) get_user_meta( $user->ID, META_LAST_VERIFIED, true );
 		$last_verified_display = $last_verified > 0 ? human_time_diff( $last_verified ) . ' ago' : 'Never';
 
-		$trusted_devices       = get_user_meta( $user->ID, META_TRUSTED_DEVICES, true );
-		$trusted_devices_count = is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
+		$trusted_devices_count = $this->count_trusted_devices( $user->ID );
 
 		$failed_attempts = (int) get_user_meta( $user->ID, META_CODE_ATTEMPTS, true );
 		$status          = array(
@@ -422,18 +465,25 @@ class CLI_Commands {
 	 * <user>
 	 * : User ID, login, or email address.
 	 *
+	 * [--dry-run]
+	 * : Report how many devices would be cleared, without changing anything.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp quick-2fa clear-devices admin
 	 *     Success: Cleared 3 trusted devices for user 'admin'.
 	 *
+	 *     $ wp quick-2fa clear-devices admin --dry-run
+	 *     Success: Dry run: would clear 3 trusted devices for user 'admin'.
+	 *
 	 * @subcommand clear-devices
 	 *
 	 * @since 0.6.0
+	 * @since 1.9.0 Added --dry-run.
 	 * @param array $args       Positional arguments.
-	 * @param array $assoc_args Associative arguments (unused, required by WP-CLI).
+	 * @param array $assoc_args Associative arguments.
 	 */
-	public function clear_devices( array $args, array $assoc_args ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Required by WP-CLI signature.
+	public function clear_devices( array $args, array $assoc_args ): void {
 		[$user_identifier] = $args;
 
 		$user = $this->get_user( $user_identifier );
@@ -441,15 +491,19 @@ class CLI_Commands {
 			\WP_CLI::error( $user->get_error_message() );
 		}
 
-		$security     = new Account_Security_Handler( $user->ID );
-		$device_count = $security->clear_trusted_devices(
-			array(
-				'source' => 'wp_cli',
-				'reason' => 'clear_devices',
-			)
-		);
+		if ( $this->is_dry_run( $assoc_args ) ) {
+			\WP_CLI::success( sprintf( "Dry run: would clear %d trusted devices for user '%s'.", $this->count_trusted_devices( $user->ID ), $user->user_login ) );
+		} else {
+			$security     = new Account_Security_Handler( $user->ID );
+			$device_count = $security->clear_trusted_devices(
+				array(
+					'source' => 'wp_cli',
+					'reason' => 'clear_devices',
+				)
+			);
 
-		\WP_CLI::success( sprintf( "Cleared %d trusted devices for user '%s'.", $device_count, $user->user_login ) );
+			\WP_CLI::success( sprintf( "Cleared %d trusted devices for user '%s'.", $device_count, $user->user_login ) );
+		}
 	}
 
 	/**
@@ -481,6 +535,54 @@ class CLI_Commands {
 		}
 
 		return $user;
+	}
+
+	/**
+	 * Whether --dry-run was passed.
+	 *
+	 * @since 1.9.0
+	 * @param array $assoc_args Associative arguments.
+	 * @return bool True for a dry run.
+	 */
+	private function is_dry_run( array $assoc_args ): bool {
+		return (bool) \WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run', false );
+	}
+
+	/**
+	 * Describe a user's lock state: unlocked, locked until a time, or permanent.
+	 *
+	 * @since 1.9.0
+	 * @param int $user_id User ID.
+	 * @return string Lock state for display.
+	 */
+	private function describe_lock_status( int $user_id ): string {
+		$security    = new Account_Security_Handler( $user_id );
+		$lock_status = 'Unlocked';
+
+		if ( $security->is_locked() ) {
+			$locked_until = (int) get_user_meta( $user_id, META_LOCKED_UNTIL, true );
+
+			if ( $locked_until > time() + PERMANENT_LOCK_THRESHOLD ) {
+				$lock_status = 'Locked (permanent)';
+			} else {
+				$lock_status = sprintf( 'Locked until %s', wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $locked_until ) );
+			}
+		}
+
+		return $lock_status;
+	}
+
+	/**
+	 * Count a user's stored trusted devices.
+	 *
+	 * @since 1.9.0
+	 * @param int $user_id User ID.
+	 * @return int Number of devices.
+	 */
+	private function count_trusted_devices( int $user_id ): int {
+		$trusted_devices = get_user_meta( $user_id, META_TRUSTED_DEVICES, true );
+
+		return is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
 	}
 
 	/**
@@ -547,6 +649,9 @@ class CLI_Commands {
 	 * [--yes]
 	 * : Skip confirmation prompt.
 	 *
+	 * [--dry-run]
+	 * : Report the mode change, without asking or changing anything.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Emergency disable with confirmation
@@ -564,6 +669,7 @@ class CLI_Commands {
 	 * @subcommand emergency-disable
 	 *
 	 * @since 0.8.0
+	 * @since 1.9.0 Added --dry-run.
 	 * @param array<string,mixed> $args       Positional arguments.
 	 * @param array<string,mixed> $assoc_args Associative arguments.
 	 */
@@ -572,6 +678,8 @@ class CLI_Commands {
 
 		if ( MODE_DISABLED === $current_mode ) {
 			\WP_CLI::warning( 'Quick 2FA is already in disabled mode.' );
+		} elseif ( $this->is_dry_run( $assoc_args ) ) {
+			\WP_CLI::success( sprintf( "Dry run: would change the mode from '%s' to '%s', turning 2FA off for every user.", $current_mode, MODE_DISABLED ) );
 		} else {
 			\WP_CLI::confirm( 'This will disable Quick 2FA for all users. Continue?', $assoc_args );
 

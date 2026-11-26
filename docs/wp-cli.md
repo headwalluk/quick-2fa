@@ -4,9 +4,11 @@ All commands are namespaced under `wp quick-2fa`. Run `wp help quick-2fa <comman
 
 > The `<user>` argument accepts a numeric user ID, a login (e.g. `john_doe`), or an email address.
 
+Every command that changes something takes `--dry-run` (from 1.9.0): it reports what the command would do, without asking for confirmation and without changing anything.
+
 ## User management
 
-### `lock <user>`
+### `lock <user> [--dry-run]`
 
 Lock a user account permanently and end all of its active sessions.
 
@@ -14,11 +16,12 @@ Lock a user account permanently and end all of its active sessions.
 wp quick-2fa lock 123
 wp quick-2fa lock john_doe
 wp quick-2fa lock john@example.com
+wp quick-2fa lock john_doe --dry-run    # report its lock status and session count
 ```
 
 WP-CLI runs as no particular user, so nothing stops this locking your own account. The admin UI refuses to; the CLI does not.
 
-### `unlock <user>`
+### `unlock <user> [--dry-run]`
 
 Unlock a user account and reset their failed-attempt counter.
 
@@ -26,22 +29,24 @@ Unlock a user account and reset their failed-attempt counter.
 wp quick-2fa unlock 123
 ```
 
-### `lock-all [--exclude=<user>] [--yes]`
+### `lock-all [--exclude=<user>] [--yes] [--dry-run]`
 
 Emergency lockdown — lock every user account at once. **Always use `--exclude` to keep yourself unlocked.**
 
 ```bash
 wp quick-2fa lock-all --exclude=admin
 wp quick-2fa lock-all --exclude=admin --yes    # skip confirmation prompt
+wp quick-2fa lock-all --exclude=admin --dry-run    # check the count and the exclusion first
 ```
 
-### `unlock-all [--yes]`
+### `unlock-all [--yes] [--dry-run]`
 
 Unlock every currently-locked user and reset their failed-attempt counters. Asks for confirmation unless `--yes` is given.
 
 ```bash
 wp quick-2fa unlock-all
 wp quick-2fa unlock-all --yes    # skip confirmation prompt
+wp quick-2fa unlock-all --dry-run    # list the IDs it would unlock
 ```
 
 ### `status <user> [--format=table|json|yaml]`
@@ -64,7 +69,7 @@ wp quick-2fa list-locked --format=csv > locked.csv
 
 ## Trusted devices
 
-### `clear-devices <user>`
+### `clear-devices <user> [--dry-run]`
 
 Remove all trusted device tokens for a user. They'll need to verify on every device on their next login.
 
@@ -74,7 +79,7 @@ wp quick-2fa clear-devices admin
 
 ## Emergency
 
-### `emergency-disable [--yes]`
+### `emergency-disable [--yes] [--dry-run]`
 
 Set Quick 2FA to `disabled` mode, bypassing all 2FA checks. Use this only if you've genuinely locked yourself out and you have no other recovery path.
 
@@ -122,6 +127,7 @@ wp quick-2fa status john_doe   # confirm
 ### Suspected credential leak — lock everyone except yourself
 
 ```bash
+wp quick-2fa lock-all --exclude=your_login --dry-run    # confirm the exclusion is you
 wp quick-2fa lock-all --exclude=your_login
 ```
 

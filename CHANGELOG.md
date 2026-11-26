@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **`--dry-run` on every WP-CLI command that changes something:** `lock`, `unlock`, `lock-all`, `unlock-all`, `clear-devices` and `emergency-disable`. A dry run reports what the command would do (the user's lock status and session count, how many users `lock-all` would lock and who `--exclude` spares, the IDs `unlock-all` would unlock) without asking for confirmation or changing anything.
+
 ### Changed
 
 - **`README.md` is now an introduction and a documentation index.** The feature list, requirements and install steps moved to the new `docs/getting-started.md`.
