@@ -33,9 +33,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # A mismatch here is what produced the permanent phantom "update
-          # available" notice in v1.2.2: the header was bumped, the constant
-          # was not, and the updater compared the constant against the tag.
+          # A header and constant that disagree make the updater advertise
+          # a permanent phantom update, so refuse to build.
           HEADER_VERSION=$(sed -n 's/^ \* Version:[[:space:]]*\(.*\)$/\1/p' quick-2fa.php | head -1 | tr -d '[:space:]')
           CONSTANT_VERSION=$(sed -n "s/^define( 'QUICK_2FA_VERSION', '\(.*\)' );[[:space:]]*$/\1/p" quick-2fa.php | head -1 | tr -d '[:space:]')
 
