@@ -31,7 +31,7 @@ wp quick-2fa unlock 123
 
 ### `lock-all [--exclude=<user>] [--yes] [--dry-run]`
 
-Emergency lockdown — lock every user account at once. **Always use `--exclude` to keep yourself unlocked.**
+Emergency lockdown — lock every user account at once. **Always use `--exclude` to keep yourself unlocked.** If any lock can't be saved, the command still processes every user, then lists the failed IDs and exits with an error, so a script can tell.
 
 ```bash
 wp quick-2fa lock-all --exclude=admin
@@ -41,7 +41,7 @@ wp quick-2fa lock-all --exclude=admin --dry-run    # check the count and the exc
 
 ### `unlock-all [--yes] [--dry-run]`
 
-Unlock every currently-locked user and reset their failed-attempt counters. Asks for confirmation unless `--yes` is given.
+Unlock every currently-locked user and reset their failed-attempt counters. Asks for confirmation unless `--yes` is given. As with `lock-all`, a failure for any user ends in an error listing their IDs.
 
 ```bash
 wp quick-2fa unlock-all
@@ -81,14 +81,14 @@ wp quick-2fa clear-devices admin
 
 ### `emergency-disable [--yes] [--dry-run]`
 
-Set Quick 2FA to `disabled` mode, bypassing all 2FA checks. Use this only if you've genuinely locked yourself out and you have no other recovery path.
+Set Quick 2FA to `disabled` mode, bypassing all 2FA checks. Use this only if you can't complete verification (codes aren't arriving, for example) and have no other recovery path. It doesn't remove account locks: a locked account still can't log in, so unlock it with `wp quick-2fa unlock`.
 
 ```bash
 wp quick-2fa emergency-disable          # asks for confirmation
 wp quick-2fa emergency-disable --yes
 ```
 
-The action is recorded to the PHP error log so it leaves a paper trail. **Re-enable 2FA from the settings page as soon as you've recovered access.**
+The action is recorded to the PHP error log so it leaves a paper trail. If the mode can't be saved, the command says so and exits with an error. **Re-enable 2FA from the settings page as soon as you've recovered access.**
 
 ## Configuration via CLI
 

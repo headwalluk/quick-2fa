@@ -206,14 +206,12 @@ class CLI_Commands {
 			}
 		}
 
-		if ( ! empty( $failed_user_ids ) ) {
-			\WP_CLI::warning( sprintf( 'Could not save the lock for %d users (IDs %s). Their sessions were still ended.', count( $failed_user_ids ), implode( ', ', $failed_user_ids ) ) );
-		}
-
 		if ( $is_dry_run && $excluded_count > 0 ) {
 			\WP_CLI::success( sprintf( "Dry run: would lock %d users and end their sessions. Would exclude user %d ('%s').", $locked_count, $excluded_user_id, $excluded_user_name ) );
 		} elseif ( $is_dry_run ) {
 			\WP_CLI::success( sprintf( 'Dry run: would lock %d users and end their sessions.', $locked_count ) );
+		} elseif ( ! empty( $failed_user_ids ) ) {
+			\WP_CLI::error( sprintf( 'Locked %d users, but could not save the lock for %d (IDs %s). Their sessions were still ended.', $locked_count, count( $failed_user_ids ), implode( ', ', $failed_user_ids ) ) );
 		} elseif ( $excluded_count > 0 ) {
 			\WP_CLI::success( sprintf( 'Locked %d users. Excluded %d user.', $locked_count, $excluded_count ) );
 		} else {
@@ -288,7 +286,7 @@ class CLI_Commands {
 			}
 
 			if ( ! empty( $failed_user_ids ) ) {
-				\WP_CLI::warning( sprintf( 'Could not remove the lock for %d users (IDs %s).', count( $failed_user_ids ), implode( ', ', $failed_user_ids ) ) );
+				\WP_CLI::error( sprintf( 'Unlocked %d users, but could not remove the lock for %d (IDs %s).', $unlocked_count, count( $failed_user_ids ), implode( ', ', $failed_user_ids ) ) );
 			}
 
 			\WP_CLI::success( sprintf( 'Unlocked %d users.', $unlocked_count ) );
@@ -645,8 +643,9 @@ class CLI_Commands {
 	/**
 	 * Emergency disable Quick 2FA across all users.
 	 *
-	 * Sets Quick 2FA to disabled mode, bypassing all 2FA checks. Use this only
-	 * when administrators are locked out and have no other way back in.
+	 * Sets Quick 2FA to disabled mode, bypassing all 2FA checks. Use this only when
+	 * administrators can't complete verification. It doesn't remove account locks:
+	 * a locked account still can't log in, so unlock it with `wp quick-2fa unlock`.
 	 *
 	 * ## OPTIONS
 	 *
@@ -688,6 +687,12 @@ class CLI_Commands {
 			\WP_CLI::confirm( 'This will disable Quick 2FA for all users. Continue?', $assoc_args );
 
 			update_option( OPTION_MODE, MODE_DISABLED );
+
+			// Settings reload after the write, so this reads what was stored.
+			if ( MODE_DISABLED !== Plugin::instance()->get_settings()->get_string( OPTION_MODE ) ) {
+				error_log( '[Quick 2FA] Emergency disable via WP-CLI failed: the mode could not be saved' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- A failed emergency action logs unconditionally.
+				\WP_CLI::error( 'The mode could not be saved, so 2FA is still on. Check the database is writable, or set quick2fa_mode to disabled directly (see the troubleshooting docs).' );
+			}
 
 			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional: emergency action must be logged to server error log.
 				sprintf(

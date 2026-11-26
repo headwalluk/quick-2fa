@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **The password reminder accepted a short password padded with spaces** (since 0.4.0). WordPress trims a password at login and before hashing, but the reminder counted the untrimmed length, so `"abc     "` passed the 8-character minimum while working as `abc`, and a password of only spaces was saved and could never be used. The reminder now trims first, as WordPress's own profile page does.
 
+- **Emergency WP-CLI commands could exit successfully after failing** (since 0.6.0). `lock-all` and `unlock-all` warned about users whose lock couldn't be changed but still ended in success, and `emergency-disable` announced that 2FA was off without checking the mode was saved. All three now exit with an error when a write fails, the bulk commands after processing every user and listing the failed IDs. `emergency-disable`'s help also no longer suggests it gets a locked account back in: it turns 2FA off, but a lock still stops the login, and `wp quick-2fa unlock` removes it.
+
 ## [1.8.1] — 2026-11-23
 
 **A security release: update every site.** The first two fixes close ways for someone who has an account's password, but not its email code, to reach the admin area. The fixes come from a code review of 1.8.0.
