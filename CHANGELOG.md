@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **A device revocation that failed to save still reported success** (since 0.6.0). `clear_trusted_devices()` ignored the delete's result, so `wp quick-2fa clear-devices` and *Revoke all devices* could confirm a revocation that hadn't happened, and log it as done. It now checks that the revoked devices are gone; if not, it logs an error and returns one, the CLI exits with an error, and the profile screen says so. Revoking one device or all of them now shows its result on the profile screen, in place of core's generic "User updated."
 
+- **The password reminder accepted a short password padded with spaces** (since 0.4.0). WordPress trims a password at login and before hashing, but the reminder counted the untrimmed length, so `"abc     "` passed the 8-character minimum while working as `abc`, and a password of only spaces was saved and could never be used. The reminder now trims first, as WordPress's own profile page does.
+
 ## [1.8.1] — 2026-11-23
 
 **A security release: update every site.** The first two fixes close ways for someone who has an account's password, but not its email code, to reach the admin area. The fixes come from a code review of 1.8.0.

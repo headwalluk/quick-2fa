@@ -728,7 +728,7 @@ class Plugin {
 			$error = new \WP_Error( 'invalid_nonce', __( 'Security check failed. Please try again.', 'quick-2fa' ) );
 		} elseif ( $is_update_submit ) {
 			// Unslashed only: sanitising would strip tags, %XX octets and repeated whitespace from the password.
-			$password = isset( $_POST['password'] ) && is_string( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Saved exactly as typed.
+			$password = isset( $_POST['password'] ) && is_string( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Kept as typed; update_password() trims it, as WordPress does.
 			$result   = $handler->update_password( $password );
 
 			if ( is_wp_error( $result ) ) {

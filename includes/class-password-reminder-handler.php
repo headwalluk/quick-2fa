@@ -121,11 +121,14 @@ class Password_Reminder_Handler {
 	 * and destroying all other sessions.
 	 *
 	 * @since 0.4.0
+	 * @since 1.9.0 Trims the password before checking it.
 	 * @param string $new_password New password.
 	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
 	public function update_password( string $new_password ): true|\WP_Error {
-		$result = true;
+		// WordPress trims a password at login and before hashing, so only the trimmed one counts.
+		$new_password = trim( $new_password );
+		$result       = true;
 
 		if ( '' === $new_password ) {
 			$result = new \WP_Error( 'empty_password', __( 'Please enter a password.', 'quick-2fa' ) );
