@@ -57,9 +57,11 @@ class Account_Security_Handler {
 		if ( $locked_until > 0 ) {
 			if ( time() >= $locked_until ) {
 				// Lock has elapsed — clear it, so the check is self-healing. Only the value
-				// read here is deleted, so a lock written since then survives. The
-				// failed-attempt count is left as it was; see docs/account-locking.md.
-				$this->clear_lock( (string) $stored_value );
+				// read here is deleted; if it has changed, a newer lock was written, so read
+				// that instead. The failed-attempt count is left as it was; see docs/account-locking.md.
+				if ( ! $this->clear_expired_lock( (string) $stored_value ) ) {
+					$is_locked = $this->read_locked_until_from_database() > time();
+				}
 			} else {
 				$is_locked = true;
 			}
@@ -161,15 +163,55 @@ class Account_Security_Handler {
 	}
 
 	/**
-	 * Remove the lock timestamp and the cached locked-user count.
+	 * Remove the lock timestamp, whatever it holds, and the cached locked-user count.
 	 *
 	 * @since 1.6.0
-	 * @since 1.8.1 Added $expected_value.
-	 * @param string $expected_value Delete only if the stored value is this; '' deletes any value.
 	 */
-	private function clear_lock( string $expected_value = '' ): void {
-		delete_user_meta( $this->user_id, META_LOCKED_UNTIL, $expected_value );
+	private function clear_lock(): void {
+		delete_user_meta( $this->user_id, META_LOCKED_UNTIL );
 		delete_transient( TRANSIENT_LOCKED_COUNT );
+	}
+
+	/**
+	 * Remove the lock timestamp only if it still holds the expired value read, and the cached locked-user count.
+	 *
+	 * Direct, because delete_user_meta() selects the row by value and then deletes it by ID,
+	 * which removes a lock written to the same row in between.
+	 *
+	 * @since 1.9.0
+	 * @param string $expected_value The expired value read.
+	 * @return bool True if this call removed it.
+	 */
+	private function clear_expired_lock( string $expected_value ): bool {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Compare-and-delete; the cache is cleared below.
+		$rows_deleted = $wpdb->delete(
+			$wpdb->usermeta,
+			array(
+				'user_id'    => $this->user_id,
+				'meta_key'   => META_LOCKED_UNTIL, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Keyed by user ID.
+				'meta_value' => $expected_value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- The compare in compare-and-delete.
+			),
+			array( '%d', '%s', '%s' )
+		);
+		wp_cache_delete( $this->user_id, 'user_meta' );
+		delete_transient( TRANSIENT_LOCKED_COUNT );
+
+		return is_int( $rows_deleted ) && $rows_deleted > 0;
+	}
+
+	/**
+	 * Read the lock timestamp from the database, not the object cache.
+	 *
+	 * @since 1.9.0
+	 * @return int Unix timestamp, or 0 for no lock.
+	 */
+	private function read_locked_until_from_database(): int {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bypasses the cache on purpose; see clear_expired_lock().
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id ASC LIMIT 1", $this->user_id, META_LOCKED_UNTIL ) );
 	}
 
 	/**

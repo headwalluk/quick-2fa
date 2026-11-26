@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **`README.md` is now an introduction and a documentation index.** The feature list, requirements and install steps moved to the new `docs/getting-started.md`.
 
+### Fixed
+
+- **Clearing an elapsed lock could delete a lock written at the same moment** (since 1.8.1, which narrowed but did not close it). WordPress deletes meta by looking up the row by value and then deleting it by ID, so a permanent lock written to the same row between the two steps was removed. The expiry cleanup now deletes with the expired value in the query itself, and if nothing matched it reads the newer lock back before deciding the account is unlocked.
+
 ## [1.8.1] — 2026-11-23
 
 **A security release: update every site.** The first two fixes close ways for someone who has an account's password, but not its email code, to reach the admin area. The fixes come from a code review of 1.8.0.
