@@ -6,69 +6,31 @@
 [![License](https://img.shields.io/badge/license-GPL--2.0+-green.svg)](LICENSE)
 [![Coding Standards](https://img.shields.io/badge/WordPress-Coding%20Standards-blue.svg)](https://github.com/WordPress/WordPress-Coding-Standards)
 
-Lightweight email-based two-factor authentication for WordPress admin access.
+Quick 2FA adds email-based two-factor authentication to the WordPress admin. After logging in, a user is sent a short code by email and must enter it before the admin loads. Trusted devices, account locking after repeated wrong codes, and password-age reminders come with it.
 
-## What it does
-
-- Email-based 2FA verification on every admin login (or only for specific roles)
-- Trusted-device tracking so users aren't asked to verify on every login
-- Account locking after too many failed attempts
-- Password reminders to nudge users towards regular password rotation
-- Last-login tracking for every user — a record WordPress core does not keep, recorded passively outside the 2FA flow
-- Comprehensive WP-CLI commands for incident response and recovery
-- Read-only queries for AI agents through the WordPress Abilities API (opt-in, WordPress 6.9+)
-- Non-breaking by design — REST API, WP-CLI, AJAX, cron, XML-RPC, and Application Passwords all bypass 2FA so existing integrations keep working
-
-## Install
-
-### Standard plugin
-
-1. Download `quick-2fa.zip` from the [latest release](https://github.com/headwalluk/quick-2fa/releases/latest)
-2. WordPress admin → Plugins → Add New → Upload Plugin → choose the zip → Install Now → Activate
-3. *(Optional)* Settings → Quick 2FA to tune the defaults
-
-After install, the plugin will receive future updates automatically via the bundled GitHub updater. No additional configuration needed.
-
-### Must-Use plugin
-
-1. Extract the `quick-2fa` folder into `wp-content/mu-plugins/`
-2. WordPress doesn't load plugins from subfolders of `mu-plugins/`, so create `wp-content/mu-plugins/quick-2fa-loader.php` to load it:
-
-   ```php
-   <?php
-   require_once __DIR__ . '/quick-2fa/quick-2fa.php';
-   ```
-
-3. Defaults are initialised on first admin page load — no activation hook required
-4. Settings → Quick 2FA to configure
-
-WordPress doesn't update must-use plugins, so the bundled updater doesn't apply. Update by replacing the `quick-2fa` folder with the one from a newer release.
-
-### Requirements
-
-- WordPress 6.2 or later
-- PHP 8.2 or later
-- Working `wp_mail()` (any SMTP plugin or transactional email service)
+It is for site owners who want a second factor on admin logins without an authenticator app, a third-party service or changes to how the site's integrations log in. REST API, WP-CLI, AJAX, cron, XML-RPC and Application Passwords requests are left alone.
 
 ## Documentation
 
-Full user and developer documentation lives in [`docs/`](docs/):
+### Site owners
 
-- [How it works](docs/how-it-works.md)
-- [Configuration](docs/configuration.md)
-- [Trusted devices](docs/trusted-devices.md)
-- [Account locking](docs/account-locking.md)
-- [AI agents](docs/ai-agents.md)
-- [WP-CLI reference](docs/wp-cli.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Hooks and filters](docs/developers/hooks-and-filters.md) *(for developers)*
-- [Abilities API](docs/developers/abilities.md) *(for developers)*
-- [Extending Quick 2FA](docs/developers/extending.md) *(for developers)*
+- [Getting started](docs/getting-started.md) — What it does, requirements, and installing it as a plugin or must-use plugin
+- [How it works](docs/how-it-works.md) — Request flow, what gets protected, what bypasses 2FA, where data lives and privacy
+- [Configuration](docs/configuration.md) — Every setting explained
+- [Trusted devices](docs/trusted-devices.md) — How device trust works, expiry, revocation
+- [Account locking](docs/account-locking.md) — Automatic and manual locks, emergency lockdown, the event log
+- [AI agents](docs/ai-agents.md) — Letting an AI agent query account security, read-only
+- [WP-CLI reference](docs/wp-cli.md) — Full command list
+- [Troubleshooting](docs/troubleshooting.md) — Common issues and how to recover
 
-## Security disclosures
+### Developers
 
-See [SECURITY.md](SECURITY.md) for the responsible-disclosure process.
+- [Hooks and filters](docs/developers/hooks-and-filters.md) — The public extension surface
+- [Abilities API](docs/developers/abilities.md) — The four read-only abilities: names, inputs and outputs
+- [Extending Quick 2FA](docs/developers/extending.md) — Practical recipes (custom intro, custom passwords, disabling auto-updates, reading last-login data)
+- [Changelog](CHANGELOG.md) — Every release, with breaking changes stated at the top of their entry
+- [Security policy](SECURITY.md) — How to report a vulnerability
 
-## License
+## Licence
 
 GPL v2 or later. See [LICENSE](LICENSE).
