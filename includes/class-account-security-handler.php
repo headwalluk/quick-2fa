@@ -60,7 +60,7 @@ class Account_Security_Handler {
 				// read here is deleted; if it has changed, a newer lock was written, so read
 				// that instead. The failed-attempt count is left as it was; see docs/account-locking.md.
 				if ( ! $this->clear_expired_lock( (string) $stored_value ) ) {
-					$is_locked = $this->read_locked_until_from_database() > time();
+					$is_locked = (int) $this->read_lock_from_database() > time();
 				}
 			} else {
 				$is_locked = true;
@@ -76,22 +76,21 @@ class Account_Security_Handler {
 	 * @since 0.4.0
 	 * @since 1.6.0 Added $context, which is logged and passed to the action.
 	 * @since 1.8.1 Returns whether the lock was saved; on failure nothing is logged as an event and the action doesn't fire.
+	 * @since 1.9.0 Never shortens a longer lock already stored; the event and action then carry the stored end time.
 	 * @param int|null $duration Lock duration in seconds, or null to use the OPTION_LOCKOUT_DURATION setting.
 	 * @param array    $context  Who or what caused the lock: 'source' and 'reason', plus 'admin_id' from the admin UI.
-	 * @return bool True if the lock is stored.
+	 * @return bool True if a lock lasting at least $duration is stored.
 	 */
 	public function lock_account( ?int $duration = null, array $context = array() ): bool {
 		if ( null === $duration ) {
 			$duration = Plugin::instance()->get_settings()->get_int( OPTION_LOCKOUT_DURATION ) * MINUTE_IN_SECONDS;
 		}
 
-		$locked_until = time() + $duration;
+		$requested_until = time() + $duration;
+		$locked_until    = $this->store_lock_unless_longer( $requested_until );
+		$is_stored       = $locked_until >= $requested_until;
 
-		update_user_meta( $this->user_id, META_LOCKED_UNTIL, $locked_until );
 		delete_transient( TRANSIENT_LOCKED_COUNT );
-
-		// update_user_meta() returns false for an unchanged value as well as a failure, so read it back.
-		$is_stored = (int) get_user_meta( $this->user_id, META_LOCKED_UNTIL, true ) === $locked_until;
 
 		if ( $is_stored ) {
 			$this->log_event( LOG_ACCOUNT_LOCKED, array_merge( $context, array( 'locked_until' => $locked_until ) ) );
@@ -202,16 +201,84 @@ class Account_Security_Handler {
 	}
 
 	/**
-	 * Read the lock timestamp from the database, not the object cache.
+	 * Store a lock ending at $locked_until, unless a lock ending later is already stored.
+	 *
+	 * A compare-and-swap against the stored value, so an automatic lock finishing at the
+	 * same moment as a permanent one can't overwrite it.
 	 *
 	 * @since 1.9.0
-	 * @return int Unix timestamp, or 0 for no lock.
+	 * @param int $locked_until Unix timestamp the new lock ends.
+	 * @return int End time of the lock now stored, or 0 if none could be saved.
 	 */
-	private function read_locked_until_from_database(): int {
+	private function store_lock_unless_longer( int $locked_until ): int {
+		$stored_until = 0;
+
+		for ( $try_count = 0; $try_count < ATTEMPT_RESERVE_TRIES; ++$try_count ) {
+			$stored_value = $this->read_lock_from_database();
+
+			if ( (int) $stored_value >= $locked_until ) {
+				// A longer lock is already in place.
+				$stored_until = (int) $stored_value;
+				break;
+			}
+
+			if ( $this->compare_and_set_lock( $stored_value, $locked_until ) ) {
+				$stored_until = $locked_until;
+				break;
+			}
+		}
+
+		return $stored_until;
+	}
+
+	/**
+	 * Set the lock timestamp only if it still holds the value read.
+	 *
+	 * @since 1.9.0
+	 * @param string $expected_value The stored value read by read_lock_from_database(), '' for none.
+	 * @param int    $locked_until   Timestamp to store.
+	 * @return bool True if this call changed it.
+	 */
+	private function compare_and_set_lock( string $expected_value, int $locked_until ): bool {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bypasses the cache on purpose; see clear_expired_lock().
-		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id ASC LIMIT 1", $this->user_id, META_LOCKED_UNTIL ) );
+		$is_set = false;
+
+		if ( '' === $expected_value ) {
+			$is_set = false !== add_user_meta( $this->user_id, META_LOCKED_UNTIL, $locked_until, true );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Compare-and-swap; the cache is cleared below.
+			$rows_changed = $wpdb->update(
+				$wpdb->usermeta,
+				array( 'meta_value' => (string) $locked_until ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Keyed by user ID and meta key.
+				array(
+					'user_id'    => $this->user_id,
+					'meta_key'   => META_LOCKED_UNTIL, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Keyed by user ID.
+					'meta_value' => $expected_value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- The compare in compare-and-swap.
+				),
+				array( '%s' ),
+				array( '%d', '%s', '%s' )
+			);
+			wp_cache_delete( $this->user_id, 'user_meta' );
+			$is_set = 1 === $rows_changed;
+		}
+
+		return $is_set;
+	}
+
+	/**
+	 * Read the stored lock timestamp from the database, not the object cache.
+	 *
+	 * @since 1.9.0
+	 * @return string The stored value, or '' for no lock.
+	 */
+	private function read_lock_from_database(): string {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bypasses the cache on purpose: the compare-and-swaps above compare against the stored value.
+		$value = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id ASC LIMIT 1", $this->user_id, META_LOCKED_UNTIL ) );
+
+		return is_string( $value ) ? $value : '';
 	}
 
 	/**
