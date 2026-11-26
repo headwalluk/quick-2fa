@@ -322,29 +322,24 @@ class User_Management {
 		$sessions->destroy_all();
 
 		if ( $is_locked ) {
-			add_settings_error(
-				'quick2fa_user_management',
-				'user_locked',
+			$this->queue_notice(
+				'success',
 				sprintf(
 					/* translators: %s: Username */
 					__( 'User %s has been locked out.', 'quick-2fa' ),
 					$user->user_login
-				),
-				'success'
+				)
 			);
 		} else {
-			add_settings_error(
-				'quick2fa_user_management',
-				'user_lock_failed',
+			$this->queue_notice(
+				'error',
 				sprintf(
 					/* translators: %s: Username */
 					__( 'User %s could not be locked out, because the lock could not be saved. Their sessions have been ended. Please try again.', 'quick-2fa' ),
 					$user->user_login
-				),
-				'error'
+				)
 			);
 		}
-		set_transient( 'settings_errors', get_settings_errors(), 30 );
 
 		wp_safe_redirect( $this->get_redirect_url() );
 		exit();
@@ -382,32 +377,78 @@ class User_Management {
 		);
 
 		if ( $is_unlocked ) {
-			add_settings_error(
-				'quick2fa_user_management',
-				'user_unlocked',
+			$this->queue_notice(
+				'success',
 				sprintf(
 					/* translators: %s: Username */
 					__( 'User %s has been unlocked.', 'quick-2fa' ),
 					$user->user_login
-				),
-				'success'
+				)
 			);
 		} else {
-			add_settings_error(
-				'quick2fa_user_management',
-				'user_unlock_failed',
+			$this->queue_notice(
+				'error',
 				sprintf(
 					/* translators: %s: Username */
 					__( 'User %s could not be unlocked, because the lock could not be removed. Please try again.', 'quick-2fa' ),
 					$user->user_login
-				),
-				'error'
+				)
 			);
 		}
-		set_transient( 'settings_errors', get_settings_errors(), 30 );
 
 		wp_safe_redirect( $this->get_redirect_url() );
 		exit();
+	}
+
+	/**
+	 * Keep a notice for the current administrator, shown once on their next Users or profile screen.
+	 *
+	 * @since 1.9.0
+	 * @param string $type    'success' or 'error'.
+	 * @param string $message Notice text.
+	 */
+	private function queue_notice( string $type, string $message ): void {
+		set_transient(
+			TRANSIENT_ADMIN_NOTICE . get_current_user_id(),
+			array(
+				'type'    => $type,
+				'message' => $message,
+			),
+			ADMIN_NOTICE_TTL
+		);
+	}
+
+	/**
+	 * Show and discard the current administrator's queued notice, on the Users and profile screens.
+	 *
+	 * @since 1.9.0
+	 */
+	public function render_queued_notice(): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		if ( ! $screen instanceof \WP_Screen || ! in_array( $screen->id, array( 'users', 'profile', 'user-edit' ), true ) ) {
+			return;
+		}
+
+		$transient_name = TRANSIENT_ADMIN_NOTICE . get_current_user_id();
+		$notice         = get_transient( $transient_name );
+
+		if ( false !== $notice ) {
+			delete_transient( $transient_name );
+		}
+
+		$is_valid = is_array( $notice )
+			&& isset( $notice['type'], $notice['message'] )
+			&& in_array( $notice['type'], array( 'success', 'error' ), true )
+			&& is_string( $notice['message'] );
+
+		if ( $is_valid ) {
+			printf(
+				'<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
+				esc_attr( $notice['type'] ),
+				esc_html( $notice['message'] )
+			);
+		}
 	}
 
 	/**

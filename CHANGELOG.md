@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **An automatic lock could shorten a manual one** (since 0.4.0). If wrong codes used up the last attempt at the same moment an administrator locked the account by hand, the automatic lock's 60-minute expiry could overwrite the permanent one, so the account could log in again an hour later. A lock now never replaces one that ends later, and the write is a compare-and-swap, so a manual lock landing mid-write is kept.
 
+- **The Users screen never showed whether Lock Out or Unlock worked** (since 0.6.0). The result was stored for core's settings-page notices, which the Users screen doesn't display, so a lock that failed to save looked the same as one that worked. The result is now kept for the administrator who acted and shown once on the Users or profile screen they return to.
+
 ## [1.8.1] — 2026-11-23
 
 **A security release: update every site.** The first two fixes close ways for someone who has an account's password, but not its email code, to reach the admin area. The fixes come from a code review of 1.8.0.

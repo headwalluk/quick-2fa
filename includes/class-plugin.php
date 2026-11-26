@@ -113,6 +113,7 @@ class Plugin {
 		add_filter( 'user_row_actions', array( $this->user_management, 'add_lockout_actions' ), 10, 2 );
 		add_action( 'admin_action_quick2fa_lock', array( $this->user_management, 'handle_lock_user' ) );
 		add_action( 'admin_action_quick2fa_unlock', array( $this->user_management, 'handle_unlock_user' ) );
+		add_action( 'admin_notices', array( $this->user_management, 'render_queued_notice' ) );
 
 		// User profile screen: security section and device revocation.
 		add_action( 'show_user_profile', array( $this->user_management, 'render_profile_section' ) );

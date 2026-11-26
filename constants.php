@@ -198,8 +198,9 @@ const SESSION_KEY_VERIFIED = 'quick2fa_verified';
  *
  * @since 1.0.0
  */
-const TRANSIENT_RETURN_URL = 'q2fa_return_';
-const TRANSIENT_RATE_LIMIT = 'q2fa_rate_limit_';
+const TRANSIENT_RETURN_URL   = 'q2fa_return_';
+const TRANSIENT_RATE_LIMIT   = 'q2fa_rate_limit_';
+const TRANSIENT_ADMIN_NOTICE = 'q2fa_admin_notice_';
 
 /**
  * How long a stored return URL stays valid.
@@ -210,6 +211,13 @@ const TRANSIENT_RATE_LIMIT = 'q2fa_rate_limit_';
  * @since 1.3.0
  */
 const RETURN_URL_TTL = 5 * MINUTE_IN_SECONDS;
+
+/**
+ * How long a Users-screen action's result waits to be shown after its redirect.
+ *
+ * @since 1.9.0
+ */
+const ADMIN_NOTICE_TTL = MINUTE_IN_SECONDS;
 
 /**
  * Users-list column, sort and filter identifiers.

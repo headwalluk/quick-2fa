@@ -44,22 +44,18 @@ if ( $quick_2fa_delete_data ) {
 
 	// Under a persistent object cache, transients never reach the options table;
 	// these per-user ones then expire on their own within 15 minutes.
-	$quick_2fa_transient_names = $wpdb->get_col(
-		$wpdb->prepare(
-			"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
-			$wpdb->esc_like( '_transient_' . TRANSIENT_RETURN_URL ) . '%'
-		)
-	);
-
-	$quick_2fa_transient_names = array_merge(
-		$quick_2fa_transient_names,
-		$wpdb->get_col(
-			$wpdb->prepare(
-				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
-				$wpdb->esc_like( '_transient_' . TRANSIENT_RATE_LIMIT ) . '%'
+	$quick_2fa_transient_names = array();
+	foreach ( array( TRANSIENT_RETURN_URL, TRANSIENT_RATE_LIMIT, TRANSIENT_ADMIN_NOTICE ) as $quick_2fa_transient_prefix ) {
+		$quick_2fa_transient_names = array_merge(
+			$quick_2fa_transient_names,
+			$wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+					$wpdb->esc_like( '_transient_' . $quick_2fa_transient_prefix ) . '%'
+				)
 			)
-		)
-	);
+		);
+	}
 	// phpcs:enable
 
 	// META_PASSWORD_LAST_CHANGED doesn't carry the plugin prefix.
