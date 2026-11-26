@@ -123,7 +123,7 @@ These paths decide who gets into an account:
 - `Verification_Code_Handler::store()` and `verify()`, with `reserve_attempt()` and `discard_code()`: the attempt count and single use are compare-and-swaps against the database, not the object cache
 - `Plugin::check_verification()`, `Plugin::user_needs_verification()` and `should_skip_check()`. Every skip there is a full 2FA and lock bypass; 1.8.1 removed two that request parameters could trigger
 - `Plugin::handle_password_page()`: on `wp-login.php`, where `admin_init` doesn't run, so it applies the lock and 2FA checks itself
-- Locking: `Account_Security_Handler::lock_account()` and `is_locked()`, and `Plugin::check_lockout_on_login()`
+- Locking: `Account_Security_Handler::lock_account()` and `is_locked()`, with `store_lock_unless_longer()`, `compare_and_set_lock()` and `clear_expired_lock()` (compare-and-swaps against the database: a lock never shortens a longer one, and expiry cleanup spares a lock written meanwhile), and `Plugin::check_lockout_on_login()`
 - `Abilities::check_permission()`: who can read every user's security state. Capability, plus a verified session for cookie-authenticated calls
 - Device trust and session verification: `Account_Security_Handler::trust_device()`, `is_device_trusted()`, `clear_trusted_devices()`, `change_trusted_devices()` (every list write but clearing), `mark_current_session_verified()` and `get_current_session_verified_time()`, and the password-change revocation in `Plugin::revoke_devices_on_password_set()` and `revoke_devices_on_profile_update()`
 - `Password_Reminder_Handler::update_password()` and `maintain_session()`
