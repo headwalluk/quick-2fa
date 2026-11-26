@@ -119,7 +119,7 @@ class User_Management {
 		$total_count  = count_users();
 		$total_users  = isset( $total_count['total_users'] ) && is_numeric( $total_count['total_users'] ) ? (int) $total_count['total_users'] : 0;
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking filter state.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Just checking filter state.
 		$current_filter = isset( $_GET[ QUERY_ARG_FILTER ] ) ? sanitize_text_field( wp_unslash( $_GET[ QUERY_ARG_FILTER ] ) ) : '';
 
 		// Locked users filter.
@@ -288,7 +288,7 @@ class User_Management {
 	 * @since 0.6.0
 	 */
 	public function handle_lock_user(): void {
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user'] ) ? absint( $_GET['user'] ) : 0;
 
 		if ( ! verify_admin_action_nonce( 'quick2fa_lock_' . $user_id ) ) {
@@ -356,7 +356,7 @@ class User_Management {
 	 * @since 0.6.0
 	 */
 	public function handle_unlock_user(): void {
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user'] ) ? absint( $_GET['user'] ) : 0;
 
 		if ( ! verify_admin_action_nonce( 'quick2fa_unlock_' . $user_id ) ) {
@@ -575,9 +575,9 @@ class User_Management {
 	 * @since 0.6.1
 	 */
 	public function handle_revoke_device(): void {
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user_id'] ) ? absint( $_GET['user_id'] ) : 0;
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$device_key = isset( $_GET['device_key'] ) ? sanitize_text_field( wp_unslash( $_GET['device_key'] ) ) : '';
 
 		if ( ! verify_admin_action_nonce( 'quick2fa_revoke_device_' . $user_id . '_' . $device_key ) ) {
@@ -616,7 +616,7 @@ class User_Management {
 	 * @since 0.6.1
 	 */
 	public function handle_revoke_all_devices(): void {
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified below.
 		$user_id = isset( $_GET['user_id'] ) ? absint( $_GET['user_id'] ) : 0;
 
 		if ( ! verify_admin_action_nonce( 'quick2fa_revoke_all_devices_' . $user_id ) ) {

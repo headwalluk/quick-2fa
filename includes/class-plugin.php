@@ -526,7 +526,7 @@ class Plugin {
 	 * @since 1.0.0
 	 */
 	public function handle_login_actions(): void {
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public page identifier.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public page identifier.
 		if ( ! isset( $_GET[ QUERY_PARAM ] ) ) {
 			return;
 		}
@@ -540,7 +540,7 @@ class Plugin {
 			exit();
 		}
 
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public page identifier.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Public page identifier.
 		$action = sanitize_key( $_GET[ QUERY_PARAM ] );
 
 		switch ( $action ) {

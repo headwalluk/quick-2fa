@@ -19,6 +19,9 @@
 	<arg name="extensions" value="php"/>
 	<arg name="parallel" value="8"/>
 	
+	<!-- WordPress floor; matches "Requires at least" in quick-2fa.php. -->
+	<config name="minimum_wp_version" value="6.2"/>
+
 	<!-- Rules -->
 	<rule ref="WordPress">
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
