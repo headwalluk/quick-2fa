@@ -57,11 +57,11 @@ class Account_Security_Handler {
 		if ( $locked_until > 0 ) {
 			if ( time() >= $locked_until ) {
 				// Lock has elapsed — clear it, so the check is self-healing. Only the value
-				// read here is deleted; if it has changed, a newer lock was written, so read
-				// that instead. The failed-attempt count is left as it was; see docs/account-locking.md.
-				if ( ! $this->clear_expired_lock( (string) $stored_value ) ) {
-					$is_locked = (int) $this->read_lock_from_database() > time();
-				}
+				// read here is deleted, so the database is read again for a lock written
+				// meanwhile or a second lock row. The failed-attempt count is left as it was;
+				// see docs/account-locking.md.
+				$this->clear_expired_lock( (string) $stored_value );
+				$is_locked = (int) $this->read_lock_from_database() > time();
 			} else {
 				$is_locked = true;
 			}
@@ -179,13 +179,12 @@ class Account_Security_Handler {
 	 *
 	 * @since 1.9.0
 	 * @param string $expected_value The expired value read.
-	 * @return bool True if this call removed it.
 	 */
-	private function clear_expired_lock( string $expected_value ): bool {
+	private function clear_expired_lock( string $expected_value ): void {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Compare-and-delete; the cache is cleared below.
-		$rows_deleted = $wpdb->delete(
+		$wpdb->delete(
 			$wpdb->usermeta,
 			array(
 				'user_id'    => $this->user_id,
@@ -196,8 +195,6 @@ class Account_Security_Handler {
 		);
 		wp_cache_delete( $this->user_id, 'user_meta' );
 		delete_transient( TRANSIENT_LOCKED_COUNT );
-
-		return is_int( $rows_deleted ) && $rows_deleted > 0;
 	}
 
 	/**
@@ -235,16 +232,16 @@ class Account_Security_Handler {
 	 * Set the lock timestamp only if it still holds the value read.
 	 *
 	 * @since 1.9.0
-	 * @param string $expected_value The stored value read by read_lock_from_database(), '' for none.
-	 * @param int    $locked_until   Timestamp to store.
+	 * @param string|null $expected_value The stored value read by read_lock_from_database(), null for no row.
+	 * @param int         $locked_until   Timestamp to store.
 	 * @return bool True if this call changed it.
 	 */
-	private function compare_and_set_lock( string $expected_value, int $locked_until ): bool {
+	private function compare_and_set_lock( ?string $expected_value, int $locked_until ): bool {
 		global $wpdb;
 
 		$is_set = false;
 
-		if ( '' === $expected_value ) {
+		if ( null === $expected_value ) {
 			$is_set = false !== add_user_meta( $this->user_id, META_LOCKED_UNTIL, $locked_until, true );
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Compare-and-swap; the cache is cleared below.
@@ -269,16 +266,19 @@ class Account_Security_Handler {
 	/**
 	 * Read the stored lock timestamp from the database, not the object cache.
 	 *
+	 * A blank value is returned as '', distinct from null, so that a blank row is updated rather than added to.
+	 *
 	 * @since 1.9.0
-	 * @return string The stored value, or '' for no lock.
+	 * @return string|null The stored value, or null for no row.
 	 */
-	private function read_lock_from_database(): string {
+	private function read_lock_from_database(): ?string {
 		global $wpdb;
 
+		// get_row(), because get_var() returns null for a blank value as well as for no row.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Bypasses the cache on purpose: the compare-and-swaps above compare against the stored value.
-		$value = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id ASC LIMIT 1", $this->user_id, META_LOCKED_UNTIL ) );
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id ASC LIMIT 1", $this->user_id, META_LOCKED_UNTIL ) );
 
-		return is_string( $value ) ? $value : '';
+		return is_object( $row ) && is_string( $row->meta_value ) ? $row->meta_value : null;
 	}
 
 	/**

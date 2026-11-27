@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- **Clearing an elapsed lock could delete a lock written at the same moment** (since 1.8.1, which narrowed but did not close it). WordPress deletes meta by looking up the row by value and then deleting it by ID, so a permanent lock written to the same row between the two steps was removed. The expiry cleanup now deletes with the expired value in the query itself, and if nothing matched it reads the newer lock back before deciding the account is unlocked.
+- **Clearing an elapsed lock could delete a lock written at the same moment** (since 1.8.1, which narrowed but did not close it). WordPress deletes meta by looking up the row by value and then deleting it by ID, so a permanent lock written to the same row between the two steps was removed. The expiry cleanup now deletes with the expired value in the query itself, then reads the database again before deciding the account is unlocked. That also catches a second lock row: WordPress checks for an existing row and then inserts, so two first-time locks at the same moment could both be stored, and clearing an expired first row reported the account unlocked while a permanent second row remained.
 
 - **An automatic lock could shorten a manual one** (since 0.4.0). If wrong codes used up the last attempt at the same moment an administrator locked the account by hand, the automatic lock's 60-minute expiry could overwrite the permanent one, so the account could log in again an hour later. A lock now never replaces one that ends later, and the write is a compare-and-swap, so a manual lock landing mid-write is kept.
 
