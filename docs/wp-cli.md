@@ -41,7 +41,7 @@ wp quick-2fa lock-all --exclude=admin --dry-run    # check the count and the exc
 
 ### `unlock-all [--yes] [--dry-run]`
 
-Unlock every currently-locked user and reset their failed-attempt counters. Asks for confirmation unless `--yes` is given. As with `lock-all`, a failure for any user ends in an error listing their IDs.
+Unlock every currently-locked user and reset their failed-attempt counters. Asks for confirmation unless `--yes` is given. As with `lock-all`, a failure for any user ends in an error listing their IDs. If the database can't list the users, both commands stop with an error before changing anything, rather than report that there was no one to lock or unlock.
 
 ```bash
 wp quick-2fa unlock-all

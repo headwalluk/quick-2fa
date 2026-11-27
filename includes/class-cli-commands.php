@@ -188,12 +188,7 @@ class CLI_Commands {
 			\WP_CLI::confirm( 'Are you sure you want to lock ALL users?', $assoc_args );
 		}
 
-		$user_query = new \WP_User_Query(
-			array(
-				'fields' => 'ID',
-			)
-		);
-		$user_ids   = $user_query->get_results();
+		$user_ids = $this->query_user_ids( array() );
 
 		$locked_count            = 0;
 		$excluded_count          = 0;
@@ -273,9 +268,8 @@ class CLI_Commands {
 	 * @param array $assoc_args Associative arguments.
 	 */
 	public function unlock_all( array $args, array $assoc_args ): void {
-		$user_query = new \WP_User_Query(
+		$user_ids = $this->query_user_ids(
 			array(
-				'fields'     => 'ID',
 				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- CLI command, not a frontend query.
 					'relation' => 'AND',
 					array(
@@ -291,7 +285,6 @@ class CLI_Commands {
 				),
 			)
 		);
-		$user_ids   = $user_query->get_results();
 
 		if ( empty( $user_ids ) ) {
 			\WP_CLI::warning( 'No locked users found.' );
@@ -611,6 +604,37 @@ class CLI_Commands {
 		$trusted_devices = get_user_meta( $user_id, META_TRUSTED_DEVICES, true );
 
 		return is_array( $trusted_devices ) ? count( $trusted_devices ) : 0;
+	}
+
+	/**
+	 * Read user IDs from the database, and stop the command with an error if the query failed.
+	 *
+	 * The result cache and the found-rows count are off, so the user query is the last query
+	 * run and $wpdb->last_error, which each query resets, is its own.
+	 *
+	 * @since 1.9.0
+	 * @param array $query_args WP_User_Query arguments; fields, cache_results and count_total are set here.
+	 * @return int[] User IDs.
+	 */
+	private function query_user_ids( array $query_args ): array {
+		global $wpdb;
+
+		$user_query = new \WP_User_Query(
+			array_merge(
+				$query_args,
+				array(
+					'fields'        => 'ID',
+					'cache_results' => false,
+					'count_total'   => false,
+				)
+			)
+		);
+
+		if ( '' !== $wpdb->last_error ) {
+			\WP_CLI::error( sprintf( 'The user list could not be read from the database, so nothing was changed: %s', $wpdb->last_error ) );
+		}
+
+		return array_map( 'intval', $user_query->get_results() );
 	}
 
 	/**
