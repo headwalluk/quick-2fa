@@ -67,10 +67,18 @@ class CLI_Commands {
 					$this->describe_lock_status( $user->ID )
 				)
 			);
-		} elseif ( $this->lock_user( $user->ID, 'manual_lock' ) ) {
-			\WP_CLI::success( sprintf( "User '%s' has been locked out and all sessions terminated.", $user->user_login ) );
 		} else {
-			\WP_CLI::error( sprintf( "User '%s' could not be locked: the lock wasn't saved. Their sessions were still ended.", $user->user_login ) );
+			$result = $this->lock_user( $user->ID, 'manual_lock' );
+
+			if ( $result['is_locked'] && $result['is_signed_out'] ) {
+				\WP_CLI::success( sprintf( "User '%s' has been locked out and all sessions terminated.", $user->user_login ) );
+			} elseif ( $result['is_locked'] ) {
+				\WP_CLI::error( sprintf( "User '%s' has been locked out, but their sessions could not all be ended.", $user->user_login ) );
+			} elseif ( $result['is_signed_out'] ) {
+				\WP_CLI::error( sprintf( "User '%s' could not be locked: the lock wasn't saved. Their sessions were ended.", $user->user_login ) );
+			} else {
+				\WP_CLI::error( sprintf( "User '%s' could not be locked: the lock wasn't saved, and their sessions could not all be ended.", $user->user_login ) );
+			}
 		}
 	}
 
@@ -187,9 +195,10 @@ class CLI_Commands {
 		);
 		$user_ids   = $user_query->get_results();
 
-		$locked_count    = 0;
-		$excluded_count  = 0;
-		$failed_user_ids = array();
+		$locked_count            = 0;
+		$excluded_count          = 0;
+		$lock_failed_user_ids    = array();
+		$session_failed_user_ids = array();
 
 		foreach ( $user_ids as $user_id ) {
 			if ( $excluded_user_id > 0 && (int) $user_id === $excluded_user_id ) {
@@ -199,19 +208,36 @@ class CLI_Commands {
 
 			if ( $is_dry_run ) {
 				++$locked_count;
-			} elseif ( $this->lock_user( (int) $user_id, 'emergency_lockdown' ) ) {
+				continue;
+			}
+
+			$result = $this->lock_user( (int) $user_id, 'emergency_lockdown' );
+
+			if ( $result['is_locked'] ) {
 				++$locked_count;
 			} else {
-				$failed_user_ids[] = (int) $user_id;
+				$lock_failed_user_ids[] = (int) $user_id;
 			}
+
+			if ( ! $result['is_signed_out'] ) {
+				$session_failed_user_ids[] = (int) $user_id;
+			}
+		}
+
+		$failures = array();
+		if ( ! empty( $lock_failed_user_ids ) ) {
+			$failures[] = sprintf( 'could not save the lock for %d (IDs %s)', count( $lock_failed_user_ids ), implode( ', ', $lock_failed_user_ids ) );
+		}
+		if ( ! empty( $session_failed_user_ids ) ) {
+			$failures[] = sprintf( 'could not end the sessions of %d (IDs %s)', count( $session_failed_user_ids ), implode( ', ', $session_failed_user_ids ) );
 		}
 
 		if ( $is_dry_run && $excluded_count > 0 ) {
 			\WP_CLI::success( sprintf( "Dry run: would lock %d users and end their sessions. Would exclude user %d ('%s').", $locked_count, $excluded_user_id, $excluded_user_name ) );
 		} elseif ( $is_dry_run ) {
 			\WP_CLI::success( sprintf( 'Dry run: would lock %d users and end their sessions.', $locked_count ) );
-		} elseif ( ! empty( $failed_user_ids ) ) {
-			\WP_CLI::error( sprintf( 'Locked %d users, but could not save the lock for %d (IDs %s). Their sessions were still ended.', $locked_count, count( $failed_user_ids ), implode( ', ', $failed_user_ids ) ) );
+		} elseif ( ! empty( $failures ) ) {
+			\WP_CLI::error( sprintf( 'Locked %d users, but %s.', $locked_count, implode( ', and ', $failures ) ) );
 		} elseif ( $excluded_count > 0 ) {
 			\WP_CLI::success( sprintf( 'Locked %d users. Excluded %d user.', $locked_count, $excluded_count ) );
 		} else {
@@ -591,11 +617,12 @@ class CLI_Commands {
 	 * Lock one account, end its sessions, and record why.
 	 *
 	 * @since 1.3.0
+	 * @since 1.9.0 Returns whether the lock was saved and whether the sessions ended, separately.
 	 * @param int    $user_id User to lock.
 	 * @param string $reason  Reason recorded in the event log.
-	 * @return bool True if the lock was saved. Sessions are ended either way.
+	 * @return array{is_locked: bool, is_signed_out: bool} Whether the lock was saved, and whether no session remains. Sessions are ended either way.
 	 */
-	private function lock_user( int $user_id, string $reason ): bool {
+	private function lock_user( int $user_id, string $reason ): array {
 		$security  = new Account_Security_Handler( $user_id );
 		$is_locked = $security->lock_account(
 			PERMANENT_LOCK_DURATION,
@@ -605,9 +632,10 @@ class CLI_Commands {
 			)
 		);
 
-		$this->destroy_all_sessions( $user_id );
-
-		return $is_locked;
+		return array(
+			'is_locked'     => $is_locked,
+			'is_signed_out' => $security->end_all_sessions(),
+		);
 	}
 
 	/**
@@ -627,17 +655,6 @@ class CLI_Commands {
 				'reason' => $reason,
 			)
 		);
-	}
-
-	/**
-	 * Destroy all sessions for a user.
-	 *
-	 * @since 0.6.0
-	 * @param int $user_id User ID.
-	 */
-	private function destroy_all_sessions( int $user_id ): void {
-		$sessions = \WP_Session_Tokens::get_instance( $user_id );
-		$sessions->destroy_all();
 	}
 
 	/**

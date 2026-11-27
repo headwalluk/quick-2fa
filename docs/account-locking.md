@@ -24,7 +24,7 @@ Anyone who can edit users can lock or unlock an account:
 - **From the admin UI:** Users → All Users → the **Lock Out** and **Unlock** row actions
 - **From WP-CLI:** `wp quick-2fa lock <user>` and `wp quick-2fa unlock <user>`
 
-A manual lock ends all of the account's sessions straight away. It is effectively **permanent**: it is set to expire 200 years ahead, and it lasts until someone unlocks the account. A lock never shortens one already in place, so wrong codes entered against a manually locked account can't turn the manual lock into an automatic one. The **Lock Status** column on the Users screen shows "Locked out until …" for an automatic lock and "Locked out (manual)" for a manual one.
+A manual lock ends all of the account's sessions straight away. If the lock can't be saved or a session is still live afterwards, the Users screen and WP-CLI say which, and WP-CLI exits with an error. It is effectively **permanent**: it is set to expire 200 years ahead, and it lasts until someone unlocks the account. A lock never shortens one already in place, so wrong codes entered against a manually locked account can't turn the manual lock into an automatic one. The **Lock Status** column on the Users screen shows "Locked out until …" for an automatic lock and "Locked out (manual)" for a manual one.
 
 Unlocking by hand, from either place, also resets the account's failed-attempt count, because someone is deliberately restoring access. A timed lock that simply runs out leaves the count where it was, so an attacker who waits out the lock gets no fresh set of guesses against the same code. Sending a new code resets the count.
 

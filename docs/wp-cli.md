@@ -31,7 +31,7 @@ wp quick-2fa unlock 123
 
 ### `lock-all [--exclude=<user>] [--yes] [--dry-run]`
 
-Emergency lockdown — lock every user account at once. **Always use `--exclude` to keep yourself unlocked.** If any lock can't be saved, the command still processes every user, then lists the failed IDs and exits with an error, so a script can tell.
+Emergency lockdown — lock every user account at once. **Always use `--exclude` to keep yourself unlocked.** If any lock can't be saved, or any user's sessions can't all be ended, the command still processes every user, then lists the failed IDs and exits with an error, so a script can tell.
 
 ```bash
 wp quick-2fa lock-all --exclude=admin

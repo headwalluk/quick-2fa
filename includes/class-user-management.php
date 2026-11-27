@@ -318,10 +318,9 @@ class User_Management {
 			)
 		);
 
-		$sessions = \WP_Session_Tokens::get_instance( $user_id );
-		$sessions->destroy_all();
+		$is_signed_out = $security->end_all_sessions();
 
-		if ( $is_locked ) {
+		if ( $is_locked && $is_signed_out ) {
 			$this->queue_notice(
 				'success',
 				sprintf(
@@ -330,12 +329,30 @@ class User_Management {
 					$user->user_login
 				)
 			);
-		} else {
+		} elseif ( $is_locked ) {
+			$this->queue_notice(
+				'error',
+				sprintf(
+					/* translators: %s: Username */
+					__( 'User %s has been locked out, but their sessions could not all be ended. Please try again.', 'quick-2fa' ),
+					$user->user_login
+				)
+			);
+		} elseif ( $is_signed_out ) {
 			$this->queue_notice(
 				'error',
 				sprintf(
 					/* translators: %s: Username */
 					__( 'User %s could not be locked out, because the lock could not be saved. Their sessions have been ended. Please try again.', 'quick-2fa' ),
+					$user->user_login
+				)
+			);
+		} else {
+			$this->queue_notice(
+				'error',
+				sprintf(
+					/* translators: %s: Username */
+					__( 'User %s could not be locked out, because the lock could not be saved, and their sessions could not all be ended. Please try again.', 'quick-2fa' ),
 					$user->user_login
 				)
 			);

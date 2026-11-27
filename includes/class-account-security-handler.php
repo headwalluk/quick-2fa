@@ -152,6 +152,27 @@ class Account_Security_Handler {
 	}
 
 	/**
+	 * End every login session for this user, and confirm none remain.
+	 *
+	 * Core's destroy_all() discards the result of its meta delete, so the sessions are read back instead.
+	 *
+	 * @since 1.9.0
+	 * @return bool True if no live session remains.
+	 */
+	public function end_all_sessions(): bool {
+		$sessions = \WP_Session_Tokens::get_instance( $this->user_id );
+		$sessions->destroy_all();
+
+		$is_signed_out = empty( $sessions->get_all() );
+
+		if ( ! $is_signed_out ) {
+			$this->log_error( sprintf( 'the sessions for user %d could not be ended', $this->user_id ) );
+		}
+
+		return $is_signed_out;
+	}
+
+	/**
 	 * Write an error to the PHP error log, whatever WP_DEBUG says.
 	 *
 	 * @since 1.8.1
