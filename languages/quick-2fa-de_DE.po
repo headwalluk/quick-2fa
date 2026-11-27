@@ -57,56 +57,56 @@ msgstr "Zu Ihrer Sicherheit müssen wir Ihre Identität überprüfen, bevor Sie 
 msgid "Failed to send verification email. Please contact your site administrator."
 msgstr "Das Versenden der Bestätigungs-E-Mail ist fehlgeschlagen. Bitte wenden Sie sich an Ihren Website-Administrator."
 
-#: includes/class-password-reminder-handler.php:131
+#: includes/class-password-reminder-handler.php:134
 msgid "Please enter a password."
 msgstr "Bitte geben Sie ein Passwort ein."
 
-#: includes/class-plugin.php:368
+#: includes/class-plugin.php:371
 msgid "Your account has been locked. Please contact your site administrator."
 msgstr "Ihr Konto wurde gesperrt. Bitte wenden Sie sich an Ihren Website-Administrator."
 
 #. translators: %s: Time remaining until unlock
-#: includes/class-plugin.php:372
+#: includes/class-plugin.php:375
 #, php-format
 msgid "Your account has been locked. Please try again in %s."
 msgstr "Ihr Konto wurde gesperrt. Bitte versuchen Sie es in %s erneut."
 
-#: includes/class-plugin.php:400
-#: includes/class-plugin.php:703
+#: includes/class-plugin.php:403
+#: includes/class-plugin.php:706
 msgid "Account Locked"
 msgstr "Konto gesperrt"
 
-#: includes/class-plugin.php:556
+#: includes/class-plugin.php:559
 msgid "Invalid action"
 msgstr "Ungültige Aktion"
 
-#: includes/class-plugin.php:556
-#: includes/class-plugin.php:606
-#: includes/class-plugin.php:689
+#: includes/class-plugin.php:559
+#: includes/class-plugin.php:609
+#: includes/class-plugin.php:692
 msgctxt "error page title"
 msgid "Error"
 msgstr "Fehler"
 
-#: includes/class-plugin.php:616
-#: includes/class-plugin.php:638
-#: includes/class-plugin.php:725
-#: includes/class-plugin.php:738
+#: includes/class-plugin.php:619
+#: includes/class-plugin.php:641
+#: includes/class-plugin.php:728
+#: includes/class-plugin.php:741
 msgid "Security check failed. Please try again."
 msgstr "Die Sicherheitsprüfung ist fehlgeschlagen. Bitte versuchen Sie es erneut."
 
-#: includes/class-plugin.php:621
+#: includes/class-plugin.php:624
 msgid "Please enter the verification code."
 msgstr "Bitte geben Sie den Bestätigungscode ein."
 
-#: includes/class-plugin.php:645
+#: includes/class-plugin.php:648
 msgid "A new verification code has been sent to your email."
 msgstr "Ein neuer Bestätigungscode wurde an Ihre E-Mail-Adresse gesendet."
 
-#: includes/class-plugin.php:770
+#: includes/class-plugin.php:773
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "Ihr Admin-Bereich ist nicht durch eine Zwei-Faktor-Authentifizierung geschützt."
 
-#: includes/class-plugin.php:772
+#: includes/class-plugin.php:775
 msgid "Enable 2FA"
 msgstr "2FA aktivieren"
 
@@ -142,16 +142,16 @@ msgid "Lock Out"
 msgstr "Sperren"
 
 #: includes/class-user-management.php:295
-#: includes/class-user-management.php:363
-#: includes/class-user-management.php:584
-#: includes/class-user-management.php:623
+#: includes/class-user-management.php:375
+#: includes/class-user-management.php:642
+#: includes/class-user-management.php:683
 msgid "Security check failed."
 msgstr "Die Sicherheitsprüfung ist fehlgeschlagen."
 
 #: includes/class-user-management.php:299
-#: includes/class-user-management.php:367
-#: includes/class-user-management.php:588
-#: includes/class-user-management.php:627
+#: includes/class-user-management.php:379
+#: includes/class-user-management.php:646
+#: includes/class-user-management.php:687
 msgid "You do not have permission to perform this action."
 msgstr "Sie haben keine Berechtigung, diese Aktion auszuführen."
 
@@ -160,30 +160,30 @@ msgid "You cannot lock out your own account."
 msgstr "Sie können Ihr eigenes Konto nicht sperren."
 
 #: includes/class-user-management.php:308
-#: includes/class-user-management.php:372
-#: includes/class-user-management.php:593
-#: includes/class-user-management.php:632
+#: includes/class-user-management.php:384
+#: includes/class-user-management.php:651
+#: includes/class-user-management.php:692
 msgid "Invalid user."
 msgstr "Ungültiger Benutzer."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:330
+#: includes/class-user-management.php:328
 #, php-format
 msgid "User %s has been locked out."
 msgstr "Der Benutzer %s wurde gesperrt."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:390
+#: includes/class-user-management.php:401
 #, php-format
 msgid "User %s has been unlocked."
 msgstr "Der Benutzer %s wurde entsperrt."
 
-#: includes/class-user-management.php:446
+#: includes/class-user-management.php:504
 msgid "Locked out (manual)"
 msgstr "Ausgesperrt (manuell)"
 
 #. translators: %s: Formatted date and time
-#: includes/class-user-management.php:457
+#: includes/class-user-management.php:515
 #, php-format
 msgid "Locked out until %s"
 msgstr "Bis %s gesperrt"
@@ -513,15 +513,15 @@ msgstr[0] "Dieser Code läuft in %d Minute ab."
 msgstr[1] "Dieser Code läuft in %d Minuten ab."
 
 #. translators: %d: minimum number of characters required in a password
-#: includes/class-password-reminder-handler.php:138
+#: includes/class-password-reminder-handler.php:141
 #, php-format
 msgid "Password must be at least %d character long."
 msgid_plural "Password must be at least %d characters long."
 msgstr[0] "Das Passwort muss mindestens %d Zeichen lang sein."
 msgstr[1] "Das Passwort muss mindestens %d Zeichen lang sein."
 
-#: includes/class-plugin.php:605
-#: includes/class-plugin.php:688
+#: includes/class-plugin.php:608
+#: includes/class-plugin.php:691
 msgid "Your user account could not be loaded. Please sign in again."
 msgstr "Ihr Benutzerkonto konnte nicht geladen werden. Bitte melden Sie sich erneut an."
 
@@ -597,7 +597,7 @@ msgid "https://headwall-hosting.com/a-web-guys-blog/"
 msgstr "https://headwall-hosting.com/a-web-guys-blog/"
 
 #. translators: %s is the plugin name, Quick 2FA
-#: includes/class-plugin.php:769
+#: includes/class-plugin.php:772
 #, php-format
 msgid "%s is currently disabled."
 msgstr "%s ist derzeit deaktiviert."
@@ -752,18 +752,50 @@ msgstr "Ermöglicht es dem KI-Agenten eines Administrators, abzufragen, wann Ben
 msgid "Needs WordPress 6.9 or later; this site's WordPress has no Abilities API."
 msgstr "Erfordert WordPress 6.9 oder höher; die WordPress-Installation dieser Website verfügt nicht über die Abilities-API."
 
-#: includes/class-password-reminder-handler.php:148
+#: includes/class-password-reminder-handler.php:151
 msgid "That password is too long. Please choose a shorter one."
 msgstr "Dieses Passwort ist zu lang. Bitte wählen Sie ein kürzeres."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:341
+#: includes/class-user-management.php:346
 #, php-format
 msgid "User %s could not be locked out, because the lock could not be saved. Their sessions have been ended. Please try again."
 msgstr "Der Benutzer %s konnte nicht gesperrt werden, da die Sperre nicht gespeichert werden konnte. Seine Sitzungen wurden beendet. Bitte versuchen Sie es erneut."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:401
+#: includes/class-user-management.php:410
 #, php-format
 msgid "User %s could not be unlocked, because the lock could not be removed. Please try again."
 msgstr "Der Benutzer %s konnte nicht entsperrt werden, da die Sperre nicht aufgehoben werden konnte. Bitte versuchen Sie es erneut."
+
+#: includes/class-account-security-handler.php:675
+msgid "The trusted devices could not be removed. Please try again."
+msgstr "Die vertrauenswürdigen Geräte konnten nicht entfernt werden. Bitte versuchen Sie es erneut."
+
+#. translators: %s: Username
+#: includes/class-user-management.php:337
+#, php-format
+msgid "User %s has been locked out, but their sessions could not all be ended. Please try again."
+msgstr "Der Benutzer %s wurde gesperrt, aber nicht alle seine Sitzungen konnten beendet werden. Bitte versuchen Sie es erneut."
+
+#. translators: %s: Username
+#: includes/class-user-management.php:355
+#, php-format
+msgid "User %s could not be locked out, because the lock could not be saved, and their sessions could not all be ended. Please try again."
+msgstr "Der Benutzer %s konnte nicht gesperrt werden, da die Sperre nicht gespeichert werden konnte und nicht alle seine Sitzungen beendet werden konnten. Bitte versuchen Sie es erneut."
+
+#: includes/class-user-management.php:664
+msgid "The trusted device has been revoked."
+msgstr "Das vertrauenswürdige Gerät wurde widerrufen."
+
+#: includes/class-user-management.php:666
+msgid "The trusted device could not be revoked, or had already been removed. Check the list and try again."
+msgstr "Das vertrauenswürdige Gerät konnte nicht widerrufen werden oder wurde bereits entfernt. Überprüfen Sie die Liste und versuchen Sie es erneut."
+
+#. translators: %d: number of trusted devices revoked
+#: includes/class-user-management.php:711
+#, php-format
+msgid "%d trusted device has been revoked."
+msgid_plural "%d trusted devices have been revoked."
+msgstr[0] "%d vertrauenswürdiges Gerät wurde widerrufen."
+msgstr[1] "%d vertrauenswürdige Geräte wurden widerrufen."

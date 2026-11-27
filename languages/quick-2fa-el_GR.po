@@ -57,56 +57,56 @@ msgstr "Για λόγους ασφαλείας, πρέπει να επαληθε
 msgid "Failed to send verification email. Please contact your site administrator."
 msgstr "Δεν κατέστη δυνατή η αποστολή του email επαλήθευσης. Παρακαλούμε επικοινωνήστε με τον διαχειριστή του ιστότοπου."
 
-#: includes/class-password-reminder-handler.php:131
+#: includes/class-password-reminder-handler.php:134
 msgid "Please enter a password."
 msgstr "Παρακαλώ εισάγετε έναν κωδικό πρόσβασης."
 
-#: includes/class-plugin.php:368
+#: includes/class-plugin.php:371
 msgid "Your account has been locked. Please contact your site administrator."
 msgstr "Ο λογαριασμός σας έχει κλειδωθεί. Παρακαλούμε επικοινωνήστε με τον διαχειριστή του ιστότοπου."
 
 #. translators: %s: Time remaining until unlock
-#: includes/class-plugin.php:372
+#: includes/class-plugin.php:375
 #, php-format
 msgid "Your account has been locked. Please try again in %s."
 msgstr "Ο λογαριασμός σας έχει κλειδωθεί. Παρακαλώ δοκιμάστε ξανά σε %s."
 
-#: includes/class-plugin.php:400
-#: includes/class-plugin.php:703
+#: includes/class-plugin.php:403
+#: includes/class-plugin.php:706
 msgid "Account Locked"
 msgstr "Ο λογαριασμός έχει κλειδωθεί"
 
-#: includes/class-plugin.php:556
+#: includes/class-plugin.php:559
 msgid "Invalid action"
 msgstr "Μη έγκυρη ενέργεια"
 
-#: includes/class-plugin.php:556
-#: includes/class-plugin.php:606
-#: includes/class-plugin.php:689
+#: includes/class-plugin.php:559
+#: includes/class-plugin.php:609
+#: includes/class-plugin.php:692
 msgctxt "error page title"
 msgid "Error"
 msgstr "Σφάλμα"
 
-#: includes/class-plugin.php:616
-#: includes/class-plugin.php:638
-#: includes/class-plugin.php:725
-#: includes/class-plugin.php:738
+#: includes/class-plugin.php:619
+#: includes/class-plugin.php:641
+#: includes/class-plugin.php:728
+#: includes/class-plugin.php:741
 msgid "Security check failed. Please try again."
 msgstr "Ο έλεγχος ασφαλείας απέτυχε. Παρακαλώ, δοκιμάστε ξανά."
 
-#: includes/class-plugin.php:621
+#: includes/class-plugin.php:624
 msgid "Please enter the verification code."
 msgstr "Παρακαλώ εισάγετε τον κωδικό επαλήθευσης."
 
-#: includes/class-plugin.php:645
+#: includes/class-plugin.php:648
 msgid "A new verification code has been sent to your email."
 msgstr "Έχει σταλεί ένας νέος κωδικός επαλήθευσης στο email σας."
 
-#: includes/class-plugin.php:770
+#: includes/class-plugin.php:773
 msgid "Your admin area is not protected by two-factor authentication."
 msgstr "Ο πίνακας ελέγχου σας δεν προστατεύεται από έλεγχο ταυτότητας δύο παραγόντων."
 
-#: includes/class-plugin.php:772
+#: includes/class-plugin.php:775
 msgid "Enable 2FA"
 msgstr "Ενεργοποίηση της διπλής επαλήθευσης (2FA)"
 
@@ -142,16 +142,16 @@ msgid "Lock Out"
 msgstr "Κλείδωμα"
 
 #: includes/class-user-management.php:295
-#: includes/class-user-management.php:363
-#: includes/class-user-management.php:584
-#: includes/class-user-management.php:623
+#: includes/class-user-management.php:375
+#: includes/class-user-management.php:642
+#: includes/class-user-management.php:683
 msgid "Security check failed."
 msgstr "Ο έλεγχος ασφαλείας απέτυχε."
 
 #: includes/class-user-management.php:299
-#: includes/class-user-management.php:367
-#: includes/class-user-management.php:588
-#: includes/class-user-management.php:627
+#: includes/class-user-management.php:379
+#: includes/class-user-management.php:646
+#: includes/class-user-management.php:687
 msgid "You do not have permission to perform this action."
 msgstr "Δεν έχετε δικαίωμα να εκτελέσετε αυτήν την ενέργεια."
 
@@ -160,30 +160,30 @@ msgid "You cannot lock out your own account."
 msgstr "Δεν μπορείτε να κλειδώσετε τον δικό σας λογαριασμό."
 
 #: includes/class-user-management.php:308
-#: includes/class-user-management.php:372
-#: includes/class-user-management.php:593
-#: includes/class-user-management.php:632
+#: includes/class-user-management.php:384
+#: includes/class-user-management.php:651
+#: includes/class-user-management.php:692
 msgid "Invalid user."
 msgstr "Μη έγκυρος χρήστης."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:330
+#: includes/class-user-management.php:328
 #, php-format
 msgid "User %s has been locked out."
 msgstr "Ο χρήστης %s έχει αποκλειστεί."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:390
+#: includes/class-user-management.php:401
 #, php-format
 msgid "User %s has been unlocked."
 msgstr "Ο χρήστης %s έχει ξεκλειδωθεί."
 
-#: includes/class-user-management.php:446
+#: includes/class-user-management.php:504
 msgid "Locked out (manual)"
 msgstr "Κλείδωμα (χειροκίνητο)"
 
 #. translators: %s: Formatted date and time
-#: includes/class-user-management.php:457
+#: includes/class-user-management.php:515
 #, php-format
 msgid "Locked out until %s"
 msgstr "Αποκλεισμός μέχρι τις %s"
@@ -513,15 +513,15 @@ msgstr[0] "Αυτός ο κωδικός θα λήξει σε %d λεπτό."
 msgstr[1] "Αυτός ο κωδικός θα λήξει σε %d λεπτά."
 
 #. translators: %d: minimum number of characters required in a password
-#: includes/class-password-reminder-handler.php:138
+#: includes/class-password-reminder-handler.php:141
 #, php-format
 msgid "Password must be at least %d character long."
 msgid_plural "Password must be at least %d characters long."
 msgstr[0] "Ο κωδικός πρόσβασης πρέπει να έχει μήκος τουλάχιστον %d χαρακτήρες."
 msgstr[1] "Ο κωδικός πρόσβασης πρέπει να έχει μήκος τουλάχιστον %d χαρακτήρες."
 
-#: includes/class-plugin.php:605
-#: includes/class-plugin.php:688
+#: includes/class-plugin.php:608
+#: includes/class-plugin.php:691
 msgid "Your user account could not be loaded. Please sign in again."
 msgstr "Δεν ήταν δυνατή η φόρτωση του λογαριασμού χρήστη σας. Παρακαλώ, συνδεθείτε ξανά."
 
@@ -597,7 +597,7 @@ msgid "https://headwall-hosting.com/a-web-guys-blog/"
 msgstr "https://headwall-hosting.com/a-web-guys-blog/"
 
 #. translators: %s is the plugin name, Quick 2FA
-#: includes/class-plugin.php:769
+#: includes/class-plugin.php:772
 #, php-format
 msgid "%s is currently disabled."
 msgstr "Το %s είναι προς το παρόν απενεργοποιημένο."
@@ -752,18 +752,50 @@ msgstr "Επιτρέπει στον πράκτορα τεχνητής νοημο
 msgid "Needs WordPress 6.9 or later; this site's WordPress has no Abilities API."
 msgstr "Απαιτείται WordPress 6.9 ή νεότερη έκδοση· το WordPress αυτού του ιστότοπου δεν διαθέτει το Abilities API."
 
-#: includes/class-password-reminder-handler.php:148
+#: includes/class-password-reminder-handler.php:151
 msgid "That password is too long. Please choose a shorter one."
 msgstr "Αυτός ο κωδικός πρόσβασης είναι πολύ μακρύς. Παρακαλώ, επιλέξτε έναν πιο σύντομο."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:341
+#: includes/class-user-management.php:346
 #, php-format
 msgid "User %s could not be locked out, because the lock could not be saved. Their sessions have been ended. Please try again."
 msgstr "Δεν ήταν δυνατή η αποκλεισμός του χρήστη %s, επειδή δεν ήταν δυνατή η αποθήκευση του αποκλεισμού. Οι συνεδρίες του έχουν τερματιστεί. Παρακαλώ δοκιμάστε ξανά."
 
 #. translators: %s: Username
-#: includes/class-user-management.php:401
+#: includes/class-user-management.php:410
 #, php-format
 msgid "User %s could not be unlocked, because the lock could not be removed. Please try again."
 msgstr "Δεν ήταν δυνατή η απεμπλοκή του χρήστη %s, επειδή δεν ήταν δυνατή η κατάργηση του κλειδώματος. Παρακαλώ δοκιμάστε ξανά."
+
+#: includes/class-account-security-handler.php:675
+msgid "The trusted devices could not be removed. Please try again."
+msgstr "Δεν ήταν δυνατή η κατάργηση των αξιόπιστων συσκευών. Παρακαλώ δοκιμάστε ξανά."
+
+#. translators: %s: Username
+#: includes/class-user-management.php:337
+#, php-format
+msgid "User %s has been locked out, but their sessions could not all be ended. Please try again."
+msgstr "Ο χρήστης %s έχει αποκλειστεί, αλλά δεν ήταν δυνατό να τερματιστούν όλες οι συνεδρίες του. Παρακαλώ δοκιμάστε ξανά."
+
+#. translators: %s: Username
+#: includes/class-user-management.php:355
+#, php-format
+msgid "User %s could not be locked out, because the lock could not be saved, and their sessions could not all be ended. Please try again."
+msgstr "Δεν ήταν δυνατή η απενεργοποίηση του χρήστη %s, επειδή δεν ήταν δυνατή η αποθήκευση του κλειδώματος και δεν ήταν δυνατό να τερματιστούν όλες οι συνεδρίες του. Παρακαλώ δοκιμάστε ξανά."
+
+#: includes/class-user-management.php:664
+msgid "The trusted device has been revoked."
+msgstr "Η πιστοποιημένη συσκευή έχει ανακληθεί."
+
+#: includes/class-user-management.php:666
+msgid "The trusted device could not be revoked, or had already been removed. Check the list and try again."
+msgstr "Η αξιόπιστη συσκευή δεν μπόρεσε να ανακληθεί ή είχε ήδη αφαιρεθεί. Ελέγξτε τη λίστα και δοκιμάστε ξανά."
+
+#. translators: %d: number of trusted devices revoked
+#: includes/class-user-management.php:711
+#, php-format
+msgid "%d trusted device has been revoked."
+msgid_plural "%d trusted devices have been revoked."
+msgstr[0] "Έχει ανακληθεί %d αξιόπιστη συσκευή."
+msgstr[1] "Έχουν ανακληθεί %d αξιόπιστες συσκευές."
