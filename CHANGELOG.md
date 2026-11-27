@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.9.0] — 2026-11-27
+
 ### Added
 
 - **`--dry-run` on every WP-CLI command that changes something:** `lock`, `unlock`, `lock-all`, `unlock-all`, `clear-devices` and `emergency-disable`. A dry run reports what the command would do (the user's lock status and session count, how many users `lock-all` would lock and who `--exclude` spares, the IDs `unlock-all` would unlock) without asking for confirmation or changing anything.
