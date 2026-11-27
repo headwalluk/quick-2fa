@@ -78,12 +78,23 @@ register_activation_hook( __FILE__, 'quick_2fa_activate' );
 function quick_2fa_deactivate(): void {
 	global $wpdb;
 
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- No API deletes transients by name pattern.
-	$wpdb->query(
-		"DELETE FROM {$wpdb->options} 
-		 WHERE option_name LIKE '_transient_q2fa_%' 
-		 OR option_name LIKE '_transient_timeout_q2fa_%'"
-	);
+	// Under a persistent object cache, transients never reach the options table;
+	// these per-user ones then expire on their own within 15 minutes.
+	$transient_prefixes = array( Quick_2FA\TRANSIENT_RETURN_URL, Quick_2FA\TRANSIENT_RATE_LIMIT, Quick_2FA\TRANSIENT_ADMIN_NOTICE );
+
+	foreach ( $transient_prefixes as $transient_prefix ) {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- No API lists transients by name prefix.
+		$option_names = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+				$wpdb->esc_like( '_transient_' . $transient_prefix ) . '%'
+			)
+		);
+
+		foreach ( $option_names as $option_name ) {
+			delete_transient( substr( $option_name, strlen( '_transient_' ) ) );
+		}
+	}
 }
 register_deactivation_hook( __FILE__, 'quick_2fa_deactivate' );
 
