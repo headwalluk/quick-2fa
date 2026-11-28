@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- **No false "version drift" error when the plugin updates itself.** Straight after an update, for example `wp plugin update` from overnight cron, the update check read the new version from the plugin header while the old version constant was still loaded, and logged a drift error. The updater now notes when this request has replaced the plugin's files and logs that case only under `WP_DEBUG`. Since 1.3.0. The first update that is quiet is the one *from* the release carrying this fix, because the update runs the code already installed.
+
 ## [1.9.0] — 2026-11-27
 
 ### Added

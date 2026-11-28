@@ -107,6 +107,13 @@ class Github_Updater {
 	private string $enabled_filter;
 
 	/**
+	 * Whether this request has replaced the plugin's files, leaving the old version constant in memory.
+	 *
+	 * @var bool
+	 */
+	private bool $has_updated_this_request = false;
+
+	/**
 	 * Store the plugin's details and register the update hooks.
 	 *
 	 * @since 1.0.0
@@ -129,6 +136,7 @@ class Github_Updater {
 		add_filter( 'site_transient_update_plugins', array( $this, 'withdraw_offer_when_disabled' ) );
 		add_filter( 'auto_update_plugin', array( $this, 'block_incompatible_auto_update' ), PHP_INT_MAX, 2 );
 		add_filter( 'plugins_api', array( $this, 'plugin_info' ), 10, 3 );
+		add_filter( 'upgrader_post_install', array( $this, 'note_files_replaced' ), 10, 2 );
 		add_action( 'upgrader_process_complete', array( $this, 'clear_cache' ), 10, 2 );
 	}
 
@@ -263,7 +271,8 @@ class Github_Updater {
 	/**
 	 * Resolve the installed version from the file header, as recorded in the update transient.
 	 *
-	 * Reads the header, not the version constant, and logs an error when they differ.
+	 * Reads the header, not the version constant, and logs an error when they differ,
+	 * unless this request has just replaced the plugin's files.
 	 *
 	 * @since 1.3.0
 	 *
@@ -276,6 +285,9 @@ class Github_Updater {
 		if ( '' === $installed_version ) {
 			$installed_version = $this->plugin_version;
 			$this->log( 'get_installed_version: ' . $this->plugin_basename . ' absent from the checked list, falling back to the version constant ' . $installed_version . '.' );
+		} elseif ( $this->plugin_version !== $installed_version && $this->has_updated_this_request ) {
+			// The new header is on disk but the old constant is still loaded until the next request.
+			$this->log( 'get_installed_version: header reports ' . $installed_version . ', constant ' . $this->plugin_version . '; expected straight after an update.' );
 		} elseif ( $this->plugin_version !== $installed_version ) {
 			$this->log_error( 'get_installed_version: version drift — the ' . $this->plugin_basename . ' header reports ' . $installed_version . ' but its version constant is ' . $this->plugin_version . '. Both must be bumped together.' );
 		} else {
@@ -331,6 +343,23 @@ class Github_Updater {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Record that this request has replaced the plugin's files.
+	 *
+	 * @since 1.9.1
+	 *
+	 * @param mixed $response   Installation response, passed through unchanged.
+	 * @param mixed $hook_extra Extra arguments for the install, naming the plugin.
+	 * @return mixed The response, unchanged.
+	 */
+	public function note_files_replaced( mixed $response, mixed $hook_extra ): mixed {
+		if ( is_array( $hook_extra ) && ( $hook_extra['plugin'] ?? '' ) === $this->plugin_basename && ! is_wp_error( $response ) ) {
+			$this->has_updated_this_request = true;
+		}
+
+		return $response;
 	}
 
 	/**
